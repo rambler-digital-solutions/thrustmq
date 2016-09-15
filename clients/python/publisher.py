@@ -38,7 +38,7 @@ def load(counter, value):
                     for i in range(BATCH_SIZE):
                         message = 'Привет от воркера %s %d\n' % (
                             TOKEN, int(time.time()))
-                        sys.stdout.write(message)
+                        # sys.stdout.write(message)
                         message = message.encode('utf-8')
                         s.sendall(message)
                         result = s.recv(1)

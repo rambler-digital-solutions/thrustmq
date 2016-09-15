@@ -5,14 +5,14 @@ import (
 	"net"
 )
 
-func Server(filename string, messageBus chan<- string, counter *uint64) {
+func Server(filename string, updateBus chan<- bool, counter *uint64) {
 	fmt.Println("Launching publisher backend...")
 
 	dumperChannel := make(chan string, 1000)
 
 	socket, _ := net.Listen("tcp", ":1888")
 
-	go dump(filename, dumperChannel, messageBus, counter)
+	go dump(filename, dumperChannel, updateBus, counter)
 
 	for {
 		connection, _ := socket.Accept()

@@ -12,10 +12,10 @@ func main() {
 	var incomingCounter uint64
 	var outgoingCounter uint64
 
-	messageBus := make(chan string, 1000)
+	updateBus := make(chan bool, 1024)
 
-	go publisher.Server(filename, messageBus, &incomingCounter)
-	go subscriber.Server(filename, messageBus, &outgoingCounter)
+	go publisher.Server(filename, updateBus, &incomingCounter)
+	go subscriber.Server(filename, updateBus, &outgoingCounter)
 
 	common.Report(&incomingCounter, &outgoingCounter)
 }

@@ -39,7 +39,8 @@ def load():
                 s.connect((HOST, PORT))
 
                 for line in readlines(s):
-                    print(line)
+                    pass
+                    # print(line)
         except IOError:
             print('Failed to connect...' + str(timestamp()))
             time.sleep(1)

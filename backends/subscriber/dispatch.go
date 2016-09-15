@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func dispatch(filename string, messageBus <-chan string, hash map[net.Conn]chan string) {
+func dispatch(filename string, updateBus <-chan bool, hash map[net.Conn]chan string) {
 	// open file
 	queue, err := os.Open(filename)
 	if err != nil {
@@ -25,7 +25,7 @@ func dispatch(filename string, messageBus <-chan string, hash map[net.Conn]chan 
 		}
 		// got EOF wait for new data
 		if err != nil {
-			<-messageBus
+			<-updateBus
 		}
 	}
 }
