@@ -1,9 +1,9 @@
 package main
 
 import (
-	"thrust/backends/common"
-	"thrust/backends/exhaust"
-	"thrust/backends/intake"
+	"thrust/subsystems/common"
+	"thrust/subsystems/exhaust"
+	"thrust/subsystems/intake"
 	"thrust/logging"
 )
 
