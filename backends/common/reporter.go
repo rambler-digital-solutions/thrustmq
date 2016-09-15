@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func Report(incomingCounter *uint64, outgoingCounter *uint64, updateBus chan<- bool) {
+func Report(incomingCounter *uint64, outgoingCounter *uint64, shaft chan<- bool) {
 	for {
 		time.Sleep(time.Second)
 		fmt.Printf("\r %6d ->msg/sec %6d msg/sec-> ", *incomingCounter, *outgoingCounter)

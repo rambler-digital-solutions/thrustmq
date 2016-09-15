@@ -1,4 +1,4 @@
-package subscriber
+package exhaust
 
 import (
 	"bufio"
@@ -7,7 +7,7 @@ import (
 	"thrust/config"
 )
 
-func dispatch(updateBus <-chan bool, hash map[net.Conn]chan string) {
+func dispatch(shaft <-chan bool, hash map[net.Conn]chan string) {
 	// open file
 	queue, err := os.OpenFile(config.Config.Filename, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
@@ -26,7 +26,7 @@ func dispatch(updateBus <-chan bool, hash map[net.Conn]chan string) {
 		}
 		// got EOF wait for new data
 		if err != nil {
-			<-updateBus
+			<-shaft
 		}
 	}
 }

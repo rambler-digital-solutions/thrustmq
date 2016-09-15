@@ -1,4 +1,4 @@
-package publisher
+package intake
 
 import (
 	"fmt"
@@ -6,13 +6,13 @@ import (
 	"thrust/config"
 )
 
-func Server(updateBus chan<- bool, counter *uint64) {
+func Init(shaft chan<- bool, counter *uint64) {
 	fmt.Printf("Spinning compressor on port %d\n", config.Config.Intake.Port)
 
 	turbineChannel := make(chan messageStruct, config.Config.Intake.CompressorBlades)
 	socket, _ := net.Listen("tcp", fmt.Sprintf(":%d", config.Config.Intake.Port))
 
-	go spin(turbineChannel, updateBus, counter)
+	go spin(turbineChannel, shaft, counter)
 
 	for {
 		connection, _ := socket.Accept()

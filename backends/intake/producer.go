@@ -1,4 +1,4 @@
-package publisher
+package intake
 
 import (
 	"bufio"
@@ -6,6 +6,11 @@ import (
 	"thrust/config"
 	"thrust/logging"
 )
+
+type messageStruct struct {
+	AckChannel chan bool
+	Payload    []byte
+}
 
 func serve(connection net.Conn, turbineChannel chan<- messageStruct) {
 	logging.NewProducer(connection.RemoteAddr())

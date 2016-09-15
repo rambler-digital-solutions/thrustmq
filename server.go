@@ -2,8 +2,8 @@ package main
 
 import (
 	"thrust/backends/common"
-	"thrust/backends/publisher"
-	"thrust/backends/subscriber"
+	"thrust/backends/exhaust"
+	"thrust/backends/intake"
 	"thrust/logging"
 )
 
@@ -14,10 +14,10 @@ func main() {
 	var incomingCounter uint64
 	var outgoingCounter uint64
 
-	updateBus := make(chan bool)
+	shaft := make(chan bool)
 
-	go publisher.Server(updateBus, &incomingCounter)
-	go subscriber.Server(updateBus, &outgoingCounter)
+	go intake.Init(shaft, &incomingCounter)
+	go exhaust.Init(shaft, &outgoingCounter)
 
-	common.Report(&incomingCounter, &outgoingCounter, updateBus)
+	common.Report(&incomingCounter, &outgoingCounter, shaft)
 }
