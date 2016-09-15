@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"thrust/config"
+	"thrust/subsystems/common"
 )
 
 func Init(shaft <-chan bool, counter *uint64) {
@@ -11,7 +12,7 @@ func Init(shaft <-chan bool, counter *uint64) {
 
 	publisherSocket, _ := net.Listen("tcp", fmt.Sprintf(":%d", config.Config.Exhaust.Port))
 
-	hash := make(map[net.Conn]chan string)
+	hash := make(map[net.Conn]chan common.MessageStruct)
 
 	go dispatch(shaft, hash)
 

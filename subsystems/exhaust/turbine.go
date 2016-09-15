@@ -5,9 +5,10 @@ import (
 	"net"
 	"os"
 	"thrust/config"
+	"thrust/subsystems/common"
 )
 
-func dispatch(shaft <-chan bool, hash map[net.Conn]chan string) {
+func dispatch(shaft <-chan bool, hash map[net.Conn]chan common.MessageStruct) {
 	// open file
 	queue, err := os.OpenFile(config.Config.Filename, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
@@ -17,11 +18,11 @@ func dispatch(shaft <-chan bool, hash map[net.Conn]chan string) {
 
 	// read lines
 	for {
-		bytes, _, err := reader.ReadLine()
+		bytes, err := reader.ReadSlice('\n')
 		// got new line
 		if len(bytes) != 0 {
 			for _, inbox := range hash {
-				inbox <- string(bytes)
+				inbox <- common.MessageStruct{AckChannel: nil, Payload: bytes}
 			}
 		}
 		// got EOF wait for new data

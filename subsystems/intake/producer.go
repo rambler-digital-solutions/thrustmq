@@ -5,14 +5,10 @@ import (
 	"net"
 	"thrust/config"
 	"thrust/logging"
+	"thrust/subsystems/common"
 )
 
-type messageStruct struct {
-	AckChannel chan bool
-	Payload    []byte
-}
-
-func serve(connection net.Conn, turbineChannel chan<- messageStruct) {
+func serve(connection net.Conn, turbineChannel chan<- common.MessageStruct) {
 	logging.NewProducer(connection.RemoteAddr())
 	defer logging.LostProducer(connection.RemoteAddr())
 
@@ -27,7 +23,7 @@ func serve(connection net.Conn, turbineChannel chan<- messageStruct) {
 
 		logging.WatchCapacity("dumper", len(turbineChannel), config.Config.Intake.CompressorBlades)
 
-		turbineChannel <- messageStruct{AckChannel: ackChannel, Payload: payload}
+		turbineChannel <- common.MessageStruct{AckChannel: ackChannel, Payload: payload}
 
 		<-ackChannel // recieve acknowledgement
 

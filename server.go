@@ -1,10 +1,10 @@
 package main
 
 import (
+	"thrust/logging"
 	"thrust/subsystems/common"
 	"thrust/subsystems/exhaust"
 	"thrust/subsystems/intake"
-	"thrust/logging"
 )
 
 func main() {

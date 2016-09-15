@@ -4,9 +4,10 @@ import (
 	"os"
 	"sync/atomic"
 	"thrust/config"
+	"thrust/subsystems/common"
 )
 
-func spin(turbineChannel <-chan messageStruct, shaft chan<- bool, counter *uint64) {
+func spin(turbineChannel <-chan common.MessageStruct, shaft chan<- bool, counter *uint64) {
 	queue, err := os.OpenFile(config.Config.Filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		panic(err)
@@ -14,8 +15,7 @@ func spin(turbineChannel <-chan messageStruct, shaft chan<- bool, counter *uint6
 
 	for {
 		message := <-turbineChannel
-		payload := append(message.Payload, '\n')
-		_, err := queue.Write(payload)
+		_, err := queue.Write(message.Payload)
 		if err != nil {
 			panic(err)
 		}
