@@ -9,7 +9,7 @@ import (
 
 func dispatch(updateBus <-chan bool, hash map[net.Conn]chan string) {
 	// open file
-	queue, err := os.Open(config.Config.Filename)
+	queue, err := os.OpenFile(config.Config.Filename, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		panic(err)
 	}

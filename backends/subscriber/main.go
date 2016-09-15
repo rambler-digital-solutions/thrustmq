@@ -17,8 +17,6 @@ func Server(updateBus <-chan bool, counter *uint64) {
 
 	for {
 		connection, _ := publisherSocket.Accept()
-		inbox := make(chan string, config.Config.Subscriber.InboxCapacity)
-		hash[connection] = inbox
-		go serve(connection, inbox, counter)
+		go serve(connection, hash, counter)
 	}
 }

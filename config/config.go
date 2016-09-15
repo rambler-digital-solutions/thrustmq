@@ -21,7 +21,7 @@ type ConfigStruct struct {
 	Publisher         PublisherConfigStruct
 	Subscriber        SubscriberConfigStruct
 	Filename          string
-	UpdateBusCapacity int
+	Logfile						string
 }
 
 func loadConfig() ConfigStruct {

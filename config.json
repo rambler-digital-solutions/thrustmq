@@ -7,6 +7,6 @@
         "Port": 2888,
         "InboxCapacity": 1024
     },
-    "Filename": "./queue.dat",
-    "UpdateBusCapacity": 1024
+    "Filename": "thrust.dat",
+    "Logfile": "thrust.log"
 }
