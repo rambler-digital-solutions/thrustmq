@@ -4,18 +4,17 @@ import (
 	"thrust/backends/common"
 	"thrust/backends/publisher"
 	"thrust/backends/subscriber"
+	"thrust/config"
 )
 
 func main() {
-	filename := "queue.dat"
-
 	var incomingCounter uint64
 	var outgoingCounter uint64
 
-	updateBus := make(chan bool, 1024)
+	updateBus := make(chan bool, config.Config.UpdateBusCapacity)
 
-	go publisher.Server(filename, updateBus, &incomingCounter)
-	go subscriber.Server(filename, updateBus, &outgoingCounter)
+	go publisher.Server(updateBus, &incomingCounter)
+	go subscriber.Server(updateBus, &outgoingCounter)
 
 	common.Report(&incomingCounter, &outgoingCounter)
 }

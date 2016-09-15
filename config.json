@@ -1,0 +1,12 @@
+{
+    "Publisher": {
+        "Port": 1888,
+        "DumperCapacity": 1024
+    },
+    "Subscriber": {
+        "Port": 2888,
+        "InboxCapacity": 1024
+    },
+    "Filename": "./queue.dat",
+    "UpdateBusCapacity": 1024
+}

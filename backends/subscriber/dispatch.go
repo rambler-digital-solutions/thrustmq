@@ -4,11 +4,12 @@ import (
 	"bufio"
 	"net"
 	"os"
+	"thrust/config"
 )
 
-func dispatch(filename string, updateBus <-chan bool, hash map[net.Conn]chan string) {
+func dispatch(updateBus <-chan bool, hash map[net.Conn]chan string) {
 	// open file
-	queue, err := os.Open(filename)
+	queue, err := os.Open(config.Config.Filename)
 	if err != nil {
 		panic(err)
 	}

@@ -3,16 +3,17 @@ package publisher
 import (
 	"fmt"
 	"net"
+	"thrust/config"
 )
 
-func Server(filename string, updateBus chan<- bool, counter *uint64) {
-	fmt.Println("Launching publisher backend...")
+func Server(updateBus chan<- bool, counter *uint64) {
+	fmt.Printf("Launching publisher  backend on port %d\n", config.Config.Publisher.Port)
 
-	dumperChannel := make(chan string, 1000)
+	dumperChannel := make(chan string, config.Config.Publisher.DumperCapacity)
 
-	socket, _ := net.Listen("tcp", ":1888")
+	socket, _ := net.Listen("tcp", fmt.Sprintf(":%d", config.Config.Publisher.Port))
 
-	go dump(filename, dumperChannel, updateBus, counter)
+	go dump(dumperChannel, updateBus, counter)
 
 	for {
 		connection, _ := socket.Accept()
