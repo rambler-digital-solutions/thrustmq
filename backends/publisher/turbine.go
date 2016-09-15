@@ -6,14 +6,14 @@ import (
 	"thrust/config"
 )
 
-func dump(dumperChannel <-chan messageStruct, updateBus chan<- bool, counter *uint64) {
+func spin(turbineChannel <-chan messageStruct, updateBus chan<- bool, counter *uint64) {
 	queue, err := os.OpenFile(config.Config.Filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		panic(err)
 	}
 
 	for {
-		message := <-dumperChannel
+		message := <-turbineChannel
 		payload := append(message.Payload, '\n')
 		_, err := queue.Write(payload)
 		if err != nil {

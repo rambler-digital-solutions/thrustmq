@@ -1,11 +1,11 @@
 {
-    "Publisher": {
+    "Intake": {
         "Port": 1888,
-        "DumperCapacity": 4096
+        "CompressorBlades": 4096
     },
-    "Subscriber": {
+    "Exhaust": {
         "Port": 2888,
-        "InboxCapacity": 1024
+        "TurbineBlades": 1024
     },
     "Filename": "thrust.dat",
     "Logfile": "thrust.log"

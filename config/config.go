@@ -7,21 +7,21 @@ import (
 	"os"
 )
 
-type SubscriberConfigStruct struct {
+type exhaustConfigStruct struct {
 	Port          int
-	InboxCapacity int
+	TurbineBlades int
 }
 
-type PublisherConfigStruct struct {
-	Port           int
-	DumperCapacity int
+type intakeConfigStruct struct {
+	Port             int
+	CompressorBlades int
 }
 
 type ConfigStruct struct {
-	Publisher  PublisherConfigStruct
-	Subscriber SubscriberConfigStruct
-	Filename   string
-	Logfile    string
+	Intake   intakeConfigStruct
+	Exhaust  exhaustConfigStruct
+	Filename string
+	Logfile  string
 }
 
 func loadConfig() ConfigStruct {

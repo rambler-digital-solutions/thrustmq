@@ -7,9 +7,9 @@ import (
 )
 
 func Server(updateBus <-chan bool, counter *uint64) {
-	fmt.Printf("Launching subscriber backend on port %d\n", config.Config.Subscriber.Port)
+	fmt.Printf("Spinning turbine    on port %d\n", config.Config.Exhaust.Port)
 
-	publisherSocket, _ := net.Listen("tcp", fmt.Sprintf(":%d", config.Config.Subscriber.Port))
+	publisherSocket, _ := net.Listen("tcp", fmt.Sprintf(":%d", config.Config.Exhaust.Port))
 
 	hash := make(map[net.Conn]chan string)
 

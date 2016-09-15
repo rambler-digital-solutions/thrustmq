@@ -10,10 +10,10 @@ import (
 func serve(connection net.Conn, hash map[net.Conn]chan string, counter *uint64) {
 	logging.NewConsumer(connection.RemoteAddr())
 
-	inbox := make(chan string, config.Config.Subscriber.InboxCapacity)
+	inbox := make(chan string, config.Config.Exhaust.TurbineBlades)
 	hash[connection] = inbox
 	for {
-		logging.WatchCapacity("inbox", len(inbox), config.Config.Subscriber.InboxCapacity)
+		logging.WatchCapacity("inbox", len(inbox), config.Config.Exhaust.TurbineBlades)
 
 		msg := <-inbox
 		byteArray := []byte(msg + "\n")
