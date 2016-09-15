@@ -38,6 +38,7 @@ def load(counter, value):
                     for i in range(BATCH_SIZE):
                         message = 'Привет от воркера %s %d\n' % (
                             TOKEN, int(time.time()))
+                        sys.stdout.write(message)
                         message = message.encode('utf-8')
                         s.sendall(message)
                         result = s.recv(1)
@@ -46,7 +47,7 @@ def load(counter, value):
                         if result != b'y':
                             print('Dramatic error!')
                             sys.exit(1)
-                        time.sleep(2)
+                        # time.sleep(0.1)
                     with lock:
                         counter.value += BATCH_SIZE
         except IOError:
