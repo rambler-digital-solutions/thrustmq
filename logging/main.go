@@ -1,34 +1,42 @@
 package logging
 
 import (
-  "os"
-  "log"
-  "net"
-  "thrust/config"
+	"log"
+	"net"
+	"os"
+	"thrust/config"
 )
 
-func Init() (*os.File) {
-  logfile, err := os.OpenFile(config.Config.Logfile, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-  if err != nil {
-      panic(err)
-  }
+func Init() *os.File {
+	logfile, err := os.OpenFile(config.Config.Logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		panic(err)
+	}
 
-  log.SetOutput(logfile)
-  log.Println("ThrusMQ started")
+	log.SetOutput(logfile)
+	log.Println("ThrusMQ started")
 
-  return logfile
+	return logfile
 }
 
 func WatchCapacity(label string, size int, capacity int) {
-  if size > capacity * 95 / 100 {
-    log.Printf("%s is %d/%d full", label, size, capacity)
-  }
+	if size > capacity*95/100 {
+		log.Printf("%s is %d/%d full", label, size, capacity)
+	}
 }
 
 func NewProducer(address net.Addr) {
-  log.Printf("new producer %s %s", address.Network(), address.String())
+	log.Printf("new producer %s %s", address.Network(), address.String())
+}
+
+func LostProducer(address net.Addr) {
+	log.Printf("lost producer %s %s", address.Network(), address.String())
 }
 
 func NewConsumer(address net.Addr) {
-  log.Printf("new consumer %s %s", address.Network(), address.String())
+	log.Printf("new consumer %s %s", address.Network(), address.String())
+}
+
+func LostConsumer(address net.Addr) {
+	log.Printf("lost consumer %s %s", address.Network(), address.String())
 }

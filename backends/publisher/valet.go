@@ -7,20 +7,25 @@ import (
 	"thrust/logging"
 )
 
-func serve(connection net.Conn, dumperChannel chan<- string) {
+func serve(connection net.Conn, dumperChannel chan<- messageStruct) {
 	logging.NewProducer(connection.RemoteAddr())
+	defer logging.LostProducer(connection.RemoteAddr())
 
+	ackChannel := make(chan bool)
 	reader := bufio.NewReader(connection)
+
 	for {
-		message, err := reader.ReadString('\n')
+		payload, err := reader.ReadSlice('\n')
 		if err != nil {
-			connection.Close()
 			return
 		}
 
 		logging.WatchCapacity("dumper", len(dumperChannel), config.Config.Publisher.DumperCapacity)
 
-		dumperChannel <- message
-		connection.Write([]byte("y"))
+		dumperChannel <- messageStruct{AckChannel: ackChannel, Payload: payload}
+
+		<-ackChannel // recieve acknowledgement
+
+		connection.Write([]byte{'y'})
 	}
 }

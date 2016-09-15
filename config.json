@@ -1,7 +1,7 @@
 {
     "Publisher": {
         "Port": 1888,
-        "DumperCapacity": 1024
+        "DumperCapacity": 4096
     },
     "Subscriber": {
         "Port": 2888,

@@ -6,23 +6,25 @@ import (
 	"thrust/config"
 )
 
-func dump(dumperChannel <-chan string, updateBus chan<- bool, counter *uint64) {
+func dump(dumperChannel <-chan messageStruct, updateBus chan<- bool, counter *uint64) {
 	queue, err := os.OpenFile(config.Config.Filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		panic(err)
 	}
 
 	for {
-		msg := <-dumperChannel
-		_, err := queue.WriteString(msg)
+		message := <-dumperChannel
+		payload := append(message.Payload, '\n')
+		_, err := queue.Write(payload)
 		if err != nil {
 			panic(err)
 		}
 		atomic.AddUint64(counter, 1)
+		message.AckChannel <- true
 		// non-blocking notify of dispatcher
 		select {
-			case updateBus <- true:
-			default:
+		case updateBus <- true:
+		default:
 		}
 	}
 }

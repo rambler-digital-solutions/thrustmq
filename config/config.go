@@ -18,10 +18,10 @@ type PublisherConfigStruct struct {
 }
 
 type ConfigStruct struct {
-	Publisher         PublisherConfigStruct
-	Subscriber        SubscriberConfigStruct
-	Filename          string
-	Logfile						string
+	Publisher  PublisherConfigStruct
+	Subscriber SubscriberConfigStruct
+	Filename   string
+	Logfile    string
 }
 
 func loadConfig() ConfigStruct {
