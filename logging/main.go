@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"thrust/config"
+	"thrust/subsystems/common"
 )
 
 func Init() *os.File {
@@ -20,8 +21,8 @@ func Init() *os.File {
 }
 
 func WatchCapacity(label string, size int, capacity int) {
-	if size > capacity*95/100 {
-		log.Printf("%s is %d/%d full", label, size, capacity)
+	if size == capacity {
+		// log.Printf("%s is %d/%d full", label, size, capacity)
 	}
 }
 
@@ -33,10 +34,10 @@ func LostProducer(address net.Addr) {
 	log.Printf("lost producer %s %s", address.Network(), address.String())
 }
 
-func NewConsumer(address net.Addr) {
-	log.Printf("new consumer %s %s", address.Network(), address.String())
+func NewConsumer(address net.Addr, hash map[net.Conn]chan *common.MessageStruct) {
+	log.Printf("new consumer %s %s (%d connections)", address.Network(), address.String(), len(hash))
 }
 
-func LostConsumer(address net.Addr) {
-	log.Printf("lost consumer %s %s", address.Network(), address.String())
+func LostConsumer(address net.Addr, hash map[net.Conn]chan *common.MessageStruct) {
+	log.Printf("lost consumer %s %s (%d connections)", address.Network(), address.String(), len(hash))
 }

@@ -4,8 +4,7 @@
         "CompressorBlades": 4096
     },
     "Exhaust": {
-        "Port": 2888,
-        "TurbineBlades": 1024
+        "Port": 2888
     },
     "Filename": "thrust.dat",
     "Logfile": "thrust.log"

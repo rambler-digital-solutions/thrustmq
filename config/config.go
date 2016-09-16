@@ -8,8 +8,7 @@ import (
 )
 
 type exhaustConfigStruct struct {
-	Port          int
-	TurbineBlades int
+	Port int
 }
 
 type intakeConfigStruct struct {
