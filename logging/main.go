@@ -34,10 +34,10 @@ func LostProducer(address net.Addr) {
 	log.Printf("lost producer %s %s", address.Network(), address.String())
 }
 
-func NewConsumer(address net.Addr, hash map[net.Conn]chan *common.MessageStruct) {
-	log.Printf("new consumer %s %s (%d connections)", address.Network(), address.String(), len(hash))
+func NewConsumer(address net.Addr, nozzles *common.MessageChannels) {
+	log.Printf("new consumer %s %s (%d connections)", address.Network(), address.String(), len(*nozzles))
 }
 
-func LostConsumer(address net.Addr, hash map[net.Conn]chan *common.MessageStruct) {
-	log.Printf("lost consumer %s %s (%d connections)", address.Network(), address.String(), len(hash))
+func LostConsumer(address net.Addr, nozzles *common.MessageChannels) {
+	log.Printf("lost consumer %s %s (%d connections)", address.Network(), address.String(), len(*nozzles))
 }

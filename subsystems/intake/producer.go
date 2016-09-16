@@ -12,7 +12,7 @@ func serve(connection net.Conn, turbineChannel chan<- common.MessageStruct) {
 	logging.NewProducer(connection.RemoteAddr())
 	defer logging.LostProducer(connection.RemoteAddr())
 
-	ackChannel := make(chan bool)
+	ackChannel := make(chan bool, 1)
 	reader := bufio.NewReader(connection)
 
 	for {

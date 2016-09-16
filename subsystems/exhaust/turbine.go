@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"io"
 	"log"
-	"net"
+	"math/rand"
 	"os"
 	"sync"
 	"thrust/config"
@@ -12,9 +12,9 @@ import (
 	"time"
 )
 
-func spin(shaft <-chan bool, hash map[net.Conn]chan *common.MessageStruct, mutex *sync.Mutex) {
+func spin(shaft <-chan bool, nozzles *common.MessageChannels, mutex *sync.Mutex) {
 	reader := getFileReader()
-	readAndPropagate(shaft, reader, hash, mutex)
+	readAndPropagate(shaft, reader, nozzles, mutex)
 }
 
 func getFileReader() *bufio.Reader {
@@ -25,13 +25,12 @@ func getFileReader() *bufio.Reader {
 	return bufio.NewReader(queue)
 }
 
-func readAndPropagate(shaft <-chan bool, reader *bufio.Reader, hash map[net.Conn]chan *common.MessageStruct, mutex *sync.Mutex) {
-	log.Println("entered readAndPropagate")
+func readAndPropagate(shaft <-chan bool, reader *bufio.Reader, nozzles *common.MessageChannels, mutex *sync.Mutex) {
 	for {
 		bytes, err := reader.ReadSlice('\n')
 
 		if len(bytes) != 0 {
-			propogate(bytes, hash, mutex)
+			propogate(bytes, nozzles, mutex)
 		}
 
 		if err == io.EOF {
@@ -40,32 +39,29 @@ func readAndPropagate(shaft <-chan bool, reader *bufio.Reader, hash map[net.Conn
 	}
 }
 
-func propogate(data []byte, hash map[net.Conn]chan *common.MessageStruct, mutex *sync.Mutex) {
-	log.Println("T: spinning!", len(data))
+func propogate(data []byte, nozzles *common.MessageChannels, mutex *sync.Mutex) {
 	for {
-		if len(hash) == 0 {
+		var nozzle chan common.MessageStruct
+		message := common.MessageStruct{AckChannel: nil, Payload: data}
+
+		mutex.Lock()
+		N := len(*nozzles)
+		if N != 0 {
+			nozzle = (*nozzles)[rand.Intn(N)]
+		}
+		mutex.Unlock()
+
+		if N == 0 {
 			log.Println("T: no clients (sleeping)")
 			time.Sleep(1e8) // wait for new consumers
 		} else {
-			sent := false
-			mutex.Lock()
-			for _, inbox := range hash {
-				message := common.MessageStruct{AckChannel: nil, Payload: data}
-				select {
-				case inbox <- &message:
-					log.Println("T: inbox <-")
-					sent = true
-				default:
-					log.Println("T: inbox x-", inbox, len(inbox))
-					// channel is full, or connection was closed
-				}
-			}
-			mutex.Unlock()
-			if sent {
+			select {
+			case nozzle <- message:
+				log.Println("T: inbox <-")
 				return
-			} else {
-				log.Println("T: failed (sleeping)")
-				time.Sleep(1e8) // wait for new consumers
+			default:
+				log.Println("T: inbox x-", nozzle, len(nozzle))
+				// channel is full, or connection was closed
 			}
 		}
 	}

@@ -15,12 +15,12 @@ func Init(shaft <-chan bool, counter *uint64) {
 
 	// maps connections to inboxes
 	mutex := &sync.Mutex{}
-	hash := make(map[net.Conn]chan *common.MessageStruct)
+	nozzles := &common.MessageChannels{}
 
-	go spin(shaft, hash, mutex)
+	go spin(shaft, nozzles, mutex)
 
 	for {
 		connection, _ := socket.Accept()
-		go serve(connection, hash, mutex, counter)
+		go thrust(connection, nozzles, mutex, counter)
 	}
 }
