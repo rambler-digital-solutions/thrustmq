@@ -17,39 +17,38 @@ TOKEN = binascii.hexlify(os.urandom(8))
 def timestamp():
     return int(time.time())
 
+    chars = []
+    while True:
+        a = sock.recv(1)
+        chars.append(a)
+        if a == "\n" or a == "":
+            return "".join(chars)
 
-def readlines(sock, recv_buffer=4096, delim=b'\n'):
+
+def readlines(sock, delim=b'\n'):
     buffer = bytes()
     data = True
     while data:
-        data = sock.recv(recv_buffer)
-        # print(data)
-        # buffer += data
-        # try:
-        #     while True:
-        #         idx = buffer.index(delim)
-        #         line = buffer[:idx + 1]
-        #         buffer = bytes(buffer[idx:])
-        #         pdb.set_trace()
-        #
-        # except ValueError:
-        #     pass
-    # for line in str(buffer, encoding='utf-8').split('\n'):
-    #     yield line
+        data = sock.recv(1)
+        buffer += data
+        if data == b'\n':
+            if len(buffer) > 1:
+                yield str(buffer, encoding='utf-8')
+            buffer = bytes()
 
 
 def load():
-    # while True:
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((HOST, PORT))
-
-            for line in readlines(s):
-                # print(line)
-                pass
-    except IOError:
-        print('Failed to connect...' + str(timestamp()))
-        time.sleep(1)
+    while True:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((HOST, PORT))
+                s.settimeout(1)
+                for line in readlines(s):
+                    pass
+                    # sys.stdout.write(line)
+        except IOError:
+            print('Failed to connect...' + str(timestamp()))
+            time.sleep(1)
 
 
 if __name__ == "__main__":

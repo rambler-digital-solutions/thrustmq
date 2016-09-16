@@ -23,6 +23,7 @@ type ConfigStruct struct {
 	Exhaust  exhaustConfigStruct
 	Filename string
 	Logfile  string
+	Debug    bool
 }
 
 func loadConfig() ConfigStruct {

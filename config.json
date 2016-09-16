@@ -9,5 +9,6 @@
         "TurbineBlades": 1024
     },
     "Filename": "thrust.dat",
-    "Logfile": "thrust.log"
+    "Logfile": "thrust.log",
+    "Debug": true
 }

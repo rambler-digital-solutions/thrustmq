@@ -30,15 +30,16 @@ func readAndPropagate(shaft <-chan bool, reader *bufio.Reader, nozzles *common.M
 		var bytes []byte
 
 		select {
-		case message := <-flux:
+		case message := <-flux: // grab messages from dead nozzles first
 			bytes = message.Payload
 		default:
-
-			bts, err := reader.ReadSlice('\n')
+			bytesFromFile, err := reader.ReadSlice('\n')
 			if err == io.EOF {
+				// log.Println("T: awaiting shaft")
 				<-shaft // wait for new messages
+				// log.Println("T: done awaiting shaft")
 			} else {
-				bytes = bts
+				bytes = bytesFromFile
 			}
 		}
 

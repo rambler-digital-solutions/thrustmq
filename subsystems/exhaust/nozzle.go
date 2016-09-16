@@ -53,12 +53,12 @@ func thrust(connection net.Conn, nozzles *common.MessageChannels, mutex *sync.Mu
 			}
 			atomic.AddUint64(counter, 1)
 		default:
-			log.Println("N: x- nozzle (heartbeat, sleep)", channel, len(channel))
+			// log.Println("N: x- nozzle (heartbeat, sleep)", channel, len(channel))
 			_, err := connection.Write([]byte{'\n'})
 			if err != nil {
 				return
 			}
-			time.Sleep(1e8)
+			time.Sleep(1e6)
 		}
 	}
 }
