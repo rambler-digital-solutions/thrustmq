@@ -10,6 +10,7 @@ import (
 type exhaustConfigStruct struct {
 	Port          int
 	TurbineBlades int
+	RecurringFlux int
 }
 
 type intakeConfigStruct struct {

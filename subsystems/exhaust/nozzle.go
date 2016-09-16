@@ -20,33 +20,40 @@ func registerConnect(connection net.Conn, nozzles *common.MessageChannels, mutex
 	return channel
 }
 
-func registerDisconnect(connection net.Conn, nozzles *common.MessageChannels, nozzle chan common.MessageStruct, mutex *sync.Mutex) {
-	fileteredNozzles := (*nozzles)[:0]
+func registerDisconnect(connection net.Conn, nozzles *common.MessageChannels, nozzle chan common.MessageStruct, mutex *sync.Mutex, flux common.MessageChannel) {
 	mutex.Lock()
+	fileteredNozzles := (*nozzles)[:0]
 	for _, value := range *nozzles {
 		if value != nozzle {
 			fileteredNozzles = append(fileteredNozzles, value)
 		}
 	}
+	*nozzles = fileteredNozzles
 	mutex.Unlock()
+	log.Println("N: Disconnect, fluxing", len(nozzle), "messages")
+	for {
+		if len(nozzle) == 0 {
+			break
+		}
+		flux <- <-nozzle
+	}
 	logging.LostConsumer(connection.RemoteAddr(), nozzles)
 }
 
-func thrust(connection net.Conn, nozzles *common.MessageChannels, mutex *sync.Mutex, counter *uint64) {
+func thrust(connection net.Conn, nozzles *common.MessageChannels, mutex *sync.Mutex, counter *uint64, flux common.MessageChannel) {
 	channel := registerConnect(connection, nozzles, mutex)
-	defer registerDisconnect(connection, nozzles, channel, mutex)
+	defer registerDisconnect(connection, nozzles, channel, mutex, flux)
 
 	for {
 		select {
 		case message := <-channel:
-			log.Println("N: success", len(message.Payload))
 			_, err := connection.Write(message.Payload)
 			if err != nil {
 				return
 			}
 			atomic.AddUint64(counter, 1)
 		default:
-			log.Println("N: failed (heartbeat, sleep)", channel, len(channel))
+			log.Println("N: x- nozzle (heartbeat, sleep)", channel, len(channel))
 			_, err := connection.Write([]byte{'\n'})
 			if err != nil {
 				return

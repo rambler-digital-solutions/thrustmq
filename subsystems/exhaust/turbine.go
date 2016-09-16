@@ -3,7 +3,7 @@ package exhaust
 import (
 	"bufio"
 	"io"
-	"log"
+	// "log"
 	"math/rand"
 	"os"
 	"sync"
@@ -12,9 +12,9 @@ import (
 	"time"
 )
 
-func spin(shaft <-chan bool, nozzles *common.MessageChannels, mutex *sync.Mutex) {
+func spinTurbine(shaft <-chan bool, nozzles *common.MessageChannels, mutex *sync.Mutex, flux common.MessageChannel) {
 	reader := getFileReader()
-	readAndPropagate(shaft, reader, nozzles, mutex)
+	readAndPropagate(shaft, reader, nozzles, mutex, flux)
 }
 
 func getFileReader() *bufio.Reader {
@@ -25,22 +25,33 @@ func getFileReader() *bufio.Reader {
 	return bufio.NewReader(queue)
 }
 
-func readAndPropagate(shaft <-chan bool, reader *bufio.Reader, nozzles *common.MessageChannels, mutex *sync.Mutex) {
+func readAndPropagate(shaft <-chan bool, reader *bufio.Reader, nozzles *common.MessageChannels, mutex *sync.Mutex, flux common.MessageChannel) {
 	for {
-		bytes, err := reader.ReadSlice('\n')
+		var bytes []byte
 
-		if len(bytes) != 0 {
-			propogate(bytes, nozzles, mutex)
+		select {
+		case message := <-flux:
+			bytes = message.Payload
+		default:
+
+			bts, err := reader.ReadSlice('\n')
+			if err == io.EOF {
+				<-shaft // wait for new messages
+			} else {
+				bytes = bts
+			}
 		}
 
-		if err == io.EOF {
-			<-shaft // wait for new messages
+		if len(bytes) != 0 {
+			propogate(bytes, nozzles, mutex, flux)
 		}
 	}
 }
 
-func propogate(data []byte, nozzles *common.MessageChannels, mutex *sync.Mutex) {
+func propogate(data []byte, nozzles *common.MessageChannels, mutex *sync.Mutex, flux common.MessageChannel) {
 	for {
+		// time.Sleep(1e9)
+
 		var nozzle chan common.MessageStruct
 		message := common.MessageStruct{AckChannel: nil, Payload: data}
 
@@ -52,15 +63,15 @@ func propogate(data []byte, nozzles *common.MessageChannels, mutex *sync.Mutex) 
 		mutex.Unlock()
 
 		if N == 0 {
-			log.Println("T: no clients (sleeping)")
+			// log.Println("T: no clients (sleeping)")
 			time.Sleep(1e8) // wait for new consumers
 		} else {
 			select {
 			case nozzle <- message:
-				log.Println("T: inbox <-")
+				// log.Println("T:    nozzle <-")
 				return
 			default:
-				log.Println("T: inbox x-", nozzle, len(nozzle))
+				// log.Println("T:    nozzle x-", nozzle, len(nozzle), len(*nozzles))
 				// channel is full, or connection was closed
 			}
 		}

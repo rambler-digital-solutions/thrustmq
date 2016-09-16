@@ -47,7 +47,7 @@ def load(counter, value):
                         if result != b'y':
                             print('Dramatic error!')
                             sys.exit(1)
-                        # time.sleep(0.1)
+                        time.sleep(0.01)
                     with lock:
                         counter.value += BATCH_SIZE
         except IOError:

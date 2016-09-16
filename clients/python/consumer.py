@@ -23,7 +23,7 @@ def readlines(sock, recv_buffer=4096, delim=b'\n'):
     data = True
     while data:
         data = sock.recv(recv_buffer)
-        print(data)
+        # print(data)
         # buffer += data
         # try:
         #     while True:
@@ -45,8 +45,8 @@ def load():
             s.connect((HOST, PORT))
 
             for line in readlines(s):
-                print(line)
-                # pass
+                # print(line)
+                pass
     except IOError:
         print('Failed to connect...' + str(timestamp()))
         time.sleep(1)

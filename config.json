@@ -5,6 +5,7 @@
     },
     "Exhaust": {
         "Port": 2888,
+        "RecurringFlux": 4096,
         "TurbineBlades": 1024
     },
     "Filename": "thrust.dat",

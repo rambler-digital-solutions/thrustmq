@@ -16,11 +16,12 @@ func Init(shaft <-chan bool, counter *uint64) {
 	// maps connections to inboxes
 	mutex := &sync.Mutex{}
 	nozzles := &common.MessageChannels{}
+	flux := make(common.MessageChannel, config.Config.Exhaust.RecurringFlux)
 
-	go spin(shaft, nozzles, mutex)
+	go spinTurbine(shaft, nozzles, mutex, flux)
 
 	for {
 		connection, _ := socket.Accept()
-		go thrust(connection, nozzles, mutex, counter)
+		go thrust(connection, nozzles, mutex, counter, flux)
 	}
 }
