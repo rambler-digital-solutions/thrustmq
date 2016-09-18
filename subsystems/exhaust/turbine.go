@@ -18,7 +18,7 @@ func spinTurbine(shaft <-chan bool, nozzles *common.MessageChannels, mutex *sync
 }
 
 func getFileReader() *bufio.Reader {
-	queue, err := os.OpenFile(config.Config.Filename, os.O_RDONLY, 0666)
+	queue, err := os.OpenFile(config.Config.Filename, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		panic(err)
 	}

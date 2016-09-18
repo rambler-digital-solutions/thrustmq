@@ -25,27 +25,22 @@ def timestamp():
             return "".join(chars)
 
 
-def readlines(sock, delim=b'\n'):
-    buffer = bytes()
-    data = True
-    while data:
-        data = sock.recv(1)
-        buffer += data
-        if data == b'\n':
-            if len(buffer) > 1:
-                yield str(buffer, encoding='utf-8')
-            buffer = bytes()
+def read_message(sock):
+    data = sock.recv(4)
+    size = int.from_bytes(data, byteorder='little')
+    message = sock.recv(size)
+    return message
 
 
 def load():
     while True:
         try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.connect((HOST, PORT))
-                s.settimeout(1)
-                for line in readlines(s):
-                    pass
-                    # sys.stdout.write(line)
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect((HOST, PORT))
+                sock.settimeout(1)
+                while True:
+                    data = read_message(sock)
+                    str(data, encoding='utf-8')
         except IOError:
             print('Failed to connect...' + str(timestamp()))
             time.sleep(1)
