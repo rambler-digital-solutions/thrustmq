@@ -3,25 +3,27 @@ package exhaust
 import (
 	"fmt"
 	"net"
-	"sync"
 	"thrust/common"
 	"thrust/config"
 )
 
-func Init(shaft <-chan bool, counter *uint64) {
-	fmt.Printf("Spinning turbine    on port %d\n", config.Config.Exhaust.Port)
+var ConnectionsMap common.ConnectionsMap = make(common.ConnectionsMap)
+var topicsMap common.TopicsMap = make(common.TopicsMap)
 
-	socket, _ := net.Listen("tcp", fmt.Sprintf(":%d", config.Config.Exhaust.Port))
+var state StateStruct = loadState()
 
-	// maps connections to inboxes
-	mutex := &sync.Mutex{}
-	nozzles := &common.MessageChannels{}
-	flux := make(common.MessageChannel, config.Config.Exhaust.RecurringFlux)
+func Init() {
+	fmt.Printf("Spinning turbine on port %d\n", config.Config.Exhaust.Port)
+	go saveState()
 
-	go spinTurbine(shaft, nozzles, mutex, flux)
+	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Config.Exhaust.Port))
+	common.FaceIt(err)
+
+	go combustion()
+	go turbine()
 
 	for {
 		connection, _ := socket.Accept()
-		go thrust(connection, nozzles, mutex, counter, flux)
+		go blow(connection)
 	}
 }

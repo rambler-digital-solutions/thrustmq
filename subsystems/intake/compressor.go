@@ -1,7 +1,7 @@
 package intake
 
 import (
-	"encoding/binary"
+	"encoding/gob"
 	"os"
 	"thrust/common"
 	"thrust/config"
@@ -15,25 +15,15 @@ func writeData(file *os.File, message common.MessageStruct) int64 {
 	return offset - int64(len(message.Payload))
 }
 
-func writeIndex(file *os.File, message common.MessageStruct, position int64) {
-	uint32Buffer := make([]byte, 4)
-	uint64Buffer := make([]byte, 8)
-
-	binary.LittleEndian.PutUint64(uint64Buffer, message.Topic)
-	_, err := file.Write(uint64Buffer)
+func writeIndex(file *os.File, message common.MessageStruct, offset int64) {
+	indexRecord := common.IndexRecord{Offset: offset, Length: len(message.Payload), Topic: message.Topic, Connection: -1, Ack: 0}
+	enc := gob.NewEncoder(file)
+	err := enc.Encode(&indexRecord)
 	common.FaceIt(err)
 
-	binary.LittleEndian.PutUint32(uint32Buffer, uint32(len(message.Payload)))
-	_, err = file.Write(uint32Buffer)
-	common.FaceIt(err)
-
-	binary.LittleEndian.PutUint64(uint64Buffer, uint64(position))
-	_, err = file.Write(uint64Buffer)
-	common.FaceIt(err)
-
-	offset, _ := file.Seek(0, os.SEEK_CUR)
-	// file.Sync()
-	oplog.Channel <- oplog.Record{Topic: message.Topic, Subsystem: 1, Operation: 1, Offset: uint64(offset - 20)}
+	poisiton, _ := file.Seek(0, os.SEEK_CUR)
+	oplogRecord := oplog.Record{Topic: message.Topic, Subsystem: 1, Operation: 1, Offset: poisiton}
+	oplog.Channel <- oplogRecord
 }
 
 func compressor() {

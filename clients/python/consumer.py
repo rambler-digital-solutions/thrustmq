@@ -28,6 +28,7 @@ def timestamp():
 def read_message(sock):
     data = sock.recv(4)
     size = int.from_bytes(data, byteorder='little')
+    print(size)
     message = sock.recv(size)
     return message
 
@@ -40,7 +41,9 @@ def load():
                 sock.settimeout(1)
                 while True:
                     data = read_message(sock)
-                    str(data, encoding='utf-8')
+                    print("New message")
+                    print(str(data, encoding='utf-8'))
+                    time.sleep(0.5)
         except IOError:
             print('Failed to connect...' + str(timestamp()))
             time.sleep(1)

@@ -10,7 +10,7 @@ import (
 type exhaustConfigStruct struct {
 	Port          int
 	TurbineBlades int
-	RecurringFlux int
+	Chamber       string
 }
 
 type intakeConfigStruct struct {
@@ -24,13 +24,14 @@ type oplogConfigStruct struct {
 }
 
 type ConfigStruct struct {
-	Intake  intakeConfigStruct
-	Exhaust exhaustConfigStruct
-	Oplog   oplogConfigStruct
-	Data    string
-	Index   string
-	Debug   bool
-	Logfile string
+	Intake          intakeConfigStruct
+	Exhaust         exhaustConfigStruct
+	Oplog           oplogConfigStruct
+	Data            string
+	Index           string
+	Debug           bool
+	Logfile         string
+	IndexRecordSize int64
 }
 
 func loadConfig() ConfigStruct {

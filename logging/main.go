@@ -10,9 +10,7 @@ import (
 
 func Init() *os.File {
 	logfile, err := os.OpenFile(config.Config.Logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		panic(err)
-	}
+	common.FaceIt(err)
 
 	log.SetOutput(logfile)
 	log.Println("ThrusMQ started")
@@ -34,10 +32,10 @@ func LostProducer(address net.Addr) {
 	log.Printf("lost producer %s %s", address.Network(), address.String())
 }
 
-func NewConsumer(address net.Addr, nozzles *common.MessageChannels) {
-	log.Printf("new consumer %s %s (%d connections)", address.Network(), address.String(), len(*nozzles))
+func NewConsumer(address net.Addr, length int) {
+	log.Printf("new consumer %s %s (%d connections)", address.Network(), address.String(), length)
 }
 
-func LostConsumer(address net.Addr, nozzles *common.MessageChannels) {
-	log.Printf("lost consumer %s %s (%d connections)", address.Network(), address.String(), len(*nozzles))
+func LostConsumer(address net.Addr, length int) {
+	log.Printf("lost consumer %s %s (%d connections)", address.Network(), address.String(), length)
 }

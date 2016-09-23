@@ -14,14 +14,14 @@ const headerSize = 12
 const headerFieldSize = 4
 const headerFieldTopic = 8
 
-func parseHeader(reader *bufio.Reader) (uint64, uint32) {
+func parseHeader(reader *bufio.Reader) (int64, int32) {
 	buffer := make([]byte, headerSize)
 	bytesRead, _ := io.ReadFull(reader, buffer)
 	if bytesRead != headerSize {
 		return 0, 0
 	}
-	topic := binary.LittleEndian.Uint64(buffer[:headerFieldTopic])
-	size := binary.LittleEndian.Uint32(buffer[headerFieldTopic:])
+	topic := int64(binary.LittleEndian.Uint64(buffer[:headerFieldTopic]))
+	size := int32(binary.LittleEndian.Uint32(buffer[headerFieldTopic:]))
 	return topic, size
 }
 

@@ -6,7 +6,8 @@
     "Exhaust": {
         "Port": 2888,
         "RecurringFlux": 4096,
-        "TurbineBlades": 1024
+        "TurbineBuffer": 1024,
+        "Chamber": "data/chamber"
     },
     "Oplog": {
       "File": "data/oplog",
@@ -15,5 +16,6 @@
     "Logfile": "data/system.log",
     "Index": "data/index",
     "Data": "data/messages",
+    "IndexRecordSize": 29,
     "Debug": true
 }

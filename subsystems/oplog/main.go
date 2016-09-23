@@ -8,14 +8,15 @@ import (
 )
 
 type Record struct {
-	Topic     uint64
-	Subsystem uint32
-	Operation uint32
-	Offset    uint64
+	Topic     int64
+	Subsystem int32
+	Operation int32
+	Offset    int64
 }
 
 var Channel chan Record = make(chan Record, config.Config.Oplog.BufferSize)
 var IntakeThroughput int
+var ExhaustThroughput int
 
 func Init() {
 	file, err := os.OpenFile(config.Config.Oplog.File, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
@@ -28,6 +29,11 @@ func Init() {
 		oprecord := <-Channel
 		err := enc.Encode(oprecord)
 		common.FaceIt(err)
-		IntakeThroughput += 1
+		if oprecord.Subsystem == 1 {
+			IntakeThroughput += 1
+		}
+		if oprecord.Subsystem == 2 {
+			ExhaustThroughput += 1
+		}
 	}
 }
