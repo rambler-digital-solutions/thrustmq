@@ -15,15 +15,22 @@ type exhaustConfigStruct struct {
 
 type intakeConfigStruct struct {
 	Port             int
-	CompressorBlades int
+	CompressorBuffer int
+}
+
+type oplogConfigStruct struct {
+	File       string
+	BufferSize int
 }
 
 type ConfigStruct struct {
-	Intake   intakeConfigStruct
-	Exhaust  exhaustConfigStruct
-	Filename string
-	Logfile  string
-	Debug    bool
+	Intake  intakeConfigStruct
+	Exhaust exhaustConfigStruct
+	Oplog   oplogConfigStruct
+	Data    string
+	Index   string
+	Debug   bool
+	Logfile string
 }
 
 func loadConfig() ConfigStruct {

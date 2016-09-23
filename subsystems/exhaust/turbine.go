@@ -1,80 +1,86 @@
 package exhaust
 
 import (
-	"bufio"
-	"io"
-	// "log"
-	"math/rand"
-	"os"
+	"bytes"
+	"encoding/binary"
+	"log"
+	"net"
 	"sync"
+	"sync/atomic"
+	"thrust/common"
 	"thrust/config"
-	"thrust/subsystems/common"
+	"thrust/logging"
 	"time"
 )
 
-func spinTurbine(shaft <-chan bool, nozzles *common.MessageChannels, mutex *sync.Mutex, flux common.MessageChannel) {
-	reader := getFileReader()
-	readAndPropagate(shaft, reader, nozzles, mutex, flux)
+func registerConnect(connection net.Conn, nozzles *common.MessageChannels, mutex *sync.Mutex) chan common.MessageStruct {
+	channel := make(chan common.MessageStruct, config.Config.Exhaust.TurbineBlades)
+	mutex.Lock()
+	*nozzles = append(*nozzles, channel)
+	mutex.Unlock()
+	logging.NewConsumer(connection.RemoteAddr(), nozzles)
+	return channel
 }
 
-func getFileReader() *bufio.Reader {
-	queue, err := os.OpenFile(config.Config.Filename, os.O_RDONLY|os.O_CREATE, 0666)
+func registerDisconnect(connection net.Conn, nozzles *common.MessageChannels, nozzle chan common.MessageStruct, mutex *sync.Mutex, flux common.MessageChannel) {
+	mutex.Lock()
+	fileteredNozzles := (*nozzles)[:0]
+	for _, value := range *nozzles {
+		if value != nozzle {
+			fileteredNozzles = append(fileteredNozzles, value)
+		}
+	}
+	*nozzles = fileteredNozzles
+	mutex.Unlock()
+	log.Println("N: Disconnect, fluxing", len(nozzle), "messages")
+	for {
+		if len(nozzle) == 0 {
+			break
+		}
+		flux <- <-nozzle
+	}
+	logging.LostConsumer(connection.RemoteAddr(), nozzles)
+}
+
+func getHeader(message []byte) []byte {
+	sizeBuffer := new(bytes.Buffer)
+	var size uint32 = uint32(len(message))
+	err := binary.Write(sizeBuffer, binary.LittleEndian, size)
 	if err != nil {
-		panic(err)
+		panic("binary.Write failed")
 	}
-	return bufio.NewReader(queue)
+	return sizeBuffer.Bytes()
 }
 
-func readAndPropagate(shaft <-chan bool, reader *bufio.Reader, nozzles *common.MessageChannels, mutex *sync.Mutex, flux common.MessageChannel) {
-	for {
-		var bytes []byte
+func thrust(connection net.Conn, nozzles *common.MessageChannels, mutex *sync.Mutex, counter *uint64, flux common.MessageChannel) {
+	channel := registerConnect(connection, nozzles, mutex)
+	defer registerDisconnect(connection, nozzles, channel, mutex, flux)
 
+	for {
 		select {
-		case message := <-flux: // grab messages from dead nozzles first
-			bytes = message.Payload
-		default:
-			bytesFromFile, err := reader.ReadSlice('\n')
-			if err == io.EOF {
-				// log.Println("T: awaiting shaft")
-				<-shaft // wait for new messages
-				// log.Println("T: done awaiting shaft")
-			} else {
-				bytes = bytesFromFile
-			}
-		}
-
-		if len(bytes) != 0 {
-			propogate(bytes, nozzles, mutex, flux)
-		}
-	}
-}
-
-func propogate(data []byte, nozzles *common.MessageChannels, mutex *sync.Mutex, flux common.MessageChannel) {
-	for {
-		// time.Sleep(1e9)
-
-		var nozzle chan common.MessageStruct
-		message := common.MessageStruct{AckChannel: nil, Payload: data}
-
-		mutex.Lock()
-		N := len(*nozzles)
-		if N != 0 {
-			nozzle = (*nozzles)[rand.Intn(N)]
-		}
-		mutex.Unlock()
-
-		if N == 0 {
-			// log.Println("T: no clients (sleeping)")
-			time.Sleep(1e8) // wait for new consumers
-		} else {
-			select {
-			case nozzle <- message:
-				// log.Println("T:    nozzle <-")
+		case message := <-channel:
+			_, err := connection.Write(getHeader(message.Payload))
+			if err != nil {
 				return
-			default:
-				// log.Println("T:    nozzle x-", nozzle, len(nozzle), len(*nozzles))
-				// channel is full, or connection was closed
 			}
+			_, err = connection.Write(message.Payload)
+			if err != nil {
+				return
+			}
+			atomic.AddUint64(counter, 1)
+		default:
+			// log.Println("N: x- nozzle (heartbeat, sleep)", channel, len(channel))
+			data := []byte{'\n'}
+			getHeader(data)
+			_, err := connection.Write(getHeader(data))
+			if err != nil {
+				return
+			}
+			_, err = connection.Write(data)
+			if err != nil {
+				return
+			}
+			time.Sleep(1e6)
 		}
 	}
 }

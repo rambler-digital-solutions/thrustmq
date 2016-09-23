@@ -4,8 +4,8 @@ import (
 	"log"
 	"net"
 	"os"
+	"thrust/common"
 	"thrust/config"
-	"thrust/subsystems/common"
 )
 
 func Init() *os.File {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"thrust/common"
 	"thrust/config"
-	"thrust/subsystems/common"
 )
 
 func Init(shaft <-chan bool, counter *uint64) {

@@ -1,14 +1,19 @@
 {
     "Intake": {
         "Port": 1888,
-        "CompressorBlades": 4096
+        "CompressorBuffer": 4096
     },
     "Exhaust": {
         "Port": 2888,
         "RecurringFlux": 4096,
         "TurbineBlades": 1024
     },
-    "Filename": "thrust.dat",
-    "Logfile": "thrust.log",
+    "Oplog": {
+      "File": "data/oplog",
+      "BufferSize": 4096
+    },
+    "Logfile": "data/system.log",
+    "Index": "data/index",
+    "Data": "data/messages",
     "Debug": true
 }

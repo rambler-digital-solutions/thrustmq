@@ -8,11 +8,13 @@ import sys
 import time
 from time import gmtime, strftime
 import datetime
+import random
 
 HOST = 'localhost'
 PORT = 1888
 TOKEN = binascii.hexlify(os.urandom(8)).decode('utf-8')
-POOL_SIZE = 2
+POOL_SIZE = 1
+HAMMER = 'HAMMER' in os.environ
 
 
 def load():
@@ -21,18 +23,35 @@ def load():
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((HOST, PORT))
                 while True:
-                    message = 'Привет от воркера %s %d\n' % (
+                    message = 'Привет от воркера %s %d' % (
                         TOKEN, int(time.time()))
-                    message = message.encode('utf-8')
-                    s.sendall(message)
+                    topic_id = random.getrandbits(64)
+
+                    if not HAMMER:
+                        print(topic_id, message)
+
+                    message_bytes = message.encode('utf-8')
+
+                    # topic header
+                    s.sendall(topic_id.to_bytes(8, byteorder='little'))
+                    # size header
+                    s.sendall(len(message_bytes).to_bytes(
+                        4, byteorder='little'))
+                    # message itself
+                    s.sendall(message_bytes)
+
+                    if not HAMMER:
+                        sys.stdout.write("  waiting for ack... ")
                     result = s.recv(1)
-                    if not result:
-                        print('No ack!')
-                    else:
-                        if result != b'y':
-                            print('Invalid reponse oO')
+
+                    if not HAMMER:
+                        time.sleep(1)
+                        if result == b'y':
+                            print('ACK')
+                        else:
+                            print('NO ACK (!)')
         except BrokenPipeError:
-            pass
+            print("BrokenPipeError")
         except IOError:
             from time import gmtime, strftime
             print('Failed to connect... {} pid:{}'.format(
