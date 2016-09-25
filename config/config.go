@@ -2,15 +2,15 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"os"
+	"thrust/common"
 )
 
 type exhaustConfigStruct struct {
-	Port          int
-	TurbineBlades int
-	Chamber       string
+	Port             int
+	TurbineBuffer    int
+	CombustionBuffer int
+	Chamber          string
 }
 
 type intakeConfigStruct struct {
@@ -38,10 +38,7 @@ func loadConfig() ConfigStruct {
 	cfg_file := "./config.json"
 
 	raw, err := ioutil.ReadFile(cfg_file)
-	if err != nil {
-		fmt.Println(err.Error())
-		os.Exit(1)
-	}
+	common.FaceIt(err)
 
 	var config ConfigStruct
 	json.Unmarshal(raw, &config)

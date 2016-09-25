@@ -8,6 +8,7 @@ import (
 	"net"
 	"thrust/common"
 	"thrust/logging"
+	"thrust/subsystems/exhaust"
 )
 
 const headerSize = 12
@@ -42,10 +43,12 @@ func suck(connection net.Conn) {
 		_, err := io.ReadFull(reader, buffer)
 		common.FaceIt(err)
 
-		Channel <- common.MessageStruct{AckChannel: ackChannel, Payload: buffer, Topic: topic}
-
+		message := common.MessageStruct{AckChannel: ackChannel, Payload: buffer, Topic: topic}
+		CompressorChannel <- message
 		<-ackChannel // receive acknowledgement, then move forward
-
+		select {
+		case exhaust.CombustorChannel <- message:
+		}
 		connection.Write([]byte{'y'})
 	}
 }

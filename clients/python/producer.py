@@ -23,12 +23,15 @@ def load():
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((HOST, PORT))
                 while True:
-                    message = 'Привет от воркера %s %d' % (
-                        TOKEN, int(time.time()))
-                    topic_id = random.getrandbits(64)
+                    topic_id = random.choice([1, 2, 3, 3])
+                    message = 'Привет от воркера %s %d topic_id: %d' % (
+                        TOKEN,
+                        int(time.time()),
+                        topic_id
+                    )
 
                     if not HAMMER:
-                        print(topic_id, message)
+                        print(message)
 
                     message_bytes = message.encode('utf-8')
 
@@ -42,6 +45,7 @@ def load():
 
                     if not HAMMER:
                         sys.stdout.write("  waiting for ack... ")
+
                     result = s.recv(1)
 
                     if not HAMMER:

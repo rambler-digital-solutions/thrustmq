@@ -7,7 +7,7 @@ import (
 	"thrust/config"
 )
 
-var Channel common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
+var CompressorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
 
 func Init() {
 	fmt.Printf("Spinning fan on port %d\n", config.Config.Intake.Port)

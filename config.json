@@ -5,8 +5,8 @@
     },
     "Exhaust": {
         "Port": 2888,
-        "RecurringFlux": 4096,
         "TurbineBuffer": 1024,
+        "CombustionBuffer": 4096,
         "Chamber": "data/chamber"
     },
     "Oplog": {

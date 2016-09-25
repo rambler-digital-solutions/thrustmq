@@ -7,10 +7,13 @@ import (
 	"thrust/config"
 )
 
+var TurbineChannel = make(chan common.ProcessingStruct, config.Config.Exhaust.TurbineBuffer)
+var CombustorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Exhaust.CombustionBuffer)
+
 var ConnectionsMap common.ConnectionsMap = make(common.ConnectionsMap)
 var topicsMap common.TopicsMap = make(common.TopicsMap)
 
-var state StateStruct = loadState()
+var State StateStruct = loadState()
 
 func Init() {
 	fmt.Printf("Spinning turbine on port %d\n", config.Config.Exhaust.Port)

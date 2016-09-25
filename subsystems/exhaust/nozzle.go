@@ -2,7 +2,6 @@ package exhaust
 
 import (
 	"encoding/binary"
-	"fmt"
 	"math/rand"
 	"net"
 	"thrust/common"
@@ -15,7 +14,7 @@ import (
 func registerConnect(connection net.Conn) common.ConnectionStruct {
 	topic := rand.Int63()
 	id := rand.Int63()
-	channel := make(chan common.MessageStruct, config.Config.Exhaust.TurbineBlades)
+	channel := make(chan common.MessageStruct, config.Config.Exhaust.TurbineBuffer)
 
 	connectionStruct := common.ConnectionStruct{Connection: connection, Topic: topic, Id: id, Channel: channel}
 	connectionStruct.Channel = make(common.MessageChannel, 1000)
@@ -37,11 +36,14 @@ func blow(connection net.Conn) {
 	buffer := make([]byte, 4)
 
 	for {
-		time.Sleep(1e6)
+		// time.Sleep(1e6)
 
 		select {
 		case message := <-connectionStruct.Channel:
-			fmt.Println("awesome")
+
+			status := common.ProcessingStruct{Connection: connectionStruct.Id, Offset: message.Position, Ack: false}
+			TurbineChannel <- status
+
 			binary.LittleEndian.PutUint32(buffer, uint32(len(message.Payload)))
 			_, err := connection.Write(buffer)
 			if err != nil {
@@ -51,13 +53,18 @@ func blow(connection net.Conn) {
 			if err != nil {
 				return
 			}
+
 			oplog.ExhaustThroughput += 1
+
+			status.Ack = true
+			TurbineChannel <- status
+
 			oplogRecord := oplog.Record{Topic: connectionStruct.Topic, Subsystem: 2, Operation: 1, Offset: 0}
 			oplog.Channel <- oplogRecord
 
-			time.Sleep(1e9)
+			// time.Sleep(1e6)
 		default:
-			data := []byte{'\n'}
+			data := []byte{'#'}
 
 			binary.LittleEndian.PutUint32(buffer, uint32(len(data)))
 
@@ -70,7 +77,7 @@ func blow(connection net.Conn) {
 				return
 			}
 
-			time.Sleep(1e9)
+			time.Sleep(1e6)
 		}
 	}
 }

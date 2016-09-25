@@ -8,6 +8,7 @@ type MessageStruct struct {
 	AckChannel chan bool
 	Payload    []byte
 	Topic      int64
+	Position   int64
 }
 
 type MessageChannel chan MessageStruct
@@ -30,4 +31,10 @@ type IndexRecord struct {
 	Topic      int64
 	Connection int64
 	Ack        byte
+}
+
+type ProcessingStruct struct {
+	Offset     int64
+	Connection int64
+	Ack        bool
 }

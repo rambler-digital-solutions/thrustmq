@@ -15,15 +15,17 @@ func writeData(file *os.File, message common.MessageStruct) int64 {
 	return offset - int64(len(message.Payload))
 }
 
-func writeIndex(file *os.File, message common.MessageStruct, offset int64) {
+func writeIndex(file *os.File, message common.MessageStruct, offset int64) int64 {
 	indexRecord := common.IndexRecord{Offset: offset, Length: len(message.Payload), Topic: message.Topic, Connection: -1, Ack: 0}
 	enc := gob.NewEncoder(file)
 	err := enc.Encode(&indexRecord)
 	common.FaceIt(err)
 
-	poisiton, _ := file.Seek(0, os.SEEK_CUR)
-	oplogRecord := oplog.Record{Topic: message.Topic, Subsystem: 1, Operation: 1, Offset: poisiton}
+	position, _ := file.Seek(0, os.SEEK_CUR)
+	oplogRecord := oplog.Record{Topic: message.Topic, Subsystem: 1, Operation: 1, Offset: offset}
 	oplog.Channel <- oplogRecord
+
+	return position
 }
 
 func compressor() {
@@ -33,9 +35,11 @@ func compressor() {
 	common.FaceIt(err)
 
 	for {
-		message := <-Channel
+		message := <-CompressorChannel
+
 		offset := writeData(dataFile, message)
-		writeIndex(indexFile, message, offset)
+		position := writeIndex(indexFile, message, offset)
+		message.Position = position
 		message.AckChannel <- true
 	}
 }

@@ -10,9 +10,9 @@ import (
 )
 
 type StateStruct struct {
+	Head         int64
+	Capacity     int
 	ConnectionId int64
-	HeadPosition int64
-	TailPosition int64
 }
 
 func loadState() StateStruct {
@@ -29,17 +29,17 @@ func loadState() StateStruct {
 		fmt.Println(err)
 	}
 
-	return StateStruct{ConnectionId: 1, HeadPosition: 0, TailPosition: 0}
+	return StateStruct{Head: 0, ConnectionId: 1}
 }
 
 func saveState() {
 	for {
-		time.Sleep(1e6)
+		time.Sleep(1e9)
 		file, err := os.OpenFile(config.Config.Exhaust.Chamber, os.O_WRONLY|os.O_CREATE, 0666)
 		common.FaceIt(err)
-		state.ConnectionId += 1
+		State.ConnectionId += 1
 		enc := gob.NewEncoder(file)
-		err = enc.Encode(state)
+		err = enc.Encode(State)
 		common.FaceIt(err)
 		file.Sync()
 		file.Close()
