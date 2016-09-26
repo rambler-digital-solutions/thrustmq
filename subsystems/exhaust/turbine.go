@@ -46,13 +46,13 @@ func fluxPass() {
 		}
 
 		buffer := make([]byte, indexRecord.Length)
-		_, err = dataFile.Seek(indexRecord.Offset, os.SEEK_SET)
+		_, err = dataFile.Seek(int64(indexRecord.Offset), os.SEEK_SET)
 		common.FaceIt(err)
 		_, err = io.ReadFull(dataFile, buffer)
 		common.FaceIt(err)
 
 		position, _ := indexFile.Seek(0, os.SEEK_CUR)
-		message := common.MessageStruct{Topic: indexRecord.Topic, Payload: buffer, Position: position}
+		message := common.MessageStruct{Topic: int64(indexRecord.Topic), Payload: buffer, Position: position}
 		State.Head = position
 		log.Println(message.Position)
 	}

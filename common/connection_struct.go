@@ -1,7 +1,7 @@
 package common
 
 import (
-  "net"
+	"net"
 )
 
 type ConnectionStruct struct {

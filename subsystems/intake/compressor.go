@@ -16,7 +16,8 @@ func writeData(file *os.File, message common.MessageStruct) int64 {
 }
 
 func writeIndex(file *os.File, message common.MessageStruct, offset int64) int64 {
-	indexRecord := common.IndexRecord{Offset: offset, Length: len(message.Payload), Topic: message.Topic, Connection: -1, Ack: 0}
+	indexRecord := common.IndexRecord{Offset: uint64(offset), Length: uint64(len(message.Payload)), Topic: uint64(message.Topic), Connection: 0, Ack: 0}
+
 	enc := gob.NewEncoder(file)
 	err := enc.Encode(&indexRecord)
 	common.FaceIt(err)
