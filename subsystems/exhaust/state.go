@@ -37,7 +37,6 @@ func saveState() {
 		time.Sleep(1e9)
 		file, err := os.OpenFile(config.Config.Exhaust.Chamber, os.O_WRONLY|os.O_CREATE, 0666)
 		common.FaceIt(err)
-		State.ConnectionId += 1
 		enc := gob.NewEncoder(file)
 		err = enc.Encode(State)
 		common.FaceIt(err)

@@ -13,7 +13,7 @@ func suck(connection net.Conn) {
 	logging.NewProducer(connection.RemoteAddr())
 	defer logging.LostProducer(connection.RemoteAddr())
 
-	ackChannel := make(chan bool, 1)
+	ackChannel := make(chan int64, 1)
 	reader := bufio.NewReader(connection)
 
 	for {
@@ -24,7 +24,7 @@ func suck(connection net.Conn) {
 		// send message to compressor
 		CompressorChannel <- message
 		// receive acknowledgement
-		<-ackChannel
+		message.Position = <-ackChannel
 		// send message to combustor
 		select {
 		case exhaust.CombustorChannel <- message:

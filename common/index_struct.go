@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/binary"
+	"io"
 )
 
 type IndexRecord struct {
@@ -24,7 +25,9 @@ func (self IndexRecord) Serialize() []byte {
 	return buffer
 }
 
-func (self *IndexRecord) Deserialize(buffer []byte) {
+func (self *IndexRecord) Deserialize(reader io.Reader) {
+	buffer := make([]byte, IndexSize)
+	io.ReadFull(reader, buffer)
 	self.Offset = binary.LittleEndian.Uint64(buffer[0:8])
 	self.Length = binary.LittleEndian.Uint64(buffer[8:16])
 	self.Topic = binary.LittleEndian.Uint64(buffer[16:24])

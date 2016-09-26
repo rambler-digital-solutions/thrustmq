@@ -33,7 +33,6 @@ func compressor() {
 
 		offset := writeData(dataFile, message)
 		position := writeIndex(indexFile, message, offset)
-		message.Position = position
-		message.AckChannel <- true
+		message.AckChannel <- position
 	}
 }

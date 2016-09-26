@@ -13,7 +13,8 @@ import (
 
 func registerConnect(connection net.Conn) common.ConnectionStruct {
 	topic := rand.Int63()
-	id := rand.Int63()
+	State.ConnectionId += 1
+	id := State.ConnectionId
 	channel := make(chan common.MessageStruct, config.Config.Exhaust.TurbineBuffer)
 
 	connectionStruct := common.ConnectionStruct{Connection: connection, Topic: topic, Id: id, Channel: channel}
@@ -39,19 +40,19 @@ func blow(connection net.Conn) {
 		select {
 		case message := <-connectionStruct.Channel:
 
-			status := common.MarkerStruct{Connection: connectionStruct.Id, Offset: message.Position, Ack: false}
+			status := common.IndexRecord{Connection: uint64(connectionStruct.Id), Offset: uint64(message.Position), Ack: 0, Topic: uint64(message.Topic)}
 			TurbineChannel <- status
 
 			bytes := message.Serialize()
 			bytesWritten, _ := connection.Write(bytes)
 			if bytesWritten != len(bytes) {
 				connectionStruct.Channel <- message
-				continue
+				return
 			}
 
 			oplog.ExhaustThroughput += 1
 
-			status.Ack = true
+			status.Ack = 1
 			TurbineChannel <- status
 		default:
 			data := []byte{'#'}
