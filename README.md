@@ -1,5 +1,9 @@
 # ThrustMQ
 
+![schema](https://gitlab.rambler.ru/rnd/thrust/raw/develop/schema.png)
+
+
+
 We live in a world of real time expectations.
 
 AMPQ (Rabbit, Active, Qpid...) - "They try to do too much."
