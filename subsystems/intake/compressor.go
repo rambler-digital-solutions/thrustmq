@@ -1,11 +1,9 @@
 package intake
 
 import (
-	"encoding/gob"
 	"os"
 	"thrust/common"
 	"thrust/config"
-	"thrust/subsystems/oplog"
 )
 
 func writeData(file *os.File, message common.MessageStruct) int64 {
@@ -18,15 +16,10 @@ func writeData(file *os.File, message common.MessageStruct) int64 {
 func writeIndex(file *os.File, message common.MessageStruct, offset int64) int64 {
 	indexRecord := common.IndexRecord{Offset: uint64(offset), Length: uint64(len(message.Payload)), Topic: uint64(message.Topic), Connection: 0, Ack: 0}
 
-	enc := gob.NewEncoder(file)
-	err := enc.Encode(&indexRecord)
-	common.FaceIt(err)
+	file.Write(indexRecord.Serialize())
 
 	position, _ := file.Seek(0, os.SEEK_CUR)
-	oplogRecord := oplog.Record{Topic: message.Topic, Subsystem: 1, Operation: 1, Offset: offset}
-	oplog.Channel <- oplogRecord
-
-	return position
+	return position - common.IndexSize
 }
 
 func compressor() {

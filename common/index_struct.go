@@ -12,10 +12,10 @@ type IndexRecord struct {
 	Ack        byte
 }
 
-var size = 33
+var IndexSize int64 = 33
 
 func (self IndexRecord) Serialize() []byte {
-	buffer := make([]byte, size)
+	buffer := make([]byte, IndexSize)
 	binary.LittleEndian.PutUint64(buffer[0:8], self.Offset)
 	binary.LittleEndian.PutUint64(buffer[8:16], self.Length)
 	binary.LittleEndian.PutUint64(buffer[16:24], self.Topic)

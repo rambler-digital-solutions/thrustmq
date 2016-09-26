@@ -30,7 +30,7 @@ def read_message(sock):
     data = sock.recv(4)
     size = int.from_bytes(data, byteorder='little')
     if size == 0:
-        raise IOError()
+        raise IOError("zero size")
     message = sock.recv(size)
     return message
 
@@ -47,8 +47,9 @@ def load():
                         sys.stdout.write("{}: ".format(len(data)))
                         print(str(data, encoding='utf-8'))
                         time.sleep(0.1)
-        except IOError:
+        except IOError as err:
             print('Failed to connect...' + str(timestamp()))
+            print(err)
             time.sleep(1)
 
 

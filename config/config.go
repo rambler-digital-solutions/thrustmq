@@ -18,15 +18,9 @@ type intakeConfigStruct struct {
 	CompressorBuffer int
 }
 
-type oplogConfigStruct struct {
-	File       string
-	BufferSize int
-}
-
 type ConfigStruct struct {
 	Intake          intakeConfigStruct
 	Exhaust         exhaustConfigStruct
-	Oplog           oplogConfigStruct
 	Data            string
 	Index           string
 	Debug           bool

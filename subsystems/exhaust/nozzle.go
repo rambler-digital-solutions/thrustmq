@@ -36,38 +36,27 @@ func blow(connection net.Conn) {
 	buffer := make([]byte, 4)
 
 	for {
-		// time.Sleep(1e6)
-
 		select {
 		case message := <-connectionStruct.Channel:
 
 			status := common.MarkerStruct{Connection: connectionStruct.Id, Offset: message.Position, Ack: false}
 			TurbineChannel <- status
 
-			binary.LittleEndian.PutUint32(buffer, uint32(len(message.Payload)))
-			_, err := connection.Write(buffer)
-			if err != nil {
-				return
-			}
-			_, err = connection.Write(message.Payload)
-			if err != nil {
-				return
+			bytes := message.Serialize()
+			bytesWritten, _ := connection.Write(bytes)
+			if bytesWritten != len(bytes) {
+				connectionStruct.Channel <- message
+				continue
 			}
 
 			oplog.ExhaustThroughput += 1
 
 			status.Ack = true
 			TurbineChannel <- status
-
-			oplogRecord := oplog.Record{Topic: connectionStruct.Topic, Subsystem: 2, Operation: 1, Offset: 0}
-			oplog.Channel <- oplogRecord
-
-			// time.Sleep(1e6)
 		default:
 			data := []byte{'#'}
 
 			binary.LittleEndian.PutUint32(buffer, uint32(len(data)))
-
 			_, err := connection.Write(buffer)
 			if err != nil {
 				return
@@ -77,7 +66,7 @@ func blow(connection net.Conn) {
 				return
 			}
 
-			time.Sleep(1e6)
+			time.Sleep(1e8)
 		}
 	}
 }

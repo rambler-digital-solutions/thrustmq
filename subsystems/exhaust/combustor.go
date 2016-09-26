@@ -1,11 +1,9 @@
 package exhaust
 
-import (
-	"thrust/common"
-)
+import ()
 
 func combustion() {
-	var message common.MessageStruct
+	message := <-CombustorChannel
 	for {
 		for _, connectionStruct := range ConnectionsMap {
 			select {

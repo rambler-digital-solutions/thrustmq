@@ -9,10 +9,6 @@
         "CombustionBuffer": 4096,
         "Chamber": "data/chamber"
     },
-    "Oplog": {
-      "File": "data/oplog",
-      "BufferSize": 4096
-    },
     "Logfile": "data/system.log",
     "Index": "data/index",
     "Data": "data/messages",
