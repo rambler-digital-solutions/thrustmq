@@ -25,12 +25,16 @@ func (self IndexRecord) Serialize() []byte {
 	return buffer
 }
 
-func (self *IndexRecord) Deserialize(reader io.Reader) {
+func (self *IndexRecord) Deserialize(reader io.Reader) bool {
 	buffer := make([]byte, IndexSize)
-	io.ReadFull(reader, buffer)
+	bytesRead, _ := io.ReadFull(reader, buffer)
+	if int64(bytesRead) != IndexSize {
+		return false
+	}
 	self.Offset = binary.LittleEndian.Uint64(buffer[0:8])
 	self.Length = binary.LittleEndian.Uint64(buffer[8:16])
 	self.Topic = binary.LittleEndian.Uint64(buffer[16:24])
 	self.Connection = binary.LittleEndian.Uint64(buffer[24:32])
 	self.Ack = buffer[32]
+	return true
 }

@@ -10,8 +10,8 @@ import (
 )
 
 type StateStruct struct {
-	Head         int64
-	Capacity     int
+	Tail         int64
+	Capacity     float32
 	ConnectionId int64
 }
 
@@ -29,7 +29,7 @@ func loadState() StateStruct {
 		fmt.Println(err)
 	}
 
-	return StateStruct{Head: 0, ConnectionId: 1}
+	return StateStruct{Tail: 0, ConnectionId: 1}
 }
 
 func saveState() {

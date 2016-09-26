@@ -2,7 +2,6 @@ package exhaust
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 	"thrust/common"
 	"thrust/config"
@@ -11,13 +10,17 @@ import (
 
 func turbine() {
 	indexFile, err := os.OpenFile(config.Config.Index, os.O_RDWR|os.O_CREATE, 0666)
+	dataFile, err := os.OpenFile(config.Config.Data, os.O_RDWR|os.O_CREATE, 0666)
 	defer indexFile.Close()
+	defer dataFile.Close()
 
 	for {
-		time.Sleep(1e6)
+		time.Sleep(1e9)
 		common.FaceIt(err)
 		markPass(indexFile)
-		fluxPass(indexFile)
+		if len(ConnectionsMap) > 0 {
+			fluxPass(indexFile, dataFile)
+		}
 	}
 }
 
@@ -41,10 +44,41 @@ func markPass(file *os.File) {
 		}
 		record := common.IndexRecord{}
 		record.Deserialize(reader)
-		fmt.Println(record)
 	}
 }
 
-func fluxPass(file *os.File) {
-	// do nothing
+func fluxPass(file *os.File, dataFile *os.File) {
+	ptr := State.Tail
+	_, err := file.Seek(ptr, os.SEEK_SET)
+	common.FaceIt(err)
+	reader := bufio.NewReader(file)
+	total := float32(0)
+	marked := float32(0)
+	streak := true
+	for {
+		record := common.IndexRecord{}
+		if !record.Deserialize(reader) {
+			State.Capacity = 1 - marked/total
+			return
+		}
+
+		if record.Ack != 0 {
+			marked += 1
+		} else {
+			if _, ok := ConnectionsMap[int64(record.Connection)]; !ok {
+				message := common.MessageStruct{}
+				message.Load(dataFile, record, ptr)
+				CombustorChannel <- message
+			} else {
+				streak = false
+			}
+		}
+
+		if streak {
+			State.Tail = ptr
+		}
+
+		ptr += common.IndexSize
+		total += 1
+	}
 }

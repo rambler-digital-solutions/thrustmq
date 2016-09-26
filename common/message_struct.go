@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/binary"
 	"io"
+	"os"
 )
 
 type MessageChannel chan MessageStruct
@@ -41,4 +42,17 @@ func (self *MessageStruct) Serialize() []byte {
 	binary.LittleEndian.PutUint32(buffer[0:4], uint32(self.Length))
 	copy(buffer[4:], self.Payload[:])
 	return buffer
+}
+
+func (self *MessageStruct) Load(file *os.File, record IndexRecord, ptr int64) {
+	self.Topic = int64(record.Topic)
+	self.Length = int32(record.Length)
+	self.Position = int64(ptr)
+
+	_, err := file.Seek(int64(record.Offset), os.SEEK_SET)
+	if err != nil {
+		return
+	}
+	self.Payload = make([]byte, self.Length)
+	io.ReadFull(file, self.Payload)
 }
