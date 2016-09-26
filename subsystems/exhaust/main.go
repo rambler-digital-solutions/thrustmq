@@ -7,7 +7,7 @@ import (
 	"thrust/config"
 )
 
-var TurbineChannel = make(chan common.ProcessingStruct, config.Config.Exhaust.TurbineBuffer)
+var TurbineChannel = make(chan common.MarkerStruct, config.Config.Exhaust.TurbineBuffer)
 var CombustorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Exhaust.CombustionBuffer)
 
 var ConnectionsMap common.ConnectionsMap = make(common.ConnectionsMap)

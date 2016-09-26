@@ -41,7 +41,7 @@ func blow(connection net.Conn) {
 		select {
 		case message := <-connectionStruct.Channel:
 
-			status := common.ProcessingStruct{Connection: connectionStruct.Id, Offset: message.Position, Ack: false}
+			status := common.MarkerStruct{Connection: connectionStruct.Id, Offset: message.Position, Ack: false}
 			TurbineChannel <- status
 
 			binary.LittleEndian.PutUint32(buffer, uint32(len(message.Payload)))
