@@ -33,7 +33,7 @@ func Init() {
 			IntakeThroughput += 1
 		}
 		if oprecord.Subsystem == 2 {
-			ExhaustThroughput += 1
+			// ExhaustThroughput += 1
 		}
 	}
 }
