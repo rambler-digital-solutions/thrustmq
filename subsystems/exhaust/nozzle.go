@@ -1,7 +1,6 @@
 package exhaust
 
 import (
-	"encoding/binary"
 	"math/rand"
 	"net"
 	"thrust/common"
@@ -13,7 +12,7 @@ import (
 
 func registerConnect(connection net.Conn) common.ConnectionStruct {
 	topic := rand.Int63()
-	State.ConnectionId += 1
+	State.ConnectionId++
 	id := State.ConnectionId
 	channel := make(chan common.MessageStruct, config.Config.Exhaust.TurbineBuffer)
 
@@ -27,14 +26,23 @@ func registerConnect(connection net.Conn) common.ConnectionStruct {
 }
 
 func registerDisconnect(connectionStruct common.ConnectionStruct) {
-	delete(ConnectionsMap, connectionStruct.Id)
-	logging.LostConsumer(connectionStruct.Connection.RemoteAddr(), len(ConnectionsMap))
+	for {
+		select {
+		case CombustorChannel <- <-connectionStruct.Channel:
+		default:
+			delete(ConnectionsMap, connectionStruct.Id)
+			logging.LostConsumer(connectionStruct.Connection.RemoteAddr(), len(ConnectionsMap))
+			return
+		}
+	}
+
 }
 
 func blow(connection net.Conn) {
 	connectionStruct := registerConnect(connection)
 	defer registerDisconnect(connectionStruct)
-	buffer := make([]byte, 4)
+	blankMessage := common.MessageStruct{}
+	blankBytes := blankMessage.Serialize()
 
 	for {
 		select {
@@ -44,29 +52,22 @@ func blow(connection net.Conn) {
 			TurbineChannel <- status
 
 			bytes := message.Serialize()
-			bytesWritten, _ := connection.Write(bytes)
-			if bytesWritten != len(bytes) {
-				connectionStruct.Channel <- message
+
+			bytesWritten, err := connection.Write(bytes)
+			if err != nil || bytesWritten != len(bytes) {
+				CombustorChannel <- message
 				return
 			}
 
-			oplog.ExhaustThroughput += 1
+			oplog.ExhaustThroughput++
 
 			status.Ack = 1
 			TurbineChannel <- status
 		default:
-			data := []byte{'#'}
-
-			binary.LittleEndian.PutUint32(buffer, uint32(len(data)))
-			_, err := connection.Write(buffer)
-			if err != nil {
+			bytesWritten, err := connection.Write(blankBytes)
+			if err != nil || bytesWritten != len(blankBytes) {
 				return
 			}
-			_, err = connection.Write(data)
-			if err != nil {
-				return
-			}
-
 			time.Sleep(1e8)
 		}
 	}

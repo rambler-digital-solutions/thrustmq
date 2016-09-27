@@ -5,7 +5,7 @@
     },
     "Exhaust": {
         "Port": 2888,
-        "TurbineBuffer": 1024,
+        "TurbineBuffer": 4096,
         "CombustionBuffer": 4096,
         "Chamber": "data/chamber"
     },

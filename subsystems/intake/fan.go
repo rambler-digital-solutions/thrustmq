@@ -33,6 +33,6 @@ func suck(connection net.Conn) {
 		// send ack to producer
 		connection.Write([]byte{'y'})
 
-		oplog.IntakeThroughput += 1
+		oplog.IntakeThroughput++
 	}
 }

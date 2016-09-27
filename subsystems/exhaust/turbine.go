@@ -5,80 +5,73 @@ import (
 	"os"
 	"thrust/common"
 	"thrust/config"
-	"time"
+	// "time"
+	"log"
 )
 
 func turbine() {
 	indexFile, err := os.OpenFile(config.Config.Index, os.O_RDWR|os.O_CREATE, 0666)
+	common.FaceIt(err)
 	dataFile, err := os.OpenFile(config.Config.Data, os.O_RDWR|os.O_CREATE, 0666)
+	common.FaceIt(err)
 	defer indexFile.Close()
 	defer dataFile.Close()
 
 	for {
-		time.Sleep(1e9)
-		common.FaceIt(err)
 		markPass(indexFile)
-		if len(ConnectionsMap) > 0 {
-			fluxPass(indexFile, dataFile)
-		}
+		// if len(ConnectionsMap) > 0 {
+		// 	fluxPass(indexFile, dataFile)
+		// }
 	}
 }
 
 func markPass(file *os.File) {
-	reader := bufio.NewReader(file)
 	for {
-		if len(TurbineChannel) == 0 {
-			return
-		}
 		marker := <-TurbineChannel
 
 		_, err := file.Seek(int64(marker.Offset), os.SEEK_SET)
 		if err != nil {
 			return
 		}
+
 		file.Write(marker.Serialize())
 
-		_, err = file.Seek(int64(marker.Offset), os.SEEK_SET)
-		if err != nil {
+		if len(TurbineChannel) == 0 {
 			return
 		}
-		record := common.IndexRecord{}
-		record.Deserialize(reader)
 	}
 }
 
 func fluxPass(file *os.File, dataFile *os.File) {
-	ptr := State.Tail
-	_, err := file.Seek(ptr, os.SEEK_SET)
-	common.FaceIt(err)
+	tail := State.Tail
+	stat, err := file.Stat()
+	head := stat.Size()
 	reader := bufio.NewReader(file)
-	total := float32(0)
+	total := float32((head - tail) / common.IndexSize)
 	marked := float32(0)
 	streak := true
-	for {
-		record := common.IndexRecord{}
-		if !record.Deserialize(reader) {
-			State.Capacity = 1 - marked/total
-			return
-		}
-
+	record := common.IndexRecord{}
+	_, err = file.Seek(tail, os.SEEK_SET)
+	common.FaceIt(err)
+	for ptr := State.Tail; ptr < head-common.IndexSize; ptr += common.IndexSize {
+		record.Deserialize(reader)
 		if record.Ack != 0 {
-			marked += 1
+			marked++
 		} else {
 			if _, ok := ConnectionsMap[int64(record.Connection)]; !ok {
+				log.Println("sent back", record)
 				message := common.MessageStruct{}
 				message.Load(dataFile, record, ptr)
 				CombustorChannel <- message
+				record.Ack = 2
+				TurbineChannel <- record
 			} else {
 				streak = false
 			}
 		}
-
 		if streak {
 			State.Tail = ptr
 		}
-
-		ptr += common.IndexSize
-		total += 1
 	}
+	State.Capacity = 1 - marked/total
 }

@@ -18,19 +18,10 @@ HAMMER = 'HAMMER' in os.environ
 def timestamp():
     return int(time.time())
 
-    chars = []
-    while True:
-        a = sock.recv(1)
-        chars.append(a)
-        if a == "\n" or a == "":
-            return "".join(chars)
-
 
 def read_message(sock):
     data = sock.recv(4)
     size = int.from_bytes(data, byteorder='little')
-    if size == 0:
-        raise IOError("zero size")
     message = sock.recv(size)
     return message
 
