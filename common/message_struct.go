@@ -9,11 +9,11 @@ import (
 type MessageChannel chan MessageStruct
 type MessageChannels []MessageChannel
 type MessageStruct struct {
-	AckChannel chan int64
+	AckChannel chan uint64
 	Payload    []byte
-	Topic      int64
-	Length     int32
-	Position   int64
+	Topic      uint64
+	Length     uint32
+	Position   uint64
 }
 
 var MessageHeaderSize = 12
@@ -25,12 +25,12 @@ func (self *MessageStruct) Deserialize(reader io.Reader) bool {
 		return false
 	}
 
-	self.Topic = int64(binary.LittleEndian.Uint64(header[0:8]))
-	self.Length = int32(binary.LittleEndian.Uint32(header[8:12]))
+	self.Topic = binary.LittleEndian.Uint64(header[0:8])
+	self.Length = binary.LittleEndian.Uint32(header[8:12])
 
 	buffer := make([]byte, self.Length)
 	bytesRead, _ = io.ReadFull(reader, buffer)
-	if int32(bytesRead) != self.Length {
+	if uint32(bytesRead) != self.Length {
 		return false
 	}
 	self.Payload = buffer
@@ -44,10 +44,10 @@ func (self *MessageStruct) Serialize() []byte {
 	return buffer
 }
 
-func (self *MessageStruct) Load(file *os.File, record IndexRecord, ptr int64) {
-	self.Topic = int64(record.Topic)
-	self.Length = int32(record.Length)
-	self.Position = int64(ptr)
+func (self *MessageStruct) Load(file *os.File, record IndexRecord) {
+	self.Topic = record.Topic
+	self.Length = uint32(record.Length)
+	self.Position = record.Position
 
 	_, err := file.Seek(int64(record.Offset), os.SEEK_SET)
 	if err != nil {

@@ -23,6 +23,9 @@ def read_message(sock):
     data = sock.recv(4)
     size = int.from_bytes(data, byteorder='little')
     message = sock.recv(size)
+    my_bytes = bytearray()
+    my_bytes.append(55)
+    sock.send(my_bytes)
     return message
 
 
@@ -35,9 +38,12 @@ def load():
                 while True:
                     data = read_message(sock)
                     if not HAMMER:
-                        sys.stdout.write("{}: ".format(len(data)))
-                        print(str(data, encoding='utf-8'))
-                        time.sleep(0.1)
+                        if len(data) > 0:
+                            sys.stdout.write("{}: ".format(len(data)))
+                            print(str(data, encoding='utf-8'))
+                            time.sleep(1)
+                        else:
+                            time.sleep(.01)
         except IOError as err:
             print('Failed to connect...' + str(timestamp()))
             print(err)

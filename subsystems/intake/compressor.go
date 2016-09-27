@@ -13,13 +13,13 @@ func writeData(file *os.File, message common.MessageStruct) int64 {
 	return offset - int64(len(message.Payload))
 }
 
-func writeIndex(file *os.File, message common.MessageStruct, offset int64) int64 {
+func writeIndex(file *os.File, message common.MessageStruct, offset int64) uint64 {
 	indexRecord := common.IndexRecord{Offset: uint64(offset), Length: uint64(len(message.Payload)), Topic: uint64(message.Topic), Connection: 0, Ack: 0}
 
 	file.Write(indexRecord.Serialize())
 
 	position, _ := file.Seek(0, os.SEEK_CUR)
-	return position - common.IndexSize
+	return uint64(position) - common.IndexSize
 }
 
 func compressor() {

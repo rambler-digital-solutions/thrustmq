@@ -6,10 +6,10 @@ import (
 
 type ConnectionStruct struct {
 	Connection net.Conn
-	Topic      int64
-	Id         int64
+	Topic      uint64
+	Id         uint64
 	Channel    MessageChannel
 }
 
-type ConnectionsMap map[int64]ConnectionStruct
-type TopicsMap map[int64]([]int64)
+type ConnectionsMap map[uint64]ConnectionStruct
+type TopicsMap map[uint64]([]uint64)

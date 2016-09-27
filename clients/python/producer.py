@@ -49,7 +49,7 @@ def load():
                     result = s.recv(1)
 
                     if not HAMMER:
-                        time.sleep(1)
+                        time.sleep(0.1)
                         if result == b'y':
                             print('ACK')
                         else:

@@ -11,7 +11,7 @@ import (
 )
 
 func registerConnect(connection net.Conn) common.ConnectionStruct {
-	topic := rand.Int63()
+	topic := uint64(rand.Int63())
 	State.ConnectionId++
 	id := State.ConnectionId
 	channel := make(chan common.MessageStruct, config.Config.Exhaust.TurbineBuffer)
@@ -26,12 +26,12 @@ func registerConnect(connection net.Conn) common.ConnectionStruct {
 }
 
 func registerDisconnect(connectionStruct common.ConnectionStruct) {
+	delete(ConnectionsMap, connectionStruct.Id)
+	logging.LostConsumer(connectionStruct.Connection.RemoteAddr(), len(ConnectionsMap))
 	for {
 		select {
 		case CombustorChannel <- <-connectionStruct.Channel:
 		default:
-			delete(ConnectionsMap, connectionStruct.Id)
-			logging.LostConsumer(connectionStruct.Connection.RemoteAddr(), len(ConnectionsMap))
 			return
 		}
 	}
@@ -47,10 +47,6 @@ func blow(connection net.Conn) {
 	for {
 		select {
 		case message := <-connectionStruct.Channel:
-
-			status := common.IndexRecord{Connection: uint64(connectionStruct.Id), Offset: uint64(message.Position), Ack: 0, Topic: uint64(message.Topic)}
-			TurbineChannel <- status
-
 			bytes := message.Serialize()
 
 			bytesWritten, err := connection.Write(bytes)
@@ -59,10 +55,15 @@ func blow(connection net.Conn) {
 				return
 			}
 
+			bfr := make([]byte, 1)
+			bytesRead, err := connection.Read(bfr)
+			if err != nil || bytesRead != 1 {
+				return
+			}
+
 			oplog.ExhaustThroughput++
 
-			status.Ack = 1
-			TurbineChannel <- status
+			TurbineChannel <- common.IndexRecord{Connection: connectionStruct.Id, Position: message.Position, Ack: 2}
 		default:
 			bytesWritten, err := connection.Write(blankBytes)
 			if err != nil || bytesWritten != len(blankBytes) {

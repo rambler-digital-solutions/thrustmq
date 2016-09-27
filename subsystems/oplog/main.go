@@ -2,5 +2,8 @@ package oplog
 
 import ()
 
-var IntakeThroughput int
-var ExhaustThroughput int
+var IntakeTotal = 0
+var ExhaustTotal = 0
+var IntakeThroughput = 0
+var ExhaustThroughput = 0
+var Requeued = 0

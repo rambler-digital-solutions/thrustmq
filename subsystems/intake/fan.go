@@ -13,7 +13,7 @@ func suck(connection net.Conn) {
 	logging.NewProducer(connection.RemoteAddr())
 	defer logging.LostProducer(connection.RemoteAddr())
 
-	ackChannel := make(chan int64, 1)
+	ackChannel := make(chan uint64, 1)
 	reader := bufio.NewReader(connection)
 
 	for {

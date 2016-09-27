@@ -10,9 +10,10 @@ import (
 )
 
 type StateStruct struct {
-	Tail         int64
+	Tail         uint64
+	Head         uint64
 	Capacity     float32
-	ConnectionId int64
+	ConnectionId uint64
 }
 
 func loadState() StateStruct {
