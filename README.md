@@ -1,44 +1,35 @@
-# ThrustMQ
+# ThrustMQ (WIP)
 
-![schema](https://gitlab.rambler.ru/rnd/thrust/raw/develop/schema.png)
+Plain Golang message queue designed for speed, durability & simplicity.
 
+How ThrustMQ stands against competition:
 
-
-We live in a world of real time expectations.
-
-AMPQ (Rabbit, Active, Qpid...) - "They try to do too much."
-Log aggregagation (Kafka...) - "No acknolegements"
-Network libraries (ZeroMQ,..) - "No persitance"
+AMPQ (Rabbit, Active, Qpid, ...) - "They try to do too much".
+<br />
+Log aggregation (Kafka, ...) - "No acknowledgements".
+<br />
+Network libraries (ZeroMQ, ...) - "No persistence".
 
 ### Features
 
-NO. Absolutely no dependencies. No zookeeper. No broker.
-Just plain old go, without extra packages
-1000 lines of open source code.
-
-UNLIMITED number of channels.
-Durable all the way.
-1000 msg / second
+- No. Absolutely no dependencies. Just plain old go, without extra packages
+- Unlimited number of topics (channels).
+- Durable all the way.
+- Can transfer up to 28000 messages per second.
+- Only 568 lines of beautiful Go code.
 
 ### Design
+![schema](https://gitlab.rambler.ru/rnd/thrust/raw/develop/schema.png)
 
-[diagram here]
+### Installation
+[Install golang](https://golang.org/doc/install).
+```
+go get github.com/rambler-digital-solutions/thrustmq
+```
 
-### Performance
-Competitors:
-31250 msg/sec - google (rabbitmq)
-
-### Use cases
-
-Actually MQ is a big theme right now.
-Microservice architecture emplys MQ at full scale.
-IoT suppose MQ as well.
-Log aggregagation, credit cards ... you name it...
-
-### Pacenotes
-http://bravenewgeek.com/dissecting-message-queues/
-View source of NATS
-
-### Ideas
-1. Make Ack optional for publisher & subscriber
-1.
+### Quickstart
+```bash
+go run thrust.go
+python clients/python/producer.py
+python clients/python/consumer.py
+```
