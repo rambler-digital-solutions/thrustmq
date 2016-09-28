@@ -3,8 +3,8 @@ package intake
 import (
 	"fmt"
 	"net"
-	"thrust/common"
-	"thrust/config"
+	"github.com/rambler-digital-solutions/thrustmq/common"
+	"github.com/rambler-digital-solutions/thrustmq/config"
 )
 
 var stage2CompressorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)

@@ -3,9 +3,9 @@ package intake
 import (
 	"bufio"
 	"net"
-	"thrust/common"
-	"thrust/logging"
-	"thrust/subsystems/oplog"
+	"github.com/rambler-digital-solutions/thrustmq/common"
+	"github.com/rambler-digital-solutions/thrustmq/logging"
+	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
 )
 
 func suck(connection net.Conn) {

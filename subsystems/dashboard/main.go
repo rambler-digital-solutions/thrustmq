@@ -2,11 +2,11 @@ package dashboard
 
 import (
 	"fmt"
-	"thrust/common"
-	"thrust/config"
-	"thrust/subsystems/exhaust"
-	"thrust/subsystems/intake"
-	"thrust/subsystems/oplog"
+	"github.com/rambler-digital-solutions/thrustmq/common"
+	"github.com/rambler-digital-solutions/thrustmq/config"
+	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
+	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
+	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
 	"time"
 )
 

@@ -3,9 +3,9 @@ package exhaust
 import (
 	"bufio"
 	"os"
-	"thrust/common"
-	"thrust/config"
-	"thrust/subsystems/oplog"
+	"github.com/rambler-digital-solutions/thrustmq/common"
+	"github.com/rambler-digital-solutions/thrustmq/config"
+	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
 	"time"
 )
 

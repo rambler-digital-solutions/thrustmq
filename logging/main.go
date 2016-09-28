@@ -4,8 +4,8 @@ import (
 	"log"
 	"net"
 	"os"
-	"thrust/common"
-	"thrust/config"
+	"github.com/rambler-digital-solutions/thrustmq/common"
+	"github.com/rambler-digital-solutions/thrustmq/config"
 )
 
 func Init() *os.File {

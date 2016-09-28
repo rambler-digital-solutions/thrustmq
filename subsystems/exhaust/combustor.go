@@ -1,7 +1,7 @@
 package exhaust
 
 import (
-	"thrust/common"
+	"github.com/rambler-digital-solutions/thrustmq/common"
 )
 
 func combustion() {

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"thrust/logging"
-	"thrust/subsystems/dashboard"
-	"thrust/subsystems/exhaust"
-	"thrust/subsystems/intake"
+	"github.com/rambler-digital-solutions/thrustmq/logging"
+	"github.com/rambler-digital-solutions/thrustmq/subsystems/dashboard"
+	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
+	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
 )
 
 func main() {

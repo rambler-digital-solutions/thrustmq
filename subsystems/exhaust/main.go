@@ -3,8 +3,8 @@ package exhaust
 import (
 	"fmt"
 	"net"
-	"thrust/common"
-	"thrust/config"
+	"github.com/rambler-digital-solutions/thrustmq/common"
+	"github.com/rambler-digital-solutions/thrustmq/config"
 )
 
 var TurbineChannel = make(chan common.IndexRecord, config.Config.Exhaust.TurbineBuffer)

@@ -3,7 +3,7 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
-	"thrust/common"
+	"github.com/rambler-digital-solutions/thrustmq/common"
 )
 
 type exhaustConfigStruct struct {

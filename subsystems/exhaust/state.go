@@ -4,8 +4,8 @@ import (
 	"encoding/gob"
 	"fmt"
 	"os"
-	"thrust/common"
-	"thrust/config"
+	"github.com/rambler-digital-solutions/thrustmq/common"
+	"github.com/rambler-digital-solutions/thrustmq/config"
 	"time"
 )
 
