@@ -10,6 +10,7 @@ type exhaustConfigStruct struct {
 	Port             int
 	TurbineBuffer    int
 	CombustionBuffer int
+	NozzleBuffer     int
 	Chamber          string
 }
 
@@ -19,13 +20,12 @@ type intakeConfigStruct struct {
 }
 
 type ConfigStruct struct {
-	Intake          intakeConfigStruct
-	Exhaust         exhaustConfigStruct
-	Data            string
-	Index           string
-	Debug           bool
-	Logfile         string
-	IndexRecordSize int64
+	Intake  intakeConfigStruct
+	Exhaust exhaustConfigStruct
+	Data    string
+	Index   string
+	Debug   bool
+	Logfile string
 }
 
 func loadConfig() ConfigStruct {

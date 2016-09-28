@@ -13,7 +13,7 @@ import random
 HOST = 'localhost'
 PORT = 1888
 TOKEN = binascii.hexlify(os.urandom(8)).decode('utf-8')
-POOL_SIZE = 1
+POOL_SIZE = 10
 HAMMER = 'HAMMER' in os.environ
 
 

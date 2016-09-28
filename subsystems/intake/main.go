@@ -7,6 +7,7 @@ import (
 	"thrust/config"
 )
 
+var stage2CompressorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
 var CompressorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
 
 func Init() {
@@ -15,7 +16,8 @@ func Init() {
 	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Config.Intake.Port))
 	common.FaceIt(err)
 
-	go compressor()
+	go compressorStage1()
+	go compressorStage2()
 
 	for {
 		connection, err := socket.Accept()

@@ -17,7 +17,7 @@ func registerConnect(connection net.Conn) common.ConnectionStruct {
 	channel := make(chan common.MessageStruct, config.Config.Exhaust.TurbineBuffer)
 
 	connectionStruct := common.ConnectionStruct{Connection: connection, Topic: topic, Id: id, Channel: channel}
-	connectionStruct.Channel = make(common.MessageChannel, 1000)
+	connectionStruct.Channel = make(common.MessageChannel, config.Config.Exhaust.NozzleBuffer)
 
 	ConnectionsMap[id] = connectionStruct
 

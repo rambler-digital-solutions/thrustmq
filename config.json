@@ -1,17 +1,17 @@
 {
     "Intake": {
         "Port": 1888,
-        "CompressorBuffer": 4096
+        "CompressorBuffer": 10000
     },
     "Exhaust": {
         "Port": 2888,
         "TurbineBuffer": 10000,
-        "CombustionBuffer": 4096,
+        "CombustionBuffer": 10000,
+        "NozzleBuffer": 10000,
         "Chamber": "data/chamber"
     },
     "Logfile": "data/system.log",
     "Index": "data/index",
     "Data": "data/messages",
-    "IndexRecordSize": 29,
     "Debug": true
 }

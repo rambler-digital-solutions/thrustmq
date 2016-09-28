@@ -5,7 +5,6 @@ import (
 	"net"
 	"thrust/common"
 	"thrust/logging"
-	"thrust/subsystems/exhaust"
 	"thrust/subsystems/oplog"
 )
 
@@ -13,24 +12,17 @@ func suck(connection net.Conn) {
 	logging.NewProducer(connection.RemoteAddr())
 	defer logging.LostProducer(connection.RemoteAddr())
 
-	ackChannel := make(chan uint64, 1)
+	ackChannel := make(chan bool, 1)
 	reader := bufio.NewReader(connection)
 
 	for {
 		message := common.MessageStruct{AckChannel: ackChannel}
 		if !message.Deserialize(reader) {
-			continue
+			return
 		}
-		// send message to compressor
+
 		CompressorChannel <- message
-		// receive acknowledgement
-		message.Position = <-ackChannel
-		// send message to combustor
-		select {
-		case exhaust.CombustorChannel <- message:
-		default:
-		}
-		// send ack to producer
+		<-ackChannel
 		connection.Write([]byte{'y'})
 
 		oplog.IntakeThroughput++

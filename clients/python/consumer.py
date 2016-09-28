@@ -13,6 +13,7 @@ HOST = 'localhost'
 PORT = 2888
 TOKEN = binascii.hexlify(os.urandom(8))
 HAMMER = 'HAMMER' in os.environ
+POOL_SIZE = 10
 
 
 def timestamp():
@@ -34,7 +35,7 @@ def load():
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.connect((HOST, PORT))
-                sock.settimeout(10)
+                sock.settimeout(1)
                 while True:
                     data = read_message(sock)
                     if not HAMMER:
@@ -50,5 +51,11 @@ def load():
             time.sleep(1)
 
 
+def signal_handler(signal, frame):
+    sys.exit(0)
+
 if __name__ == "__main__":
-    load()
+    signal.signal(signal.SIGINT, signal_handler)
+
+    for i in range(POOL_SIZE):
+        Process(target=load).start()

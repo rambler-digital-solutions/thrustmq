@@ -9,7 +9,7 @@ import (
 type MessageChannel chan MessageStruct
 type MessageChannels []MessageChannel
 type MessageStruct struct {
-	AckChannel chan uint64
+	AckChannel chan bool
 	Payload    []byte
 	Topic      uint64
 	Length     uint32

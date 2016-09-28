@@ -4,6 +4,7 @@ import (
 	"os"
 	"thrust/common"
 	"thrust/config"
+	"thrust/subsystems/exhaust"
 )
 
 func writeData(file *os.File, message common.MessageStruct) int64 {
@@ -22,16 +23,33 @@ func writeIndex(file *os.File, message common.MessageStruct, offset int64) uint6
 	return uint64(position) - common.IndexSize
 }
 
-func compressor() {
+var Position uint64 = 0
+
+func compressorStage1() {
+	for {
+		message := <-CompressorChannel
+		stage2CompressorChannel <- message
+		select {
+		case exhaust.CombustorChannel <- message:
+		default:
+		}
+	}
+}
+
+func compressorStage2() {
 	indexFile, err := os.OpenFile(config.Config.Index, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	dataFile, err := os.OpenFile(config.Config.Data, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	common.FaceIt(err)
 
+	ptr, err := indexFile.Seek(0, os.SEEK_CUR)
+	Position = uint64(ptr)
+
 	for {
-		message := <-CompressorChannel
+		message := <-stage2CompressorChannel
 		offset := writeData(dataFile, message)
-		position := writeIndex(indexFile, message, offset)
-		message.AckChannel <- position
+		writeIndex(indexFile, message, offset)
+		message.AckChannel <- true
+		Position += common.IndexSize
 	}
 }
