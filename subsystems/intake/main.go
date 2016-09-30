@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	stage2CompressorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
+	Stage2CompressorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
 	CompressorChannel       common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
 )
 

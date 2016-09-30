@@ -5,9 +5,9 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/dashboard"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
-	// "log"
-	// "net/http"
-	// _ "net/http/pprof"
+	"log"
+	"net/http"
+	_ "net/http/pprof"
 )
 
 func main() {
@@ -16,9 +16,9 @@ func main() {
 	go intake.Init()
 	go exhaust.Init()
 
-	// go func() {
-	// 	log.Println(http.ListenAndServe("localhost:6060", nil))
-	// }()
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 
 	dashboard.Init()
 }

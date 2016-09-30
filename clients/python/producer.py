@@ -17,34 +17,44 @@ POOL_SIZE = 10
 HAMMER = 'HAMMER' in os.environ
 
 
+def send_message(s):
+    topic_id = random.choice([1, 2, 3, 3])
+    message = 'Привет от воркера %s %d topic_id: %d' % (
+        TOKEN,
+        int(time.time()),
+        topic_id
+    )
+
+    if not HAMMER:
+        print(message)
+
+    message_bytes = message.encode('utf-8')
+
+    # topic header
+    s.sendall(topic_id.to_bytes(8, byteorder='little'))
+    # size header
+    s.sendall(len(message_bytes).to_bytes(
+        4, byteorder='little'))
+    # message itself
+    s.sendall(message_bytes)
+
+    if not HAMMER:
+        sys.stdout.write("  waiting for ack... ")
+
+
 def load():
     while True:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((HOST, PORT))
                 while True:
-                    topic_id = random.choice([1, 2, 3, 3])
-                    message = 'Привет от воркера %s %d topic_id: %d' % (
-                        TOKEN,
-                        int(time.time()),
-                        topic_id
-                    )
+                    batch_size = 10
 
-                    if not HAMMER:
-                        print(message)
-
-                    message_bytes = message.encode('utf-8')
-
-                    # topic header
-                    s.sendall(topic_id.to_bytes(8, byteorder='little'))
-                    # size header
-                    s.sendall(len(message_bytes).to_bytes(
+                    s.sendall(batch_size.to_bytes(
                         4, byteorder='little'))
-                    # message itself
-                    s.sendall(message_bytes)
 
-                    if not HAMMER:
-                        sys.stdout.write("  waiting for ack... ")
+                    for i in range(batch_size):
+                        send_message(s)
 
                     result = s.recv(1)
 
