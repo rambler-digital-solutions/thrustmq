@@ -2,18 +2,18 @@ package exhaust
 
 import (
 	"fmt"
-	"net"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
+	"net"
 )
 
-var TurbineChannel = make(chan common.IndexRecord, config.Config.Exhaust.TurbineBuffer)
-var CombustorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Exhaust.CombustionBuffer)
-
-var ConnectionsMap common.ConnectionsMap = make(common.ConnectionsMap)
-var topicsMap common.TopicsMap = make(common.TopicsMap)
-
-var State StateStruct = loadState()
+var (
+	TurbineChannel                         = make(chan common.IndexRecord, config.Config.Exhaust.TurbineBuffer)
+	CombustorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Exhaust.CombustionBuffer)
+	ConnectionsMap   common.ConnectionsMap = make(common.ConnectionsMap)
+	topicsMap        common.TopicsMap      = make(common.TopicsMap)
+	State            StateStruct           = loadState()
+)
 
 func Init() {
 	fmt.Printf("Spinning turbine on port %d\n", config.Config.Exhaust.Port)
@@ -25,8 +25,11 @@ func Init() {
 	go combustion()
 	go turbine()
 
+	var (
+		connection net.Conn
+	)
 	for {
-		connection, _ := socket.Accept()
+		connection, _ = socket.Accept()
 		go blow(connection)
 	}
 }

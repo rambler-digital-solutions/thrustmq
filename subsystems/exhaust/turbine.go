@@ -2,10 +2,10 @@ package exhaust
 
 import (
 	"bufio"
-	"os"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
+	"os"
 	"time"
 )
 

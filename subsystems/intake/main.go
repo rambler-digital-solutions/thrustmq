@@ -2,13 +2,15 @@ package intake
 
 import (
 	"fmt"
-	"net"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
+	"net"
 )
 
-var stage2CompressorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
-var CompressorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
+var (
+	stage2CompressorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
+	CompressorChannel       common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
+)
 
 func Init() {
 	fmt.Printf("Spinning fan on port %d\n", config.Config.Intake.Port)
@@ -19,10 +21,13 @@ func Init() {
 	go compressorStage1()
 	go compressorStage2()
 
-	for {
-		connection, err := socket.Accept()
-		common.FaceIt(err)
+	var (
+		connection net.Conn
+	)
 
+	for {
+		connection, err = socket.Accept()
+		common.FaceIt(err)
 		go suck(connection)
 	}
 }

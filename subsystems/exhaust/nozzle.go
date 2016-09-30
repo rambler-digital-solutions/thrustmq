@@ -1,12 +1,12 @@
 package exhaust
 
 import (
-	"math/rand"
-	"net"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
+	"math/rand"
+	"net"
 	"time"
 )
 

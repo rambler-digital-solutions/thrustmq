@@ -1,21 +1,25 @@
 package intake
 
 import (
-	"os"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
+	"os"
 )
 
 func writeData(file *os.File, message common.MessageStruct) int64 {
 	_, err := file.Write(message.Payload)
 	common.FaceIt(err)
-	offset, _ := file.Seek(0, os.SEEK_CUR)
-	return offset - int64(len(message.Payload))
+	offset, err := file.Seek(0, os.SEEK_CUR)
+	common.FaceIt(err)
+	return offset - int64(message.Length)
 }
 
 func writeIndex(file *os.File, message common.MessageStruct, offset int64) uint64 {
-	indexRecord := common.IndexRecord{Offset: uint64(offset), Length: uint64(len(message.Payload)), Topic: uint64(message.Topic), Connection: 0, Ack: 0}
+	indexRecord := common.IndexRecord{}
+	indexRecord.Offset = uint64(offset)
+	indexRecord.Length = uint64(message.Length)
+	indexRecord.Topic = uint64(message.Topic)
 
 	file.Write(indexRecord.Serialize())
 

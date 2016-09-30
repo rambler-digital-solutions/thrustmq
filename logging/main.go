@@ -1,11 +1,11 @@
 package logging
 
 import (
+	"github.com/rambler-digital-solutions/thrustmq/common"
+	"github.com/rambler-digital-solutions/thrustmq/config"
 	"log"
 	"net"
 	"os"
-	"github.com/rambler-digital-solutions/thrustmq/common"
-	"github.com/rambler-digital-solutions/thrustmq/config"
 )
 
 func Init() *os.File {
@@ -16,12 +16,6 @@ func Init() *os.File {
 	log.Println("ThrusMQ started")
 
 	return logfile
-}
-
-func WatchCapacity(label string, size int, capacity int) {
-	if size == capacity {
-		// log.Printf("%s is %d/%d full", label, size, capacity)
-	}
 }
 
 func NewProducer(address net.Addr) {

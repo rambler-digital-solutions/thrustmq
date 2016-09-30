@@ -3,9 +3,9 @@ package exhaust
 import (
 	"encoding/gob"
 	"fmt"
-	"os"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
+	"os"
 	"time"
 )
 
