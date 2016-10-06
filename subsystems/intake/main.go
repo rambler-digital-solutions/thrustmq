@@ -13,8 +13,6 @@ var (
 )
 
 func Init() {
-	fmt.Printf("Spinning fan on port %d\n", config.Config.Intake.Port)
-
 	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Config.Intake.Port))
 	common.FaceIt(err)
 
