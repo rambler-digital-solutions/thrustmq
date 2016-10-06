@@ -8,14 +8,12 @@ import (
 	"os"
 )
 
-func Init() *os.File {
+func Init() {
 	logfile, err := os.OpenFile(config.Config.Logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	common.FaceIt(err)
 
 	log.SetOutput(logfile)
 	log.Println("ThrusMQ started")
-
-	return logfile
 }
 
 func NewProducer(address net.Addr) {
