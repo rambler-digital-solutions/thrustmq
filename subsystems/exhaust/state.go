@@ -2,7 +2,6 @@ package exhaust
 
 import (
 	"encoding/gob"
-	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"os"
