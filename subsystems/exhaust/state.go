@@ -26,10 +26,7 @@ func loadState() StateStruct {
 		common.FaceIt(err)
 		file.Close()
 		return result
-	} else {
-		fmt.Println(err)
 	}
-
 	return StateStruct{Tail: 0, ConnectionId: 1}
 }
 
