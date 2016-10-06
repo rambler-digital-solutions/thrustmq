@@ -48,7 +48,7 @@ def load():
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((HOST, PORT))
                 while True:
-                    batch_size = 10
+                    batch_size = 50
 
                     s.sendall(batch_size.to_bytes(
                         4, byteorder='little'))
