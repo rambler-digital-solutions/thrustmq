@@ -38,7 +38,7 @@ func (self *MessageStruct) Deserialize(reader io.Reader) bool {
 }
 
 func (self *MessageStruct) Serialize() []byte {
-	buffer := make([]byte, 4+self.Length)
+	buffer := make([]byte, 4 + self.Length)
 	binary.LittleEndian.PutUint32(buffer[0:4], uint32(self.Length))
 	copy(buffer[4:], self.Payload[:])
 	return buffer
