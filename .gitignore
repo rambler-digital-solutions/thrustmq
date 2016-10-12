@@ -1,2 +1,3 @@
 application-build-*
 data/*
+clients/**/dist
