@@ -33,3 +33,33 @@ go run thrust.go
 python clients/python/producer.py
 python clients/python/consumer.py
 ```
+
+### Protocol
+
+Producer:
+```
+->
+32 batch size
+64 bits bucketId, 32 bits length, bytes
+64 bits bucketId, 32 bits length, bytes
+64 bits bucketId, 32 bits length, bytes
+```
+
+```
+<-
+ACK: batch_size bytes 1/0
+```
+
+Consumer:
+```
+->
+32 batch size
+32 bits length, bytes
+32 bits length, bytes
+32 bits length, bytes
+```
+
+```
+<-
+ACK: batch_size bites 1/0
+```
