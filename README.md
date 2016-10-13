@@ -61,5 +61,5 @@ Consumer:
 
 ```
 <-
-ACK: batch_size bites 1/0
+ACK: batch_size bytes 1/0
 ```
