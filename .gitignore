@@ -2,3 +2,4 @@ application-build-*
 data/*
 test/data/*
 clients/**/dist
+.bench
