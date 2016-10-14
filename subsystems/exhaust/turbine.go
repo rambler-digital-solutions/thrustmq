@@ -10,9 +10,9 @@ import (
 )
 
 func turbine() {
-	indexFile, err := os.OpenFile(config.Config.Index, os.O_RDWR|os.O_CREATE, 0666)
+	indexFile, err := os.OpenFile(config.Base.Index, os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
-	dataFile, err := os.OpenFile(config.Config.Data, os.O_RDWR|os.O_CREATE, 0666)
+	dataFile, err := os.OpenFile(config.Base.Data, os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	defer indexFile.Close()
 	defer dataFile.Close()
@@ -89,10 +89,10 @@ func fluxPass(file *os.File, dataFile *os.File) {
 	common.FaceIt(err)
 
 	for ptr := State.Tail; ptr < State.Head-common.IndexSize; ptr += common.IndexSize {
-		if len(TurbineChannel) > config.Config.Exhaust.TurbineBuffer/2 {
+		if len(TurbineChannel) > config.Exhaust.TurbineBuffer/2 {
 			return
 		}
-		if len(CombustorChannel) > config.Config.Exhaust.CombustionBuffer/2 {
+		if len(CombustorChannel) > config.Exhaust.CombustionBuffer/2 {
 			return
 		}
 

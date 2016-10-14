@@ -9,7 +9,7 @@ import (
 )
 
 func Init() {
-	logfile, err := os.OpenFile(config.Config.Logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	logfile, err := os.OpenFile(config.Base.Logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	common.FaceIt(err)
 
 	log.SetOutput(logfile)

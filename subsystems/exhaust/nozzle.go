@@ -14,10 +14,10 @@ func registerConnect(connection net.Conn) common.ConnectionStruct {
 	bucket := uint64(rand.Int63())
 	State.ConnectionId++
 	id := State.ConnectionId
-	channel := make(chan common.MessageStruct, config.Config.Exhaust.TurbineBuffer)
+	channel := make(chan common.MessageStruct, config.Exhaust.TurbineBuffer)
 
 	connectionStruct := common.ConnectionStruct{Connection: connection, Bucket: bucket, Id: id, Channel: channel}
-	connectionStruct.Channel = make(common.MessageChannel, config.Config.Exhaust.NozzleBuffer)
+	connectionStruct.Channel = make(common.MessageChannel, config.Exhaust.NozzleBuffer)
 
 	ConnectionsMap[id] = connectionStruct
 

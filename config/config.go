@@ -42,7 +42,6 @@ func loadConfig() ConfigStruct {
 	return config
 }
 
-var Config = loadConfig()
-var Base = Config
-var Intake = Config.Intake
-var Exhaust = Config.Exhaust
+var Base = loadConfig()
+var Intake = Base.Intake
+var Exhaust = Base.Exhaust

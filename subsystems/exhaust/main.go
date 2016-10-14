@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	TurbineChannel                         = make(chan common.IndexRecord, config.Config.Exhaust.TurbineBuffer)
-	CombustorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Exhaust.CombustionBuffer)
+	TurbineChannel                         = make(chan common.IndexRecord, config.Exhaust.TurbineBuffer)
+	CombustorChannel common.MessageChannel = make(common.MessageChannel, config.Exhaust.CombustionBuffer)
 	ConnectionsMap   common.ConnectionsMap = make(common.ConnectionsMap)
 	bucketsMap       common.BucketsMap     = make(common.BucketsMap)
 	State            StateStruct           = loadState()
@@ -18,7 +18,7 @@ var (
 func Init() {
 	go saveState()
 
-	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Config.Exhaust.Port))
+	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Exhaust.Port))
 	common.FaceIt(err)
 
 	go combustion()

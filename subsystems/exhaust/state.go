@@ -16,8 +16,8 @@ type StateStruct struct {
 }
 
 func loadState() StateStruct {
-	if _, err := os.Stat(config.Config.Exhaust.Chamber); err == nil {
-		file, err := os.OpenFile(config.Config.Exhaust.Chamber, os.O_RDONLY|os.O_CREATE, 0666)
+	if _, err := os.Stat(config.Exhaust.Chamber); err == nil {
+		file, err := os.OpenFile(config.Exhaust.Chamber, os.O_RDONLY|os.O_CREATE, 0666)
 		common.FaceIt(err)
 		dec := gob.NewDecoder(file)
 		result := StateStruct{}
@@ -32,7 +32,7 @@ func loadState() StateStruct {
 func saveState() {
 	for {
 		time.Sleep(1e9)
-		file, err := os.OpenFile(config.Config.Exhaust.Chamber, os.O_WRONLY|os.O_CREATE, 0666)
+		file, err := os.OpenFile(config.Exhaust.Chamber, os.O_WRONLY|os.O_CREATE, 0666)
 		common.FaceIt(err)
 		enc := gob.NewEncoder(file)
 		err = enc.Encode(State)

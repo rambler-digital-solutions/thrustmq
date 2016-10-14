@@ -8,12 +8,12 @@ import (
 )
 
 var (
-	Stage2CompressorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
-	CompressorChannel       common.MessageChannel = make(common.MessageChannel, config.Config.Intake.CompressorBuffer)
+	Stage2CompressorChannel common.MessageChannel = make(common.MessageChannel, config.Intake.CompressorBuffer)
+	CompressorChannel       common.MessageChannel = make(common.MessageChannel, config.Intake.CompressorBuffer)
 )
 
 func Init() {
-	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Config.Intake.Port))
+	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Intake.Port))
 	common.FaceIt(err)
 
 	go compressorStage1()

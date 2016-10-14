@@ -34,9 +34,9 @@ func compressorStage1() {
 }
 
 func compressorStage2() {
-	indexFile, err := os.OpenFile(config.Config.Index, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	indexFile, err := os.OpenFile(config.Base.Index, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	common.FaceIt(err)
-	dataFile, err := os.OpenFile(config.Config.Data, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	dataFile, err := os.OpenFile(config.Base.Data, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	common.FaceIt(err)
 
 	ptr, err := indexFile.Seek(0, os.SEEK_CUR)
