@@ -11,7 +11,7 @@ var (
 	TurbineChannel                         = make(chan common.IndexRecord, config.Config.Exhaust.TurbineBuffer)
 	CombustorChannel common.MessageChannel = make(common.MessageChannel, config.Config.Exhaust.CombustionBuffer)
 	ConnectionsMap   common.ConnectionsMap = make(common.ConnectionsMap)
-	topicsMap        common.TopicsMap      = make(common.TopicsMap)
+	bucketsMap       common.BucketsMap     = make(common.BucketsMap)
 	State            StateStruct           = loadState()
 )
 

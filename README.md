@@ -13,7 +13,7 @@ Network libraries (ZeroMQ, ...) - "No persistence".
 ### Features
 
 - No. Absolutely no dependencies. Just plain old go, without extra packages
-- Unlimited number of topics (channels).
+- Unlimited number of buckets (channels).
 - Durable all the way.
 - Can transfer up to 28000 messages per second.
 - Only 568 lines of beautiful Go code.

@@ -11,7 +11,9 @@ import pdb
 
 TOKEN = binascii.hexlify(os.urandom(8))
 
+
 class ThrustMQConsumer:
+
     def __init__(self, host, port):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))

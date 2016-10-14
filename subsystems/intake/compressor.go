@@ -17,7 +17,7 @@ func writeIndex(file *bufio.Writer, message common.MessageStruct, offset uint64)
 	indexRecord := common.IndexRecord{}
 	indexRecord.Offset = offset
 	indexRecord.Length = uint64(message.Length)
-	indexRecord.Topic = uint64(message.Topic)
+	indexRecord.Bucket = uint64(message.Bucket)
 
 	file.Write(indexRecord.Serialize())
 }
