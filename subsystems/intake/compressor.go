@@ -44,8 +44,8 @@ func compressorStage2() {
 	ptr, err = indexFile.Seek(0, os.SEEK_CUR)
 	Offset := uint64(ptr)
 
-	dataWriter := bufio.NewWriterSize(dataFile, 100000)
-	indexWriter := bufio.NewWriterSize(indexFile, 100000)
+	dataWriter := bufio.NewWriterSize(dataFile, config.Base.FileBuffer)
+	indexWriter := bufio.NewWriterSize(indexFile, config.Base.FileBuffer)
 
 	for {
 		message := <-Stage2CompressorChannel

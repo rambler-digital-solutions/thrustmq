@@ -20,12 +20,14 @@ type intakeConfigStruct struct {
 }
 
 type ConfigStruct struct {
-	Intake  intakeConfigStruct
-	Exhaust exhaustConfigStruct
-	Data    string
-	Index   string
-	Debug   bool
-	Logfile string
+	Intake        intakeConfigStruct
+	Exhaust       exhaustConfigStruct
+	Data          string
+	Index         string
+	Debug         bool
+	Logfile       string
+	FileBuffer    int
+	NetworkBuffer int
 }
 
 func loadConfig() ConfigStruct {
@@ -41,3 +43,6 @@ func loadConfig() ConfigStruct {
 }
 
 var Config = loadConfig()
+var Base = Config
+var Intake = Config.Intake
+var Exhaust = Config.Exhaust

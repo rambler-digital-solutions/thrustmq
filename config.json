@@ -13,5 +13,7 @@
     "Logfile": "data/system.log",
     "Index": "data/index",
     "Data": "data/messages",
+    "FileBuffer": 1024,
+    "NetworkBuffer": 1024,
     "Debug": true
 }
