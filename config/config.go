@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"io/ioutil"
+	"os"
 )
 
 type exhaustConfigStruct struct {
@@ -31,9 +32,12 @@ type ConfigStruct struct {
 }
 
 func loadConfig() ConfigStruct {
-	cfg_file := "./config.json"
+	filename := "./config.json"
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		filename = "../config.json"
+	}
 
-	raw, err := ioutil.ReadFile(cfg_file)
+	raw, err := ioutil.ReadFile(filename)
 	common.FaceIt(err)
 
 	var config ConfigStruct

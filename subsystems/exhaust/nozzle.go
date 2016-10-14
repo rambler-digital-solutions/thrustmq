@@ -6,6 +6,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
+	"log"
 	"net"
 	"runtime"
 )
@@ -69,6 +70,7 @@ func blow(connection net.Conn) {
 				}
 			}
 		} else {
+			log.Printf("Trying to ping client #%d", client.Id)
 			client.Ping()
 			runtime.Gosched()
 		}

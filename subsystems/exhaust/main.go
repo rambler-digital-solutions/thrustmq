@@ -24,9 +24,7 @@ func Init() {
 	go combustion()
 	go turbine()
 
-	var (
-		connection net.Conn
-	)
+	var connection net.Conn
 	for {
 		connection, _ = socket.Accept()
 		go blow(connection)

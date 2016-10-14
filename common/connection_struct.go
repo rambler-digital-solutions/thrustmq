@@ -55,10 +55,10 @@ func (self *ConnectionStruct) GetAcks(batchSize int) ([]byte, error) {
 	return buffer, err
 }
 
-func (self *ConnectionStruct) Ping() error {
+func (self *ConnectionStruct) Ping() {
 	self.SendActualBatchSize(1)
 	message := MessageStruct{}
-	err := self.SendMessage(message)
+	self.SendMessage(message)
+	self.Writer.Flush()
 	self.GetAcks(1)
-	return err
 }
