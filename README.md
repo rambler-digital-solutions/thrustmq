@@ -39,27 +39,35 @@ python clients/python/consumer.py
 Producer:
 ```
 ->
-32 batch size
-64 bits bucketId, 32 bits length, bytes
-64 bits bucketId, 32 bits length, bytes
-64 bits bucketId, 32 bits length, bytes
+BatchSize uint32
+BucketId uint64, Length uint64, data []byte
+BucketId uint64, Length uint64, data []byte
+...
+BucketId uint64, Length uint64, data []byte
 ```
 
 ```
 <-
-ACK: batch_size bytes 1/0
+ack []byte
 ```
 
 Consumer:
 ```
+<-
+BucketId uint64
+BatchSize uint32
+```
+
+```
 ->
-32 batch size
-32 bits length, bytes
-32 bits length, bytes
-32 bits length, bytes
+ActualBatchSize uint32
+Length uint64, data []byte
+Length uint64, data []byte
+...
+Length uint64, data []byte
 ```
 
 ```
 <-
-ACK: batch_size bytes 1/0
+ack []byte
 ```
