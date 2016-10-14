@@ -7,7 +7,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
 	"net"
-	"time"
+	"runtime"
 )
 
 func registerConnect(connection net.Conn) common.ConnectionStruct {
@@ -36,42 +36,41 @@ func registerDisconnect(connectionStruct common.ConnectionStruct) {
 			return
 		}
 	}
-
 }
 
 func blow(connection net.Conn) {
 	client := registerConnect(connection)
 	defer registerDisconnect(client)
 
-	blankMessage := common.MessageStruct{}
-	blankBytes := blankMessage.Serialize()
-
+	var batchSize int
 	for {
-		select {
-		case message := <-client.Channel:
-			bytes := message.Serialize()
+		batchSize = client.NextBatchSize()
+		if batchSize > 0 {
+			var ackArray []common.MessageStruct = make([]common.MessageStruct, batchSize)
 
-			bytesWritten, err := connection.Write(bytes)
-			if err != nil || bytesWritten != len(bytes) {
-				CombustorChannel <- message
-				return
+			client.SendActualBatchSize(batchSize)
+			for i := 0; i < batchSize; i++ {
+				message := <-client.Channel
+				err := client.SendMessage(message)
+				if err != nil {
+					CombustorChannel <- message
+					return
+				}
+				ackArray[i] = message
+				oplog.ExhaustThroughput++
 			}
-
-			bfr := make([]byte, 1)
-			bytesRead, err := connection.Read(bfr)
-			if err != nil || bytesRead != 1 {
-				return
+			acks, _ := client.GetAcks(batchSize)
+			for i := 0; i < batchSize; i++ {
+				message := ackArray[i]
+				if acks[i] == 1 {
+					TurbineChannel <- common.IndexRecord{Connection: client.Id, Position: message.Position, Ack: 2}
+				} else {
+					CombustorChannel <- message
+				}
 			}
-
-			oplog.ExhaustThroughput++
-
-			TurbineChannel <- common.IndexRecord{Connection: client.Id, Position: message.Position, Ack: 2}
-		default:
-			bytesWritten, err := connection.Write(blankBytes)
-			if err != nil || bytesWritten != len(blankBytes) {
-				return
-			}
-			time.Sleep(1e8)
+		} else {
+			client.Ping()
+			runtime.Gosched()
 		}
 	}
 }
