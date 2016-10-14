@@ -54,6 +54,7 @@ ack []byte
 Consumer:
 ```
 <-
+ConsumerId uint64
 BucketId uint64
 BatchSize uint32
 ```

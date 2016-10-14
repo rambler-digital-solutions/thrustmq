@@ -1,27 +1,28 @@
 package exhaust
 
 import (
+	"bufio"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
-	"math/rand"
 	"net"
 	"time"
 )
 
 func registerConnect(connection net.Conn) common.ConnectionStruct {
-	bucket := uint64(rand.Int63())
 	State.ConnectionId++
-	id := State.ConnectionId
-	channel := make(chan common.MessageStruct, config.Exhaust.TurbineBuffer)
 
-	connectionStruct := common.ConnectionStruct{Connection: connection, Bucket: bucket, Id: id, Channel: channel}
+	connectionStruct := common.ConnectionStruct{Connection: connection}
+	connectionStruct.Id = State.ConnectionId
+	connectionStruct.Reader = bufio.NewReaderSize(connection, config.Base.NetworkBuffer)
+	connectionStruct.Writer = bufio.NewWriterSize(connection, config.Base.NetworkBuffer)
 	connectionStruct.Channel = make(common.MessageChannel, config.Exhaust.NozzleBuffer)
+	connectionStruct.DeserializeHeader()
 
-	ConnectionsMap[id] = connectionStruct
+	ConnectionsMap[connectionStruct.Id] = connectionStruct
 
-	logging.NewConsumer(connection.RemoteAddr(), len(ConnectionsMap))
+	logging.NewConsumer(connectionStruct, len(ConnectionsMap))
 	return connectionStruct
 }
 
@@ -39,14 +40,15 @@ func registerDisconnect(connectionStruct common.ConnectionStruct) {
 }
 
 func blow(connection net.Conn) {
-	connectionStruct := registerConnect(connection)
-	defer registerDisconnect(connectionStruct)
+	client := registerConnect(connection)
+	defer registerDisconnect(client)
+
 	blankMessage := common.MessageStruct{}
 	blankBytes := blankMessage.Serialize()
 
 	for {
 		select {
-		case message := <-connectionStruct.Channel:
+		case message := <-client.Channel:
 			bytes := message.Serialize()
 
 			bytesWritten, err := connection.Write(bytes)
@@ -63,7 +65,7 @@ func blow(connection net.Conn) {
 
 			oplog.ExhaustThroughput++
 
-			TurbineChannel <- common.IndexRecord{Connection: connectionStruct.Id, Position: message.Position, Ack: 2}
+			TurbineChannel <- common.IndexRecord{Connection: client.Id, Position: message.Position, Ack: 2}
 		default:
 			bytesWritten, err := connection.Write(blankBytes)
 			if err != nil || bytesWritten != len(blankBytes) {
