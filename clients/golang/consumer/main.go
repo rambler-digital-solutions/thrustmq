@@ -1,7 +1,9 @@
 package consumer
 
 import (
+	"encoding/binary"
 	"fmt"
+	"math/rand"
 	"net"
 	"os"
 )
@@ -23,4 +25,12 @@ func Send(data []byte) {
 
 func Recieve(buffer []byte) {
 	connection.Read(buffer)
+}
+
+func SendHeader(batchSize int, bucketId int) {
+	buffer := make([]byte, 20)
+	binary.LittleEndian.PutUint64(buffer[0:8], uint64(bucketId))
+	binary.LittleEndian.PutUint64(buffer[8:16], uint64(rand.Int63()))
+	binary.LittleEndian.PutUint32(buffer[16:20], uint32(batchSize))
+	Send(buffer)
 }
