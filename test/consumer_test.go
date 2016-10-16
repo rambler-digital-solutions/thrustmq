@@ -29,18 +29,15 @@ func TestPing(t *testing.T) {
 
 	consumer.SendHeader(1, 1)
 
-	consumer.Recieve(buffer)
+	messages := consumer.RecieveBatch()
 
 	expectedBatchSize := 1
 	expectedMessageLength := 0
-
-	actualBatchSize := int(binary.LittleEndian.Uint32(buffer[0:4]))
-	actualMessageLength := int(binary.LittleEndian.Uint32(buffer[4:12]))
-
+	actualBatchSize := len(messages)
 	if actualBatchSize != expectedBatchSize {
 		t.Fatalf("batch size is expected to be %d (%d instead)", expectedBatchSize, actualBatchSize)
 	}
-
+	actualMessageLength := messages[0].Length
 	if actualMessageLength != expectedMessageLength {
 		t.Fatalf("message length is expected to be %d (%d instead)", expectedMessageLength, actualMessageLength)
 	}
@@ -56,22 +53,21 @@ func TestRecipienceOfSingleMessage(t *testing.T) {
 
 	consumer.SendHeader(1, 1)
 
-	consumer.Recieve(buffer)
+	messages := consumer.RecieveBatch()
 
 	expectedBatchSize := 1
 	expectedMessageLength := 8
 	expectedNumber := randomNumber
 
-	actualBatchSize := int(binary.LittleEndian.Uint32(buffer[0:4]))
-	actualMessageLength := int(binary.LittleEndian.Uint32(buffer[4:12]))
-	actualNumber := binary.LittleEndian.Uint64(buffer[8:16])
-
+	actualBatchSize := len(messages)
 	if actualBatchSize != expectedBatchSize {
 		t.Fatalf("batch size is expected to be %d (%d instead)", expectedBatchSize, actualBatchSize)
 	}
+	actualMessageLength := messages[0].Length
 	if actualMessageLength != expectedMessageLength {
 		t.Fatalf("message length is expected to be %d (%d instead)", expectedMessageLength, actualMessageLength)
 	}
+	actualNumber := binary.LittleEndian.Uint64(messages[0].Payload)
 	if actualNumber != expectedNumber {
 		t.Fatalf("recieved number is ne to sent one %d != %d", expectedNumber, actualNumber)
 	}
