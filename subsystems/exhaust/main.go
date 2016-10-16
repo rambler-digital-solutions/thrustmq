@@ -21,12 +21,14 @@ func Init() {
 	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Exhaust.Port))
 	common.FaceIt(err)
 
-	go combustion()
+	// go combustion()
 	go turbine()
 
 	var connection net.Conn
 	for {
-		connection, _ = socket.Accept()
+		connection, err = socket.Accept()
+		common.FaceIt(err)
+
 		go blow(connection)
 	}
 }

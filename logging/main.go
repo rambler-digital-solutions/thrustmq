@@ -26,8 +26,11 @@ func LostProducer(address net.Addr) {
 
 func NewConsumer(connectionStruct common.ConnectionStruct, length int) {
 	address := connectionStruct.Connection.RemoteAddr()
-	log.Printf("new consumer %s %s (%d connections)", address.Network(), address.String(), length)
-	log.Printf("id: %d clientId: %d bucketId: %d batchSize: %d", connectionStruct.Id, connectionStruct.ClientId, connectionStruct.Bucket, connectionStruct.BatchSize)
+	log.Printf("new consumer #%d %s %s (%d connections)", connectionStruct.Id, address.Network(), address.String(), length)
+}
+
+func NewConsumerHeader(connectionStruct common.ConnectionStruct) {
+	log.Printf("consumer #%d subscribed to bucket %d with batch size %d", connectionStruct.Id, connectionStruct.BucketId, connectionStruct.BatchSize)
 }
 
 func LostConsumer(address net.Addr, length int) {

@@ -19,11 +19,13 @@ func registerConnect(connection net.Conn) common.ConnectionStruct {
 	connectionStruct.Reader = bufio.NewReaderSize(connection, config.Base.NetworkBuffer)
 	connectionStruct.Writer = bufio.NewWriterSize(connection, config.Base.NetworkBuffer)
 	connectionStruct.Channel = make(common.MessageChannel, config.Exhaust.NozzleBuffer)
-	connectionStruct.DeserializeHeader()
 
 	ConnectionsMap[connectionStruct.Id] = connectionStruct
-
 	logging.NewConsumer(connectionStruct, len(ConnectionsMap))
+
+	connectionStruct.DeserializeHeader()
+	logging.NewConsumerHeader(connectionStruct)
+
 	return connectionStruct
 }
 
@@ -45,13 +47,14 @@ func blow(connection net.Conn) {
 
 	var batchSize int
 	for {
-		batchSize = client.NextBatchSize()
+		batchSize = common.Min(int(client.BatchSize), len(CombustorChannel))
+
 		if batchSize > 0 {
 			var ackArray []common.MessageStruct = make([]common.MessageStruct, batchSize)
 
 			client.SendActualBatchSize(batchSize)
 			for i := 0; i < batchSize; i++ {
-				message := <-client.Channel
+				message := <-CombustorChannel
 				err := client.SendMessage(message)
 				if err != nil {
 					CombustorChannel <- message
@@ -60,6 +63,8 @@ func blow(connection net.Conn) {
 				ackArray[i] = message
 				oplog.ExhaustThroughput++
 			}
+			client.Writer.Flush()
+
 			acks, _ := client.GetAcks(batchSize)
 			for i := 0; i < batchSize; i++ {
 				message := ackArray[i]

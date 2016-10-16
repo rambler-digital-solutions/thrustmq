@@ -14,22 +14,41 @@ import (
 var initialized bool = false
 var buffer []byte = make([]byte, 1024)
 
-func bootstrap() {
-	if !initialized {
-		logging.Init()
-		go exhaust.Init()
-		time.Sleep(1e5)
-		consumer.Connect()
-		initialized = true
+func checkCombustor(t *testing.T, size int) {
+	if len(exhaust.CombustorChannel) != size {
+		t.Fatalf("combustor channel size %d (should be %d)", len(exhaust.CombustorChannel), size)
 	}
 }
 
-func TestPing(t *testing.T) {
-	bootstrap()
+func checkConnections(t *testing.T, size int) {
+	time.Sleep(1e7)
+	if len(exhaust.ConnectionsMap) != size {
+		t.Fatalf("%d connections instead of %d", len(exhaust.ConnectionsMap), size)
+	}
+}
 
-	consumer.SendHeader(1, 1)
+func bootstrap(t *testing.T) {
+	if !initialized {
+		rand.Seed(time.Now().UTC().UnixNano())
+		logging.Init()
+		go exhaust.Init()
+		time.Sleep(1e6)
+		initialized = true
+	}
+
+	consumer.Disconnect()
+	checkConnections(t, 0)
+	consumer.Connect()
+	checkConnections(t, 1)
+}
+
+func TestPing(t *testing.T) {
+	bootstrap(t)
+
+	consumer.SendHeader(1, uint64(rand.Int63()))
 
 	messages := consumer.RecieveBatch()
+	consumer.SendAcks(1)
 
 	expectedBatchSize := 1
 	expectedMessageLength := 0
@@ -44,16 +63,20 @@ func TestPing(t *testing.T) {
 }
 
 func TestRecipienceOfSingleMessage(t *testing.T) {
-	bootstrap()
-
 	// add pending message with random number
 	randomNumber := uint64(rand.Int63())
 	binary.LittleEndian.PutUint64(buffer, randomNumber)
-	exhaust.CombustorChannel <- common.MessageStruct{Length: 8, Payload: buffer}
+	exhaust.CombustorChannel <- common.MessageStruct{Length: 8, Payload: buffer[0:8]}
+	checkCombustor(t, 1)
 
-	consumer.SendHeader(1, 1)
+	bootstrap(t)
+
+	consumer.SendHeader(1, uint64(rand.Uint32()))
 
 	messages := consumer.RecieveBatch()
+	checkCombustor(t, 0)
+
+	consumer.SendAcks(1)
 
 	expectedBatchSize := 1
 	expectedMessageLength := 8
@@ -70,5 +93,41 @@ func TestRecipienceOfSingleMessage(t *testing.T) {
 	actualNumber := binary.LittleEndian.Uint64(messages[0].Payload)
 	if actualNumber != expectedNumber {
 		t.Fatalf("recieved number is ne to sent one %d != %d", expectedNumber, actualNumber)
+	}
+}
+
+func TestRecipienceOfMultipleMessage(t *testing.T) {
+	batchSize := 3
+	randomNumbers := make([]uint64, batchSize)
+	for i := 0; i < batchSize; i++ {
+		randomNumbers[i] = uint64(rand.Int63())
+		payload := make([]byte, 8)
+		binary.LittleEndian.PutUint64(payload, randomNumbers[i])
+		exhaust.CombustorChannel <- common.MessageStruct{Length: 8, Payload: payload}
+	}
+
+	bootstrap(t)
+	consumer.SendHeader(batchSize, uint64(rand.Int63()))
+
+	messages := consumer.RecieveBatch()
+	consumer.SendAcks(batchSize)
+
+	expectedBatchSize := batchSize
+	expectedMessageLength := 8
+
+	actualBatchSize := len(messages)
+	if actualBatchSize != expectedBatchSize {
+		t.Fatalf("batch size is expected to be %d (%d instead)", expectedBatchSize, actualBatchSize)
+	}
+
+	for i := 0; i < batchSize; i++ {
+		actualMessageLength := messages[i].Length
+		if actualMessageLength != expectedMessageLength {
+			t.Fatalf("message length is expected to be %d (%d instead)", expectedMessageLength, actualMessageLength)
+		}
+		actualNumber := binary.LittleEndian.Uint64(messages[i].Payload)
+		if !common.Contains(randomNumbers, actualNumber) {
+			t.Fatalf("recieved number %d was not sent at all ¯\\_(ツ)_/¯", actualNumber)
+		}
 	}
 }

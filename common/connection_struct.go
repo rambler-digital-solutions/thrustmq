@@ -9,7 +9,7 @@ import (
 
 type ConnectionStruct struct {
 	Connection net.Conn
-	Bucket     uint64
+	BucketId     uint64
 	ClientId   uint64
 	BatchSize  uint32
 	Id         uint64
@@ -29,12 +29,8 @@ func (self *ConnectionStruct) DeserializeHeader() {
 	FaceIt(err)
 
 	self.ClientId = binary.LittleEndian.Uint64(buffer[0:8])
-	self.Bucket = binary.LittleEndian.Uint64(buffer[8:16])
+	self.BucketId = binary.LittleEndian.Uint64(buffer[8:16])
 	self.BatchSize = binary.LittleEndian.Uint32(buffer[16:20])
-}
-
-func (self *ConnectionStruct) NextBatchSize() int {
-	return min(int(self.BatchSize), len(self.Channel))
 }
 
 func (self *ConnectionStruct) SendActualBatchSize(batchSize int) {
