@@ -4,6 +4,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/clients/golang/producer"
 	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
+	"math/rand"
 	"testing"
 	"time"
 )
@@ -14,6 +15,7 @@ func bootstrap(t *testing.T) {
 	if !initialized {
 		logging.Init()
 		go intake.Init()
+		rand.Seed(time.Now().UTC().UnixNano())
 		time.Sleep(1e6)
 		initialized = true
 	}
@@ -36,5 +38,29 @@ func TestSendOneMessage(t *testing.T) {
 
 	if acks[0] != 1 {
 		t.Fatalf("ack reports error (code %d)", acks[0])
+	}
+}
+
+func TestSendSeveralMessages(t *testing.T) {
+	bootstrap(t)
+
+	numberOfMessages := 3
+	messages := make([]producer.Message, numberOfMessages)
+	for i := 0; i < numberOfMessages; i++ {
+		payload := make([]byte, rand.Intn(1024))
+		messages[i] = producer.Message{Length: len(payload), Payload: payload}
+	}
+
+	producer.SendBatch(messages)
+	acks := producer.GetAcks(numberOfMessages)
+
+	if len(acks) != numberOfMessages {
+		t.Fatalf("got %d acks instead of %d", len(acks), numberOfMessages)
+	}
+
+	for i := 0; i < numberOfMessages; i++ {
+		if acks[i] != 1 {
+			t.Fatalf("ack #%d reports error (code %d)", i, acks[0])
+		}
 	}
 }
