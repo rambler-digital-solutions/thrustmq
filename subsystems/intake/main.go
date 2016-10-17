@@ -19,9 +19,7 @@ func Init() {
 	go compressorStage1()
 	go compressorStage2()
 
-	var (
-		connection net.Conn
-	)
+	var connection net.Conn
 
 	for {
 		connection, err = socket.Accept()

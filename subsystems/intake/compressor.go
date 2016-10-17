@@ -56,6 +56,6 @@ func compressorStage2() {
 		Position += common.IndexSize
 		Offset += uint64(message.Length)
 
-		message.AckChannel <- true
+		message.AckChannel <- message.PositionInBatch
 	}
 }

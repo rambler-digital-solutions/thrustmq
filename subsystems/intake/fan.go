@@ -8,6 +8,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
 	"io"
+	"log"
 	"net"
 )
 
@@ -15,7 +16,7 @@ func getBatchSize(reader *bufio.Reader) int {
 	batchSizeBuffer := make([]byte, 4)
 	_, err := io.ReadFull(reader, batchSizeBuffer)
 	if err != nil {
-		return -1
+		return 0
 	}
 	return int(binary.LittleEndian.Uint32(batchSizeBuffer))
 }
@@ -28,25 +29,23 @@ func suck(connection net.Conn) {
 
 	for {
 		batchSize := getBatchSize(reader)
-		if batchSize < 0 {
-			return
-		}
-
-		ackChannel := make(chan bool, batchSize)
-		message := common.MessageStruct{AckChannel: ackChannel}
+		ackChannel := make(chan int, batchSize)
 
 		for i := 0; i < batchSize; i++ {
+			message := common.MessageStruct{}
+			message.AckChannel = ackChannel
+			message.PositionInBatch = i
 			if !message.Deserialize(reader) {
+				log.Print("Could not deserialize message...")
 				return
 			}
 			CompressorChannel <- message
-			oplog.IntakeThroughput++
 		}
 
 		response := make([]byte, batchSize)
 		for i := 0; i < batchSize; i++ {
-			<-ackChannel
-			response[i] = 1
+			response[<-ackChannel] = 1
+			oplog.IntakeThroughput++
 		}
 
 		connection.Write(response)

@@ -9,11 +9,12 @@ import (
 type MessageChannel chan MessageStruct
 type MessageChannels []MessageChannel
 type MessageStruct struct {
-	AckChannel chan bool
-	Payload    []byte
-	BucketId   uint64
-	Length     uint32
-	Position   uint64
+	AckChannel      chan int
+	Payload         []byte
+	BucketId        uint64
+	Length          uint32
+	Position        uint64
+	PositionInBatch int
 }
 
 var MessageHeaderSize = 12
