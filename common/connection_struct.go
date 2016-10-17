@@ -9,7 +9,7 @@ import (
 
 type ConnectionStruct struct {
 	Connection net.Conn
-	BucketId     uint64
+	BucketId   uint64
 	ClientId   uint64
 	BatchSize  uint32
 	Id         uint64

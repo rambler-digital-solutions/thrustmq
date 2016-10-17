@@ -43,10 +43,12 @@ func suck(connection net.Conn) {
 			oplog.IntakeThroughput++
 		}
 
+		response := make([]byte, batchSize)
 		for i := 0; i < batchSize; i++ {
 			<-ackChannel
+			response[i] = 1
 		}
 
-		connection.Write([]byte{'y'})
+		connection.Write(response)
 	}
 }

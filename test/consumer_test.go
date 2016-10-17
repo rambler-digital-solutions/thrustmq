@@ -96,7 +96,7 @@ func TestRecipienceOfSingleMessage(t *testing.T) {
 	}
 }
 
-func TestRecipienceOfMultipleMessage(t *testing.T) {
+func TestRecipienceOfMultipleMessages(t *testing.T) {
 	batchSize := 3
 	randomNumbers := make([]uint64, batchSize)
 	for i := 0; i < batchSize; i++ {

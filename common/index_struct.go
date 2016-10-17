@@ -9,7 +9,7 @@ type IndexRecord struct {
 	Position   uint64
 	Offset     uint64
 	Length     uint64
-	BucketId     uint64
+	BucketId   uint64
 	Connection uint64
 	Ack        byte
 }

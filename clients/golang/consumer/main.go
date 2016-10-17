@@ -54,7 +54,6 @@ func SendAcks(batchSize int) {
 	Send(buffer)
 }
 
-
 func RecieveBatch() []Message {
 	buffer := make([]byte, 4)
 	Recieve(buffer)

@@ -8,10 +8,10 @@ func Min(a int, b int) int {
 }
 
 func Contains(s []uint64, e uint64) bool {
-    for _, a := range s {
-        if a == e {
-            return true
-        }
-    }
-    return false
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }

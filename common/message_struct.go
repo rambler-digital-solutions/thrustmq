@@ -11,7 +11,7 @@ type MessageChannels []MessageChannel
 type MessageStruct struct {
 	AckChannel chan bool
 	Payload    []byte
-	BucketId     uint64
+	BucketId   uint64
 	Length     uint32
 	Position   uint64
 }
