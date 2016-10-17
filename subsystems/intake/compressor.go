@@ -15,8 +15,8 @@ func writeData(file *bufio.Writer, message common.MessageStruct) {
 
 func writeIndex(file *bufio.Writer, message common.MessageStruct, offset uint64) {
 	indexRecord := common.IndexRecord{}
-	indexRecord.Offset = offset
-	indexRecord.Length = uint64(message.Length)
+	indexRecord.DataSeek = offset
+	indexRecord.DataLength = uint64(message.Length)
 	indexRecord.BucketId = uint64(message.BucketId)
 
 	file.Write(indexRecord.Serialize())
@@ -40,9 +40,9 @@ func compressorStage2() {
 	common.FaceIt(err)
 
 	ptr, err := indexFile.Seek(0, os.SEEK_CUR)
-	Position := uint64(ptr)
+	IndexOffset := uint64(ptr)
 	ptr, err = indexFile.Seek(0, os.SEEK_CUR)
-	Offset := uint64(ptr)
+	DataOffset := uint64(ptr)
 
 	dataWriter := bufio.NewWriterSize(dataFile, config.Base.FileBuffer)
 	indexWriter := bufio.NewWriterSize(indexFile, config.Base.FileBuffer)
@@ -51,11 +51,11 @@ func compressorStage2() {
 		message := <-Stage2CompressorChannel
 
 		writeData(dataWriter, message)
-		writeIndex(indexWriter, message, Offset)
+		writeIndex(indexWriter, message, DataOffset)
 
-		Position += common.IndexSize
-		Offset += uint64(message.Length)
+		IndexOffset += common.IndexSize
+		DataOffset += uint64(message.Length)
 
-		message.AckChannel <- message.PositionInBatch
+		message.AckChannel <- message.NumberInBatch
 	}
 }

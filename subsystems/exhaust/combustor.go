@@ -25,7 +25,7 @@ func passAndFetchMessage(connectionStruct common.ConnectionStruct, message commo
 	case connectionStruct.Channel <- message:
 		indexRecord := common.IndexRecord{}
 		indexRecord.Connection = connectionStruct.Id
-		indexRecord.Position = message.Position
+		indexRecord.Seek = message.IndexSeek
 		indexRecord.Ack = 1
 
 		TurbineChannel <- indexRecord

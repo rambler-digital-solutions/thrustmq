@@ -9,12 +9,13 @@ import (
 type MessageChannel chan MessageStruct
 type MessageChannels []MessageChannel
 type MessageStruct struct {
-	AckChannel      chan int
-	Payload         []byte
-	BucketId        uint64
-	Length          uint32
-	Position        uint64
-	PositionInBatch int
+	AckChannel    chan int
+	Payload       []byte
+	BucketId      uint64
+	Length        uint32
+	IndexSeek     uint64
+	DataSeek      uint64
+	NumberInBatch int
 }
 
 var MessageHeaderSize = 12
@@ -47,10 +48,10 @@ func (self *MessageStruct) Serialize() []byte {
 
 func (self *MessageStruct) Load(file *os.File, record IndexRecord) {
 	self.BucketId = record.BucketId
-	self.Length = uint32(record.Length)
-	self.Position = record.Position
+	self.Length = uint32(record.DataLength)
+	self.DataSeek = record.DataSeek
 
-	_, err := file.Seek(int64(record.Offset), os.SEEK_SET)
+	_, err := file.Seek(int64(record.DataSeek), os.SEEK_SET)
 	if err != nil {
 		return
 	}

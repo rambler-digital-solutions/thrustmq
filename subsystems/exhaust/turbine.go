@@ -30,18 +30,18 @@ func fillMapa(mapa map[uint64]common.IndexRecord) {
 	for {
 		select {
 		case marker := <-TurbineChannel:
-			if _, ok := mapa[marker.Position]; ok {
-				if mapa[marker.Position].Ack < marker.Ack {
+			if _, ok := mapa[marker.Seek]; ok {
+				if mapa[marker.Seek].Ack < marker.Ack {
 					if marker.Ack > 2 {
 						marker.Ack = 0
 					}
-					mapa[marker.Position] = marker
+					mapa[marker.Seek] = marker
 				}
 			} else {
 				if marker.Ack > 2 {
 					marker.Ack = 0
 				}
-				mapa[marker.Position] = marker
+				mapa[marker.Seek] = marker
 			}
 		default:
 			return
@@ -55,7 +55,7 @@ func markPass(file *os.File) {
 	fillMapa(mapa)
 
 	for _, marker := range mapa {
-		_, err := file.Seek(int64(marker.Position), os.SEEK_SET)
+		_, err := file.Seek(int64(marker.Seek), os.SEEK_SET)
 		common.FaceIt(err)
 
 		record := common.IndexRecord{}
@@ -64,7 +64,7 @@ func markPass(file *os.File) {
 		record.Ack = marker.Ack
 		record.Connection = marker.Connection
 
-		_, err = file.Seek(int64(marker.Position), os.SEEK_SET)
+		_, err = file.Seek(int64(marker.Seek), os.SEEK_SET)
 		common.FaceIt(err)
 		file.Write(record.Serialize())
 	}
@@ -106,7 +106,7 @@ func fluxPass(file *os.File, dataFile *os.File) {
 			}
 			if _, ok := ConnectionsMap[record.Connection]; !ok {
 				record.Ack = 3
-				record.Position = ptr
+				record.Seek = ptr
 				oplog.Requeued++
 
 				select {

@@ -69,7 +69,7 @@ func blow(connection net.Conn) {
 			for i := 0; i < batchSize; i++ {
 				message := ackArray[i]
 				if acks[i] == 1 {
-					TurbineChannel <- common.IndexRecord{Connection: client.Id, Position: message.Position, Ack: 2}
+					TurbineChannel <- common.IndexRecord{Connection: client.Id, Seek: message.IndexSeek, Ack: 2}
 				} else {
 					CombustorChannel <- message
 				}

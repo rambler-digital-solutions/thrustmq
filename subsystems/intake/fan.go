@@ -34,7 +34,7 @@ func suck(connection net.Conn) {
 		for i := 0; i < batchSize; i++ {
 			message := common.MessageStruct{}
 			message.AckChannel = ackChannel
-			message.PositionInBatch = i
+			message.NumberInBatch = i
 			if !message.Deserialize(reader) {
 				log.Print("Could not deserialize message...")
 				return
