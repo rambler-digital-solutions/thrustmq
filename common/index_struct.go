@@ -12,39 +12,33 @@ type IndexRecord struct {
 	BucketId   uint64
 	Connection uint64
 
-	Ack byte
-
-	// TODO: replace Ack with explicit:
-	// Created uint64
-	// Enqueued uint64
-	// Sent uint64
-	// Delivered uint64
-	// Retries uint32
-	// could use time.Now().UnixNano() !
+	Created   uint64
+	Enqueued  uint64
+	Sent      uint64
+	Delivered uint64
+	Retries   uint64
 }
 
-var IndexSize uint64 = 33
+var IndexSize uint64 = 8 * 9
+
+func (self IndexRecord) slots() []*uint64 {
+	return []*uint64{&self.DataSeek, &self.DataLength, &self.BucketId, &self.Connection, &self.Created, &self.Enqueued, &self.Sent, &self.Delivered, &self.Retries}
+}
 
 func (self IndexRecord) Serialize() []byte {
 	buffer := make([]byte, IndexSize)
-	binary.LittleEndian.PutUint64(buffer[0:8], self.DataSeek)
-	binary.LittleEndian.PutUint64(buffer[8:16], self.DataLength)
-	binary.LittleEndian.PutUint64(buffer[16:24], self.BucketId)
-	binary.LittleEndian.PutUint64(buffer[24:32], self.Connection)
-	buffer[32] = self.Ack
+	slots := self.slots()
+	for i := range slots {
+		binary.LittleEndian.PutUint64(buffer[i*8:(i+1)*8], *slots[i])
+	}
 	return buffer
 }
 
-func (self *IndexRecord) Deserialize(reader io.Reader) bool {
+func (self *IndexRecord) Deserialize(reader io.Reader) {
 	buffer := make([]byte, IndexSize)
-	bytesRead, _ := io.ReadFull(reader, buffer)
-	if uint64(bytesRead) != IndexSize {
-		return false
+	io.ReadFull(reader, buffer)
+	slots := self.slots()
+	for i := range slots {
+		*slots[i] = binary.LittleEndian.Uint64(buffer[i*8 : (i+1)*8])
 	}
-	self.DataSeek = binary.LittleEndian.Uint64(buffer[0:8])
-	self.DataLength = binary.LittleEndian.Uint64(buffer[8:16])
-	self.BucketId = binary.LittleEndian.Uint64(buffer[16:24])
-	self.Connection = binary.LittleEndian.Uint64(buffer[24:32])
-	self.Ack = buffer[32]
-	return true
 }

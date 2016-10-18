@@ -41,6 +41,37 @@ func registerDisconnect(connectionStruct common.ConnectionStruct) {
 	}
 }
 
+func sendBatch(client common.ConnectionStruct, batchSize int, ackArray []common.MessageStruct) {
+	client.SendActualBatchSize(batchSize)
+	for i := 0; i < batchSize; i++ {
+		message := <-CombustorChannel
+		err := client.SendMessage(message)
+		if err != nil {
+			CombustorChannel <- message
+			return
+		}
+		ackArray[i] = message
+		oplog.ExhaustThroughput++
+	}
+	client.Writer.Flush()
+}
+
+func recieveAcks(client common.ConnectionStruct, batchSize int, ackArray []common.MessageStruct) {
+	acks, _ := client.GetAcks(batchSize)
+	for i := 0; i < batchSize; i++ {
+		message := ackArray[i]
+		if acks[i] == 1 {
+			record := common.IndexRecord{}
+			record.Connection = client.Id
+			record.Seek = message.IndexSeek
+			record.Delivered = common.TimestampUint64()
+			TurbineChannel <- record
+		} else {
+			CombustorChannel <- message
+		}
+	}
+}
+
 func blow(connection net.Conn) {
 	client := registerConnect(connection)
 	defer registerDisconnect(client)
@@ -50,30 +81,9 @@ func blow(connection net.Conn) {
 		batchSize = common.Min(int(client.BatchSize), len(CombustorChannel))
 
 		if batchSize > 0 {
-			var ackArray []common.MessageStruct = make([]common.MessageStruct, batchSize)
-
-			client.SendActualBatchSize(batchSize)
-			for i := 0; i < batchSize; i++ {
-				message := <-CombustorChannel
-				err := client.SendMessage(message)
-				if err != nil {
-					CombustorChannel <- message
-					return
-				}
-				ackArray[i] = message
-				oplog.ExhaustThroughput++
-			}
-			client.Writer.Flush()
-
-			acks, _ := client.GetAcks(batchSize)
-			for i := 0; i < batchSize; i++ {
-				message := ackArray[i]
-				if acks[i] == 1 {
-					TurbineChannel <- common.IndexRecord{Connection: client.Id, Seek: message.IndexSeek, Ack: 2}
-				} else {
-					CombustorChannel <- message
-				}
-			}
+			ackArray := make([]common.MessageStruct, batchSize)
+			sendBatch(client, batchSize, ackArray)
+			recieveAcks(client, batchSize, ackArray)
 		} else {
 			log.Printf("Trying to ping client #%d", client.Id)
 			client.Ping()

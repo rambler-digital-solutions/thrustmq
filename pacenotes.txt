@@ -1,3 +1,3 @@
 - bufio vastly improves performance (because of less context switches)
 - you can't read/write without seek
-- 
+- ...

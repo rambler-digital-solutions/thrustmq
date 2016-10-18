@@ -6,7 +6,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
 	"os"
-	"time"
+	"runtime"
 )
 
 func turbine() {
@@ -22,7 +22,7 @@ func turbine() {
 		if len(ConnectionsMap) > 0 {
 			fluxPass(indexFile, dataFile)
 		}
-		time.Sleep(1e6)
+		runtime.Gosched()
 	}
 }
 
