@@ -3,6 +3,7 @@ package common
 import (
 	"encoding/binary"
 	"io"
+	"os"
 )
 
 type IndexRecord struct {
@@ -34,11 +35,31 @@ func (self IndexRecord) Serialize() []byte {
 	return buffer
 }
 
-func (self *IndexRecord) Deserialize(reader io.Reader) {
+func (self IndexRecord) Deserialize(reader io.Reader) {
 	buffer := make([]byte, IndexSize)
 	io.ReadFull(reader, buffer)
 	slots := self.slots()
 	for i := range slots {
 		*slots[i] = binary.LittleEndian.Uint64(buffer[i*8 : (i+1)*8])
 	}
+}
+
+func (self IndexRecord) Merge(other IndexRecord) {
+	slots1 := self.slots()
+	slots2 := self.slots()
+	for i := range slots1 {
+		*slots1[i] = Max(*slots1[i], *slots2[i])
+	}
+}
+
+func (self IndexRecord) ForgeMessage(dataFile *os.File) MessageStruct {
+	message := MessageStruct{}
+
+	message.BucketId = self.BucketId
+	message.Length = uint32(self.DataLength)
+	message.IndexSeek = self.Seek
+	message.DataSeek = self.DataSeek
+	message.LoadData(dataFile)
+
+	return message
 }

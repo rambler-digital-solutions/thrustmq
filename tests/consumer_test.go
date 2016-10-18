@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var initialized bool = false
+var exhaustInitialized bool = false
 var buffer []byte = make([]byte, 1024)
 
 func checkCombustor(t *testing.T, size int) {
@@ -27,13 +27,13 @@ func checkConnections(t *testing.T, size int) {
 	}
 }
 
-func bootstrap(t *testing.T) {
-	if !initialized {
+func bootstrapExhaust(t *testing.T) {
+	if !exhaustInitialized {
 		rand.Seed(time.Now().UTC().UnixNano())
 		logging.Init()
 		go exhaust.Init()
 		time.Sleep(1e6)
-		initialized = true
+		exhaustInitialized = true
 	}
 
 	consumer.Disconnect()
@@ -43,7 +43,7 @@ func bootstrap(t *testing.T) {
 }
 
 func TestPing(t *testing.T) {
-	bootstrap(t)
+	bootstrapExhaust(t)
 
 	consumer.SendHeader(1, uint64(rand.Int63()))
 
@@ -69,7 +69,7 @@ func TestRecipienceOfSingleMessage(t *testing.T) {
 	exhaust.CombustorChannel <- common.MessageStruct{Length: 8, Payload: buffer[0:8]}
 	checkCombustor(t, 1)
 
-	bootstrap(t)
+	bootstrapExhaust(t)
 
 	consumer.SendHeader(1, uint64(rand.Uint32()))
 
@@ -106,7 +106,7 @@ func TestRecipienceOfMultipleMessages(t *testing.T) {
 		exhaust.CombustorChannel <- common.MessageStruct{Length: 8, Payload: payload}
 	}
 
-	bootstrap(t)
+	bootstrapExhaust(t)
 	consumer.SendHeader(batchSize, uint64(rand.Int63()))
 
 	messages := consumer.RecieveBatch()

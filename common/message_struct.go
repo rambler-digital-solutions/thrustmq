@@ -46,12 +46,8 @@ func (self *MessageStruct) Serialize() []byte {
 	return buffer
 }
 
-func (self *MessageStruct) Load(file *os.File, record IndexRecord) {
-	self.BucketId = record.BucketId
-	self.Length = uint32(record.DataLength)
-	self.DataSeek = record.DataSeek
-
-	_, err := file.Seek(int64(record.DataSeek), os.SEEK_SET)
+func (self *MessageStruct) LoadData(file *os.File) {
+	_, err := file.Seek(int64(self.DataSeek), os.SEEK_SET)
 	if err != nil {
 		return
 	}
