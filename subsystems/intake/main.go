@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
+	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"net"
 )
 
@@ -13,6 +14,8 @@ var (
 )
 
 func Init() {
+	logging.Debug("Init intake")
+
 	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Intake.Port))
 	common.FaceIt(err)
 

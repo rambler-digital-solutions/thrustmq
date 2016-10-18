@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"log"
 )
 
 type Message struct {
@@ -26,6 +27,7 @@ func Connect() {
 
 func Disconnect() {
 	if connection != nil {
+		log.Print("Closing!!!")
 		connection.Close()
 	}
 }
@@ -51,6 +53,7 @@ func SendAcks(batchSize int) {
 	for i := 0; i < batchSize; i++ {
 		buffer[i] = 1
 	}
+	fmt.Println(buffer)
 	Send(buffer)
 }
 

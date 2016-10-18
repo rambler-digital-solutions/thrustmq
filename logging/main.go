@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 )
 
 func Init() {
@@ -35,4 +36,10 @@ func NewConsumerHeader(connectionStruct common.ConnectionStruct) {
 
 func LostConsumer(address net.Addr, length int) {
 	log.Printf("lost consumer %s %s (%d connections)", address.Network(), address.String(), length)
+}
+
+func Debug(messages ...string) {
+	if os.Getenv("GODEBUG") != "" {
+		log.Print("[DEBUG] ", strings.Join(messages, " "))
+	}
 }

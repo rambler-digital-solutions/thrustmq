@@ -5,6 +5,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"net"
+	"github.com/rambler-digital-solutions/thrustmq/logging"
 )
 
 var (
@@ -16,13 +17,15 @@ var (
 )
 
 func Init() {
+	logging.Debug("Init exhaust")
+
 	go saveState()
 
 	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Exhaust.Port))
 	common.FaceIt(err)
 
-	go combustion()
-	go turbine()
+	//go combustion()
+	//go turbine()
 
 	var connection net.Conn
 	for {

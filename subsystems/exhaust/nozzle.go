@@ -6,9 +6,11 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
-	"log"
 	"net"
 	"runtime"
+	"strconv"
+	"time"
+	"log"
 )
 
 func registerConnect(connection net.Conn) common.ConnectionStruct {
@@ -32,13 +34,6 @@ func registerConnect(connection net.Conn) common.ConnectionStruct {
 func registerDisconnect(connectionStruct common.ConnectionStruct) {
 	delete(ConnectionsMap, connectionStruct.Id)
 	logging.LostConsumer(connectionStruct.Connection.RemoteAddr(), len(ConnectionsMap))
-	for {
-		select {
-		case CombustorChannel <- <-connectionStruct.Channel:
-		default:
-			return
-		}
-	}
 }
 
 func sendBatch(client common.ConnectionStruct, batchSize int, ackArray []common.MessageStruct) {
@@ -47,7 +42,10 @@ func sendBatch(client common.ConnectionStruct, batchSize int, ackArray []common.
 		message := <-CombustorChannel
 		err := client.SendMessage(message)
 		if err != nil {
-			CombustorChannel <- message
+			log.Print(err)
+			if message.Length > 0 {
+				CombustorChannel <- message
+			}
 			return
 		}
 		ackArray[i] = message
@@ -67,7 +65,9 @@ func recieveAcks(client common.ConnectionStruct, batchSize int, ackArray []commo
 			record.Delivered = common.TimestampUint64()
 			TurbineChannel <- record
 		} else {
-			CombustorChannel <- message
+			logging.Debug("returning message to combustor")
+			log.Print(acks[i])
+			// CombustorChannel <- message
 		}
 	}
 }
@@ -85,9 +85,12 @@ func blow(connection net.Conn) {
 			sendBatch(client, batchSize, ackArray)
 			recieveAcks(client, batchSize, ackArray)
 		} else {
-			log.Printf("Trying to ping client #%d", client.Id)
-			client.Ping()
+			logging.Debug("Trying to ping client", strconv.FormatInt(int64(client.Id), 4), "...")
+			time.Sleep(1e8)
 			runtime.Gosched()
+			if !client.Ping() {
+				return
+			}
 		}
 	}
 }

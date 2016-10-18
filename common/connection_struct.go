@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 	"net"
+	"log"
 )
 
 type ConnectionStruct struct {
@@ -48,13 +49,20 @@ func (self *ConnectionStruct) SendMessage(message MessageStruct) error {
 func (self *ConnectionStruct) GetAcks(batchSize int) ([]byte, error) {
 	buffer := make([]byte, batchSize)
 	_, err := io.ReadFull(self.Reader, buffer)
+	log.Print("getting ", batchSize, " acks ", buffer)
 	return buffer, err
 }
 
-func (self *ConnectionStruct) Ping() {
+func (self *ConnectionStruct) Ping() bool {
 	self.SendActualBatchSize(1)
 	message := MessageStruct{}
 	self.SendMessage(message)
 	self.Writer.Flush()
-	self.GetAcks(1)
+
+	acks, _ := self.GetAcks(1)
+	if acks[0] != 1 {
+		return false
+	}
+
+	return true
 }

@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"testing"
 	"time"
+	"log"
 )
 
 var exhaustInitialized bool = false
@@ -21,7 +22,7 @@ func checkCombustor(t *testing.T, size int) {
 }
 
 func checkConnections(t *testing.T, size int) {
-	time.Sleep(1e7)
+	time.Sleep(1e8)
 	if len(exhaust.ConnectionsMap) != size {
 		t.Fatalf("%d connections instead of %d", len(exhaust.ConnectionsMap), size)
 	}
@@ -31,8 +32,9 @@ func bootstrapExhaust(t *testing.T) {
 	if !exhaustInitialized {
 		rand.Seed(time.Now().UTC().UnixNano())
 		logging.Init()
+		exhaust.State.Tail = exhaust.State.Head
 		go exhaust.Init()
-		time.Sleep(1e6)
+		time.Sleep(1e8)
 		exhaustInitialized = true
 	}
 
@@ -43,6 +45,9 @@ func bootstrapExhaust(t *testing.T) {
 }
 
 func TestPing(t *testing.T) {
+	consumer.Disconnect()
+	log.Println("PING")
+
 	bootstrapExhaust(t)
 
 	consumer.SendHeader(1, uint64(rand.Int63()))
@@ -63,6 +68,8 @@ func TestPing(t *testing.T) {
 }
 
 func TestRecipienceOfSingleMessage(t *testing.T) {
+	consumer.Disconnect()
+	log.Println("ONE")
 	// add pending message with random number
 	randomNumber := uint64(rand.Int63())
 	binary.LittleEndian.PutUint64(buffer, randomNumber)
@@ -97,6 +104,8 @@ func TestRecipienceOfSingleMessage(t *testing.T) {
 }
 
 func TestRecipienceOfMultipleMessages(t *testing.T) {
+	consumer.Disconnect()
+	log.Println("MUL")
 	batchSize := 3
 	randomNumbers := make([]uint64, batchSize)
 	for i := 0; i < batchSize; i++ {
@@ -108,6 +117,8 @@ func TestRecipienceOfMultipleMessages(t *testing.T) {
 
 	bootstrapExhaust(t)
 	consumer.SendHeader(batchSize, uint64(rand.Int63()))
+
+	log.Println("header!")
 
 	messages := consumer.RecieveBatch()
 	consumer.SendAcks(batchSize)
@@ -127,7 +138,7 @@ func TestRecipienceOfMultipleMessages(t *testing.T) {
 		}
 		actualNumber := binary.LittleEndian.Uint64(messages[i].Payload)
 		if !common.Contains(randomNumbers, actualNumber) {
-			t.Fatalf("recieved number %d was not sent at all ¯\\_(ツ)_/¯", actualNumber)
+			t.Fatalf("recieved number %d was not sent at all cat ", actualNumber)
 		}
 	}
 }

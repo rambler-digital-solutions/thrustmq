@@ -3,8 +3,10 @@ package exhaust
 import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
+  "github.com/rambler-digital-solutions/thrustmq/logging"
 	"os"
 	"runtime"
+  "strconv"
 )
 
 var combustorThreshold = config.Exhaust.CombustionBuffer / 2
@@ -32,7 +34,8 @@ func burst() {
 	stat, err := indexFile.Stat()
 	State.Head = uint64(stat.Size())
 
-	for ptr := State.Tail; ptr <= State.Head-common.IndexSize; ptr += common.IndexSize {
+  logging.Debug("bursting", strconv.Itoa(int(State.Tail)), strconv.Itoa(int(State.Head)))
+	for ptr := State.Tail; ptr <= State.Head - common.IndexSize; ptr += common.IndexSize {
 		_, err = indexFile.Seek(int64(ptr), os.SEEK_SET)
 		common.FaceIt(err)
 
