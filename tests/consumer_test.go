@@ -33,7 +33,7 @@ func bootstrapExhaust(t *testing.T) {
 		logging.Init()
 		exhaust.State.Tail = exhaust.State.Head
 		go exhaust.Init()
-		time.Sleep(1e8)
+		time.Sleep(1e7)
 		exhaustInitialized = true
 	}
 

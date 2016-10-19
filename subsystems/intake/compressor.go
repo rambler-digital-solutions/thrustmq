@@ -6,6 +6,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
 	"os"
+	"runtime"
 )
 
 func writeData(file *bufio.Writer, message common.MessageStruct) {
@@ -48,14 +49,19 @@ func compressorStage2() {
 	indexWriter := bufio.NewWriterSize(indexFile, config.Base.FileBuffer)
 
 	for {
-		message := <-Stage2CompressorChannel
+		select {
+		case message := <-Stage2CompressorChannel:
+			writeData(dataWriter, message)
+			writeIndex(indexWriter, message, DataOffset)
 
-		writeData(dataWriter, message)
-		writeIndex(indexWriter, message, DataOffset)
+			IndexOffset += common.IndexSize
+			DataOffset += uint64(message.Length)
 
-		IndexOffset += common.IndexSize
-		DataOffset += uint64(message.Length)
-
-		message.AckChannel <- message.NumberInBatch
+			message.AckChannel <- message.NumberInBatch
+		default:
+			indexWriter.Flush()
+			dataWriter.Flush()
+			runtime.Gosched()
+		}
 	}
 }

@@ -31,6 +31,9 @@ func Disconnect() {
 }
 
 func Send(data []byte) {
+	if connection == nil {
+		panic("producer is not connected")
+	}
 	connection.Write(data)
 }
 

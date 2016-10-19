@@ -3,7 +3,6 @@ package consumer
 import (
 	"encoding/binary"
 	"fmt"
-	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -32,7 +31,6 @@ func Disconnect() {
 }
 
 func Send(data []byte) {
-	fmt.Println(data)
 	connection.Write(data)
 }
 
