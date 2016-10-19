@@ -8,7 +8,7 @@ import (
 )
 
 func TestRecordSerialization(t *testing.T) {
-	indexFile, err := os.OpenFile(config.Base.Index+"_testca", os.O_RDWR|os.O_CREATE, 0666)
+	indexFile, err := os.OpenFile(config.Base.Index+"_test", os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	defer indexFile.Close()
 
@@ -21,8 +21,6 @@ func TestRecordSerialization(t *testing.T) {
 
 	indexFile.Seek(0, os.SEEK_SET)
 	indexFile.Write(record.Serialize())
-
-	indexFile.Sync()
 
 	indexFile.Seek(0, os.SEEK_SET)
 	readRecord := common.IndexRecord{}

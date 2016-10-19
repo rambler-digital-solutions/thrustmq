@@ -1,3 +1,4 @@
-- bufio vastly improves performance (because of less context switches)
 - you can't read/write without seek
-- ...
+- if you write disk blocks - than performance skyrockets (x5, bufio)
+- context switches are evil
+- buffered sequential read is x10 times faster than random one

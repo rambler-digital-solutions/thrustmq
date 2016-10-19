@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ./format.sh
-go test ./test/consumer_test.go
-go test -bench=. -benchmem ./test/benchmark_test.go > .bench
+go test ./tests/...
+go test -bench=. -benchmem ./benchmarks/... > .bench
 git add -A
 git diff --cached

@@ -27,7 +27,6 @@ func Connect() {
 
 func Disconnect() {
 	if connection != nil {
-		log.Print("Closing!!!")
 		connection.Close()
 	}
 }

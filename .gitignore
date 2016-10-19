@@ -1,5 +1,6 @@
 application-build-*
 data/*
 tests/data/*
+benchmarks/data/*
 clients/**/dist
 .bench
