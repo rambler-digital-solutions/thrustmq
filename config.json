@@ -8,7 +8,8 @@
         "TurbineBuffer": 1024,
         "CombustionBuffer": 1024,
         "NozzleBuffer": 1024,
-        "Chamber": "data/chamber"
+        "Chamber": "data/chamber",
+        "HeartbeatRate": 1e8
     },
     "Logfile": "data/system.log",
     "Index": "data/index",

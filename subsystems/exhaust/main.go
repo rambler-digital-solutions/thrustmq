@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
-	"net"
 	"github.com/rambler-digital-solutions/thrustmq/logging"
+	"net"
 )
 
 var (

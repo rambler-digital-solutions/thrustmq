@@ -9,7 +9,6 @@ import (
 	"math/rand"
 	"testing"
 	"time"
-	"log"
 )
 
 var exhaustInitialized bool = false
@@ -46,7 +45,6 @@ func bootstrapExhaust(t *testing.T) {
 
 func TestPing(t *testing.T) {
 	consumer.Disconnect()
-	log.Println("PING")
 
 	bootstrapExhaust(t)
 
@@ -69,8 +67,6 @@ func TestPing(t *testing.T) {
 
 func TestRecipienceOfSingleMessage(t *testing.T) {
 	consumer.Disconnect()
-	log.Println("ONE")
-	// add pending message with random number
 	randomNumber := uint64(rand.Int63())
 	binary.LittleEndian.PutUint64(buffer, randomNumber)
 	exhaust.CombustorChannel <- common.MessageStruct{Length: 8, Payload: buffer[0:8]}
@@ -105,7 +101,6 @@ func TestRecipienceOfSingleMessage(t *testing.T) {
 
 func TestRecipienceOfMultipleMessages(t *testing.T) {
 	consumer.Disconnect()
-	log.Println("MUL")
 	batchSize := 3
 	randomNumbers := make([]uint64, batchSize)
 	for i := 0; i < batchSize; i++ {
@@ -117,8 +112,6 @@ func TestRecipienceOfMultipleMessages(t *testing.T) {
 
 	bootstrapExhaust(t)
 	consumer.SendHeader(batchSize, uint64(rand.Int63()))
-
-	log.Println("header!")
 
 	messages := consumer.RecieveBatch()
 	consumer.SendAcks(batchSize)

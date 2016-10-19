@@ -12,6 +12,7 @@ type exhaustConfigStruct struct {
 	TurbineBuffer    int
 	CombustionBuffer int
 	NozzleBuffer     int
+	HeartbeatRate    int
 	Chamber          string
 }
 

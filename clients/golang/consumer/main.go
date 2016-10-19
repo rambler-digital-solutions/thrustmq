@@ -3,10 +3,10 @@ package consumer
 import (
 	"encoding/binary"
 	"fmt"
+	"log"
 	"math/rand"
 	"net"
 	"os"
-	"log"
 )
 
 type Message struct {
@@ -33,6 +33,7 @@ func Disconnect() {
 }
 
 func Send(data []byte) {
+	fmt.Println(data)
 	connection.Write(data)
 }
 
@@ -53,7 +54,6 @@ func SendAcks(batchSize int) {
 	for i := 0; i < batchSize; i++ {
 		buffer[i] = 1
 	}
-	fmt.Println(buffer)
 	Send(buffer)
 }
 

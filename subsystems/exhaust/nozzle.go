@@ -6,11 +6,11 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
+	"log"
 	"net"
 	"runtime"
 	"strconv"
 	"time"
-	"log"
 )
 
 func registerConnect(connection net.Conn) common.ConnectionStruct {
@@ -67,7 +67,7 @@ func recieveAcks(client common.ConnectionStruct, batchSize int, ackArray []commo
 		} else {
 			logging.Debug("returning message to combustor")
 			log.Print(acks[i])
-			// CombustorChannel <- message
+			CombustorChannel <- message
 		}
 	}
 }
@@ -86,7 +86,7 @@ func blow(connection net.Conn) {
 			recieveAcks(client, batchSize, ackArray)
 		} else {
 			logging.Debug("Trying to ping client", strconv.FormatInt(int64(client.Id), 4), "...")
-			time.Sleep(1e8)
+			time.Sleep(time.Duration(config.Exhaust.HeartbeatRate) * time.Nanosecond)
 			runtime.Gosched()
 			if !client.Ping() {
 				return
