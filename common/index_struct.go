@@ -22,37 +22,37 @@ type IndexRecord struct {
 
 var IndexSize uint64 = 8 * 9
 
-func (self IndexRecord) slots() []*uint64 {
+func (self *IndexRecord) Slots() []*uint64 {
 	return []*uint64{&self.DataSeek, &self.DataLength, &self.BucketId, &self.Connection, &self.Created, &self.Enqueued, &self.Sent, &self.Delivered, &self.Retries}
 }
 
-func (self IndexRecord) Serialize() []byte {
+func (self *IndexRecord) Serialize() []byte {
 	buffer := make([]byte, IndexSize)
-	slots := self.slots()
+	slots := self.Slots()
 	for i := range slots {
 		binary.LittleEndian.PutUint64(buffer[i*8:(i+1)*8], *slots[i])
 	}
 	return buffer
 }
 
-func (self IndexRecord) Deserialize(reader io.Reader) {
+func (self *IndexRecord) Deserialize(reader io.Reader) {
 	buffer := make([]byte, IndexSize)
 	io.ReadFull(reader, buffer)
-	slots := self.slots()
+	slots := self.Slots()
 	for i := range slots {
 		*slots[i] = binary.LittleEndian.Uint64(buffer[i*8 : (i+1)*8])
 	}
 }
 
-func (self IndexRecord) Merge(other IndexRecord) {
-	slots1 := self.slots()
-	slots2 := self.slots()
+func (self *IndexRecord) Merge(other *IndexRecord) {
+	slots1 := self.Slots()
+	slots2 := self.Slots()
 	for i := range slots1 {
 		*slots1[i] = Max(*slots1[i], *slots2[i])
 	}
 }
 
-func (self IndexRecord) ForgeMessage(dataFile *os.File) MessageStruct {
+func (self *IndexRecord) ForgeMessage(dataFile *os.File) MessageStruct {
 	message := MessageStruct{}
 
 	message.BucketId = self.BucketId

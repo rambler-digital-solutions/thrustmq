@@ -63,7 +63,7 @@ func recieveAcks(client common.ConnectionStruct, batchSize int, ackArray []commo
 			record.Connection = client.Id
 			record.Seek = message.IndexSeek
 			record.Delivered = common.TimestampUint64()
-			TurbineChannel <- record
+			TurbineChannel <- &record
 		} else {
 			logging.Debug("returning message to combustor")
 			log.Print(acks[i])

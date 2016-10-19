@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	TurbineChannel                         = make(chan common.IndexRecord, config.Exhaust.TurbineBuffer)
+	TurbineChannel                         = make(chan *common.IndexRecord, config.Exhaust.TurbineBuffer)
 	CombustorChannel common.MessageChannel = make(common.MessageChannel, config.Exhaust.CombustionBuffer)
 	ConnectionsMap   common.ConnectionsMap = make(common.ConnectionsMap)
 	bucketsMap       common.BucketsMap     = make(common.BucketsMap)
