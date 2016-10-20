@@ -19,7 +19,7 @@ Network libraries (ZeroMQ, ...) - "No persistence".
 - Only 568 lines of beautiful Go code.
 
 ### Design
-![schema](https://raw.githubusercontent.com/rambler-digital-solutions/thrustmq/develop/schema.png)
+![schema](https://cdn.rawgit.com/rambler-digital-solutions/thrustmq/develop/docs/ThrustMQ.svg)
 
 ### Installation
 [Install golang](https://golang.org/doc/install).
