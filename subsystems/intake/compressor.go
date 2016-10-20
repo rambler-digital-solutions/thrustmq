@@ -9,18 +9,14 @@ import (
 	"runtime"
 )
 
-func writeData(file *bufio.Writer, message common.MessageStruct) {
-	_, err := file.Write(message.Payload)
+func writeData(file *bufio.Writer, record *common.IndexRecord) {
+	_, err := file.Write(record.Data)
 	common.FaceIt(err)
 }
 
-func writeIndex(file *bufio.Writer, message common.MessageStruct, offset uint64) {
-	indexRecord := common.IndexRecord{}
-	indexRecord.DataSeek = offset
-	indexRecord.DataLength = uint64(message.Length)
-	indexRecord.BucketId = uint64(message.BucketId)
-
-	file.Write(indexRecord.Serialize())
+func writeIndex(file *bufio.Writer, record *common.IndexRecord, offset uint64) {
+	record.DataSeek = offset
+	file.Write(record.Serialize())
 }
 
 func compressorStage1() {
@@ -28,7 +24,7 @@ func compressorStage1() {
 		message := <-CompressorChannel
 		Stage2CompressorChannel <- message
 		select {
-		case exhaust.CombustorChannel <- message:
+		case exhaust.CombustorChannel <- message.Record:
 		default:
 		}
 	}
@@ -51,11 +47,11 @@ func compressorStage2() {
 	for {
 		select {
 		case message := <-Stage2CompressorChannel:
-			writeData(dataWriter, message)
-			writeIndex(indexWriter, message, DataOffset)
+			writeData(dataWriter, message.Record)
+			writeIndex(indexWriter, message.Record, DataOffset)
 
 			IndexOffset += common.IndexSize
-			DataOffset += uint64(message.Length)
+			DataOffset += uint64(message.Record.DataLength)
 
 			message.AckChannel <- message.NumberInBatch
 		default:

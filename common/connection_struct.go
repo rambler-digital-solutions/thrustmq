@@ -16,7 +16,7 @@ type ConnectionStruct struct {
 	Id         uint64
 	Reader     *bufio.Reader
 	Writer     *bufio.Writer
-	Channel    MessageChannel
+	Channel    RecordPipe
 }
 
 type ConnectionsMap map[uint64]ConnectionStruct
@@ -40,7 +40,7 @@ func (self *ConnectionStruct) SendActualBatchSize(batchSize int) {
 	self.Writer.Write(buffer)
 }
 
-func (self *ConnectionStruct) SendMessage(message MessageStruct) error {
+func (self *ConnectionStruct) SendMessage(message IndexRecord) error {
 	bytes := message.Serialize()
 	_, err := self.Writer.Write(bytes)
 	return err
@@ -54,7 +54,7 @@ func (self *ConnectionStruct) GetAcks(batchSize int) ([]byte, error) {
 
 func (self *ConnectionStruct) Ping() bool {
 	self.SendActualBatchSize(1)
-	message := MessageStruct{}
+	message := IndexRecord{}
 	self.SendMessage(message)
 	self.Writer.Flush()
 

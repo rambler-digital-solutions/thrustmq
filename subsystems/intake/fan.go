@@ -39,7 +39,7 @@ func suck(connection net.Conn) {
 				log.Print("Could not deserialize message...")
 				return
 			}
-			CompressorChannel <- message
+			CompressorChannel <- &message
 		}
 
 		response := make([]byte, batchSize)

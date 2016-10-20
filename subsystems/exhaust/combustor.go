@@ -52,7 +52,7 @@ func burn(record common.IndexRecord, dataFile *os.File) {
 			return
 		}
 	}
-	CombustorChannel <- record.ForgeMessage(dataFile)
+	CombustorChannel <- &record
 	record.Enqueued = common.TimestampUint64()
 	record.Retries++
 	TurbineChannel <- &record

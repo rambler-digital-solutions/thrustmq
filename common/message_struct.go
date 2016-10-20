@@ -3,20 +3,15 @@ package common
 import (
 	"encoding/binary"
 	"io"
-	"os"
 )
 
-type MessageChannel chan MessageStruct
-type MessageChannels []MessageChannel
 type MessageStruct struct {
 	AckChannel    chan int
-	Payload       []byte
-	BucketId      uint64
-	Length        uint32
-	IndexSeek     uint64
-	DataSeek      uint64
 	NumberInBatch int
+	Record        *IndexRecord
 }
+
+type MessageChannel chan *MessageStruct
 
 var MessageHeaderSize = 12
 
@@ -27,30 +22,22 @@ func (self *MessageStruct) Deserialize(reader io.Reader) bool {
 		return false
 	}
 
-	self.BucketId = binary.LittleEndian.Uint64(header[0:8])
-	self.Length = binary.LittleEndian.Uint32(header[8:12])
+	self.Record = &IndexRecord{}
+	self.Record.BucketId = binary.LittleEndian.Uint64(header[0:8])
+	self.Record.DataLength = uint64(binary.LittleEndian.Uint32(header[8:12]))
 
-	buffer := make([]byte, self.Length)
+	buffer := make([]byte, self.Record.DataLength)
 	bytesRead, _ = io.ReadFull(reader, buffer)
-	if uint32(bytesRead) != self.Length {
+	if uint64(bytesRead) != self.Record.DataLength {
 		return false
 	}
-	self.Payload = buffer
+	self.Record.Data = buffer
 	return true
 }
 
 func (self *MessageStruct) Serialize() []byte {
-	buffer := make([]byte, 4+self.Length)
-	binary.LittleEndian.PutUint32(buffer[0:4], uint32(self.Length))
-	copy(buffer[4:], self.Payload[:])
+	buffer := make([]byte, 4+self.Record.DataLength)
+	binary.LittleEndian.PutUint32(buffer[0:4], uint32(self.Record.DataLength))
+	copy(buffer[4:], self.Record.Data[:])
 	return buffer
-}
-
-func (self *MessageStruct) LoadData(file *os.File) {
-	_, err := file.Seek(int64(self.DataSeek), os.SEEK_SET)
-	if err != nil {
-		return
-	}
-	self.Payload = make([]byte, self.Length)
-	io.ReadFull(file, self.Payload)
 }

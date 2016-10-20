@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	TurbineChannel                         = make(chan *common.IndexRecord, config.Exhaust.TurbineBuffer)
-	CombustorChannel common.MessageChannel = make(common.MessageChannel, config.Exhaust.CombustionBuffer)
+	TurbineChannel                         = make(common.RecordPipe, config.Exhaust.TurbineBuffer)
+	CombustorChannel common.RecordPipe     = make(common.RecordPipe, config.Exhaust.CombustionBuffer)
 	ConnectionsMap   common.ConnectionsMap = make(common.ConnectionsMap)
 	bucketsMap       common.BucketsMap     = make(common.BucketsMap)
 	State            StateStruct           = loadState()

@@ -10,6 +10,7 @@ type IndexRecord struct {
 	Seek       uint64
 	DataSeek   uint64
 	DataLength uint64
+	Data       []byte
 	BucketId   uint64
 	Connection uint64
 
@@ -19,6 +20,9 @@ type IndexRecord struct {
 	Delivered uint64
 	Retries   uint64
 }
+
+type RecordPipe chan *IndexRecord
+type RecordPipes []RecordPipe
 
 var IndexSize uint64 = 8 * 9
 
@@ -52,14 +56,11 @@ func (self *IndexRecord) Merge(other *IndexRecord) {
 	}
 }
 
-func (self *IndexRecord) ForgeMessage(dataFile *os.File) MessageStruct {
-	message := MessageStruct{}
-
-	message.BucketId = self.BucketId
-	message.Length = uint32(self.DataLength)
-	message.IndexSeek = self.Seek
-	message.DataSeek = self.DataSeek
-	message.LoadData(dataFile)
-
-	return message
+func (self *IndexRecord) LoadData(file *os.File) {
+	_, err := file.Seek(int64(self.DataSeek), os.SEEK_SET)
+	if err != nil {
+		return
+	}
+	self.Data = make([]byte, self.DataLength)
+	io.ReadFull(file, self.Data)
 }
