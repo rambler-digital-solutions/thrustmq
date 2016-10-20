@@ -29,22 +29,23 @@ func suck(connection net.Conn) {
 
 	for {
 		batchSize := getBatchSize(reader)
-		ackChannel := make(chan int, batchSize)
-
+		ackChannel := make(chan *common.IntakeStruct, batchSize)
+		messages := make([]*common.IntakeStruct, batchSize)
 		for i := 0; i < batchSize; i++ {
-			message := &common.IntakeStruct{}
-			message.AckChannel = ackChannel
-			message.NumberInBatch = i
-			if !message.Deserialize(reader) {
+			messages[i] = &common.IntakeStruct{}
+			messages[i].AckChannel = ackChannel
+			messages[i].NumberInBatch = i
+			if !messages[i].Deserialize(reader) {
 				log.Print("Could not deserialize message...")
 				return
 			}
-			CompressorChannel <- message
+			CompressorChannel <- messages[i]
 		}
 
 		response := make([]byte, batchSize)
 		for i := 0; i < batchSize; i++ {
-			response[<-ackChannel] = 1
+			message := <-ackChannel
+			response[message.NumberInBatch] = message.Status
 			oplog.IntakeThroughput++
 		}
 

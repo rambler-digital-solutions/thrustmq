@@ -39,7 +39,8 @@ func compressorStage2() {
 		case message := <-Stage2CompressorChannel:
 			persistRecord(message.Record, indexOffset, indexWriter, dataOffset, dataWriter)
 
-			message.AckChannel <- message.NumberInBatch
+			message.Status = 1
+			message.AckChannel <- message
 
 			indexOffset += common.IndexSize
 			dataOffset += message.Record.DataLength

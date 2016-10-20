@@ -6,8 +6,9 @@ import (
 )
 
 type IntakeStruct struct {
-	AckChannel    chan int
+	AckChannel    chan *IntakeStruct
 	NumberInBatch int
+	Status        byte
 	Record        *Record
 }
 
