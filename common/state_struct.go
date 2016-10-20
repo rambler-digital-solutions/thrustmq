@@ -1,8 +1,7 @@
-package exhaust
+package common
 
 import (
 	"encoding/gob"
-	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"os"
 	"time"
@@ -15,29 +14,35 @@ type StateStruct struct {
 	ConnectionId uint64
 }
 
+var State StateStruct = loadState()
+
 func loadState() StateStruct {
 	if _, err := os.Stat(config.Exhaust.Chamber); err == nil {
 		file, err := os.OpenFile(config.Exhaust.Chamber, os.O_RDONLY|os.O_CREATE, 0666)
-		common.FaceIt(err)
+		FaceIt(err)
 		dec := gob.NewDecoder(file)
 		result := StateStruct{}
 		err = dec.Decode(&result)
-		common.FaceIt(err)
+		FaceIt(err)
 		file.Close()
 		return result
 	}
 	return StateStruct{Tail: 0, ConnectionId: 1}
 }
 
-func saveState() {
+func SaveState() {
 	for {
 		time.Sleep(1e9)
 		file, err := os.OpenFile(config.Exhaust.Chamber, os.O_WRONLY|os.O_CREATE, 0666)
-		common.FaceIt(err)
+		FaceIt(err)
 		enc := gob.NewEncoder(file)
 		err = enc.Encode(State)
-		common.FaceIt(err)
+		FaceIt(err)
 		file.Sync()
 		file.Close()
 	}
+}
+
+func (self *StateStruct) Distance() uint64 {
+	return self.Head - self.Tail
 }

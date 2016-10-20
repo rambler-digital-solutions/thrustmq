@@ -10,8 +10,8 @@ import (
 
 type ConnectionStruct struct {
 	Connection net.Conn
-	BucketId   uint64
-	ClientId   uint64
+	Bucket     uint64
+	Client     uint64
 	BatchSize  uint32
 	Id         uint64
 	Reader     *bufio.Reader
@@ -19,7 +19,7 @@ type ConnectionStruct struct {
 	Channel    RecordPipe
 }
 
-type ConnectionsMap map[uint64]ConnectionStruct
+type ConnectionsMap map[uint64]*ConnectionStruct
 
 var ConnectionHeaderSize = 20
 
@@ -28,8 +28,8 @@ func (self *ConnectionStruct) DeserializeHeader() {
 	_, err := io.ReadFull(self.Reader, buffer)
 	FaceIt(err)
 
-	self.ClientId = binary.LittleEndian.Uint64(buffer[0:8])
-	self.BucketId = binary.LittleEndian.Uint64(buffer[8:16])
+	self.Client = binary.LittleEndian.Uint64(buffer[0:8])
+	self.Bucket = binary.LittleEndian.Uint64(buffer[8:16])
 	self.BatchSize = binary.LittleEndian.Uint32(buffer[16:20])
 }
 
@@ -39,8 +39,8 @@ func (self *ConnectionStruct) SendActualBatchSize(batchSize int) {
 	self.Writer.Write(buffer)
 }
 
-func (self *ConnectionStruct) SendMessage(message Record) error {
-	bytes := message.Serialize()
+func (self *ConnectionStruct) SendMessage(record *Record) error {
+	bytes := record.NetworkSerialize()
 	_, err := self.Writer.Write(bytes)
 	return err
 }
@@ -53,7 +53,7 @@ func (self *ConnectionStruct) GetAcks(batchSize int) ([]byte, error) {
 
 func (self *ConnectionStruct) Ping() bool {
 	self.SendActualBatchSize(1)
-	message := Record{}
+	message := &Record{}
 	self.SendMessage(message)
 	self.Writer.Flush()
 

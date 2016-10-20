@@ -7,6 +7,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
 	"os"
 	"runtime"
+	"time"
 )
 
 func compressorStage1() {

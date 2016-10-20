@@ -24,7 +24,7 @@ func (self *IntakeStruct) Deserialize(reader io.Reader) bool {
 	}
 
 	self.Record = &Record{}
-	self.Record.BucketId = binary.LittleEndian.Uint64(header[0:8])
+	self.Record.Bucket = binary.LittleEndian.Uint64(header[0:8])
 	self.Record.DataLength = uint64(binary.LittleEndian.Uint32(header[8:12]))
 
 	buffer := make([]byte, self.Record.DataLength)
@@ -34,11 +34,4 @@ func (self *IntakeStruct) Deserialize(reader io.Reader) bool {
 	}
 	self.Record.Data = buffer
 	return true
-}
-
-func (self *IntakeStruct) Serialize() []byte {
-	buffer := make([]byte, 4+self.Record.DataLength)
-	binary.LittleEndian.PutUint32(buffer[0:4], uint32(self.Record.DataLength))
-	copy(buffer[4:], self.Record.Data[:])
-	return buffer
 }

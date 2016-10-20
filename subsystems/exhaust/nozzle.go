@@ -13,11 +13,12 @@ import (
 	"time"
 )
 
-func registerConnect(connection net.Conn) common.ConnectionStruct {
-	State.ConnectionId++
+func registerConnect(connection net.Conn) *common.ConnectionStruct {
+	common.State.ConnectionId++
 
-	connectionStruct := common.ConnectionStruct{Connection: connection}
-	connectionStruct.Id = State.ConnectionId
+	connectionStruct := &common.ConnectionStruct{}
+	connectionStruct.Connection = connection
+	connectionStruct.Id = common.State.ConnectionId
 	connectionStruct.Reader = bufio.NewReaderSize(connection, config.Base.NetworkBuffer)
 	connectionStruct.Writer = bufio.NewWriterSize(connection, config.Base.NetworkBuffer)
 	connectionStruct.Channel = make(common.RecordPipe, config.Exhaust.NozzleBuffer)
@@ -31,41 +32,35 @@ func registerConnect(connection net.Conn) common.ConnectionStruct {
 	return connectionStruct
 }
 
-func registerDisconnect(connectionStruct common.ConnectionStruct) {
+func registerDisconnect(connectionStruct *common.ConnectionStruct) {
 	delete(ConnectionsMap, connectionStruct.Id)
 	logging.LostConsumer(connectionStruct.Connection.RemoteAddr(), len(ConnectionsMap))
 }
 
-func sendBatch(client common.ConnectionStruct, batchSize int, ackArray []common.Record) {
-	client.SendActualBatchSize(batchSize)
-	for i := 0; i < batchSize; i++ {
-		record := *<-CombustorChannel
+func sendBatch(client *common.ConnectionStruct, batch []*common.Record) {
+	client.SendActualBatchSize(len(batch))
+	for i := 0; i < len(batch); i++ {
+		record := <-client.Channel
+		record.Sent = common.TimestampUint64()
 		err := client.SendMessage(record)
 		if err != nil {
 			log.Print(err)
-			if record.DataLength > 0 {
-				CombustorChannel <- &record
-			}
 			return
 		}
-		ackArray[i] = record
+		batch[i] = record
 		oplog.ExhaustThroughput++
 	}
 	client.Writer.Flush()
 }
 
-func recieveAcks(client common.ConnectionStruct, batchSize int, ackArray []common.Record) {
-	acks, _ := client.GetAcks(batchSize)
-	for i := 0; i < batchSize; i++ {
-		record := ackArray[i]
+func recieveAcks(client *common.ConnectionStruct, batch []*common.Record) {
+	acks, _ := client.GetAcks(len(batch))
+	for i := 0; i < len(batch); i++ {
 		if acks[i] == 1 {
-			record.Connection = client.Id
-			record.Delivered = common.TimestampUint64()
-			TurbineChannel <- &record
+			batch[i].Delivered = common.TimestampUint64()
 		} else {
 			log.Print("returning record to combustor")
 			log.Print(acks[i])
-			CombustorChannel <- &record
 		}
 	}
 }
@@ -74,14 +69,13 @@ func blow(connection net.Conn) {
 	client := registerConnect(connection)
 	defer registerDisconnect(client)
 
-	var batchSize int
 	for {
-		batchSize = common.Min(int(client.BatchSize), len(CombustorChannel))
+		batchSize := common.Min(int(client.BatchSize), len(CombustorChannel))
 
 		if batchSize > 0 {
-			ackArray := make([]common.Record, batchSize)
-			sendBatch(client, batchSize, ackArray)
-			recieveAcks(client, batchSize, ackArray)
+			batch := make([]*common.Record, batchSize)
+			sendBatch(client, batch)
+			recieveAcks(client, batch)
 		} else {
 			logging.Debug("Trying to ping client", strconv.FormatInt(int64(client.Id), 4), "...")
 			time.Sleep(time.Duration(config.Exhaust.HeartbeatRate) * time.Nanosecond)

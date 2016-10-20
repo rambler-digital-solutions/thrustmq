@@ -1,27 +1,31 @@
 package exhaust
 
 import (
+	"bufio"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
-	"github.com/rambler-digital-solutions/thrustmq/logging"
+	"log"
 	"os"
 	"runtime"
-	"strconv"
 )
 
-func forward() {
-	// grab messages in channel & pass them to nozzles
+func forward(record *common.Record) {
+	if !bucketRequired(record.Bucket) {
+		delete(RecordsMap, record.Seek)
+		return
+	}
 
-	// if there's no connection for this bucket - do nothing
-	// else send it to the nozzle (RR), add dirty sent record to turbine (with retries++)
-
-	// same logic for file reader
-
-	// record.Enqueued = common.TimestampUint64()
-	// record.Retries++
+	for _, connection := range ConnectionsMap {
+		if connection.Bucket == record.Bucket && len(connection.Channel) != cap(connection.Channel) {
+			record.Connection = connection.Id
+			record.Enqueued = common.TimestampUint64()
+			record.Retries++
+			connection.Channel <- record
+		}
+	}
 }
 
-func combustion() {
+func combustor() {
 	for {
 		select {
 		case record := <-CombustorChannel:
@@ -38,29 +42,29 @@ func afterburner() {
 	defer indexFile.Close()
 
 	for {
-		if len(TurbineChannel) < turbineThreshold && len(CombustorChannel) < combustorThreshold && State.Tail < State.Head {
-			burn(getReader(), dataFile)
+		if len(CombustorChannel) < cap(CombustorChannel)/2 && common.State.Tail < common.State.Head {
+			burn(getReader(indexFile))
 		} else {
 			runtime.Gosched()
 		}
 	}
 }
 
-func getReader() {
+func getReader(indexFile *os.File) *bufio.Reader {
 	stat, err := indexFile.Stat()
 	common.FaceIt(err)
-	State.Head = uint64(stat.Size())
-	_, err = indexFile.Seek(State.Tail, os.SEEK_SET)
+	common.State.Head = uint64(stat.Size())
+	_, err = indexFile.Seek(int64(common.State.Tail), os.SEEK_SET)
 	common.FaceIt(err)
-	indexReader = bufio.NewReaderSize(reader, config.Base.NetworkBuffer)
+	return bufio.NewReaderSize(indexFile, config.Base.NetworkBuffer)
 }
 
-func burn() {
-	logging.Debug("bursting", strconv.Itoa(int(State.Tail)), strconv.Itoa(int(State.Head)))
+func burn(reader *bufio.Reader) {
+	log.Print("burning", common.State.Tail, common.State.Head)
 
-	for ptr := State.Tail; ptr <= State.Head-common.IndexSize; ptr += common.IndexSize {
-		record := common.Record{}
-		record.Deserialize(indexFile)
+	for ptr := common.State.Tail; ptr <= common.State.Head-common.IndexSize; ptr += common.IndexSize {
+		record := &common.Record{}
+		record.Deserialize(reader)
 		record.Seek = ptr
 		forward(record)
 	}

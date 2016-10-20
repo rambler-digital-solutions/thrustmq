@@ -11,20 +11,41 @@ import (
 var (
 	CombustorChannel common.RecordPipe     = make(common.RecordPipe, config.Exhaust.CombustionBuffer)
 	ConnectionsMap   common.ConnectionsMap = make(common.ConnectionsMap)
-	State            common.StateStruct    = loadState()
+	RecordsMap       common.RecordsMap     = make(common.RecordsMap)
 )
+
+func recordInMemory(record *common.Record) bool {
+	if _, ok := ConnectionsMap[record.Seek]; ok {
+		return false
+	}
+	return true
+}
+
+func connectionAlive(id uint64) bool {
+	if _, ok := ConnectionsMap[id]; ok {
+		return false
+	}
+	return true
+}
+
+func bucketRequired(id uint64) bool {
+	for _, connection := range ConnectionsMap {
+		if id == connection.Bucket {
+			return true
+		}
+	}
+	return false
+}
 
 func Init() {
 	logging.Debug("Init exhaust")
 
-	go saveState()
-
 	socket, err := net.Listen("tcp", fmt.Sprintf(":%d", config.Exhaust.Port))
 	common.FaceIt(err)
 
-	//go combustion()
-	//go afterburner()
-	//go turbine()
+	go combustor()
+	go afterburner()
+	go turbine()
 
 	var connection net.Conn
 	for {

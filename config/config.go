@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"github.com/rambler-digital-solutions/thrustmq/common"
 	"io/ioutil"
 	"os"
 )
@@ -39,7 +38,9 @@ func loadConfig() ConfigStruct {
 	}
 
 	raw, err := ioutil.ReadFile(filename)
-	common.FaceIt(err)
+	if err != nil {
+		panic(err)
+	}
 
 	var config ConfigStruct
 	json.Unmarshal(raw, &config)

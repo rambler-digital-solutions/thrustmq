@@ -40,9 +40,9 @@ func Init() {
 			output(fmt.Sprintf("%7d ->msg", oplog.IntakeThroughput))
 			output(fmt.Sprintf("%7d msg->", oplog.ExhaustThroughput))
 		}
-		statusLine += fmt.Sprintf("%4d->cp %4d->cp2 %4d->cb %4d->tb", len(intake.CompressorChannel), len(intake.Stage2CompressorChannel), len(exhaust.CombustorChannel), len(exhaust.TurbineChannel))
-		statusLine += fmt.Sprintf("|rq %d cid: %d", oplog.Requeued, exhaust.State.ConnectionId)
-		statusLine += fmt.Sprintf("|h %d t %d s: %d c: %.2f", exhaust.State.Head, exhaust.State.Tail, (exhaust.State.Head-exhaust.State.Tail)/uint64(common.IndexSize), exhaust.State.Capacity)
+		statusLine += fmt.Sprintf("%4d->cp %4d->cp2 %4d->cb rms=%4d", len(intake.CompressorChannel), len(intake.Stage2CompressorChannel), len(exhaust.CombustorChannel), len(exhaust.RecordsMap))
+		statusLine += fmt.Sprintf("|rq %d cid: %d", oplog.Requeued, common.State.ConnectionId)
+		statusLine += fmt.Sprintf("|h %d t %d s: %d c: %.2f", common.State.Head, common.State.Tail, common.State.Distance()/uint64(common.IndexSize), common.State.Capacity)
 		for _, connectionStruct := range exhaust.ConnectionsMap {
 			statusLine += fmt.Sprintf("%4d ", len(connectionStruct.Channel))
 		}

@@ -11,7 +11,7 @@ type Record struct {
 	DataSeek   uint64
 	DataLength uint64
 	Data       []byte
-	BucketId   uint64
+	Bucket     uint64
 	Connection uint64
 
 	Created   uint64
@@ -25,11 +25,12 @@ type Record struct {
 
 type RecordPipe chan *Record
 type RecordPipes []RecordPipe
+type RecordsMap map[uint64]*Record
 
 var IndexSize uint64 = 8 * 9
 
 func (self *Record) Slots() []*uint64 {
-	return []*uint64{&self.DataSeek, &self.DataLength, &self.BucketId, &self.Connection, &self.Created, &self.Enqueued, &self.Sent, &self.Delivered, &self.Retries}
+	return []*uint64{&self.DataSeek, &self.DataLength, &self.Bucket, &self.Connection, &self.Created, &self.Enqueued, &self.Sent, &self.Delivered, &self.Retries}
 }
 
 func (self *Record) Serialize() []byte {
@@ -65,4 +66,11 @@ func (self *Record) LoadData(file *os.File) {
 	}
 	self.Data = make([]byte, self.DataLength)
 	io.ReadFull(file, self.Data)
+}
+
+func (self *Record) NetworkSerialize() []byte {
+	buffer := make([]byte, 4+self.DataLength)
+	binary.LittleEndian.PutUint32(buffer[0:4], uint32(self.DataLength))
+	copy(buffer[4:], self.Data[:])
+	return buffer
 }
