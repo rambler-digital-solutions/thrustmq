@@ -26,9 +26,9 @@ func compressorStage2() {
 	dataFile, err := os.OpenFile(config.Base.Data, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	common.FaceIt(err)
 
-	ptr, err := indexFile.Seek(0, os.SEEK_CUR)
+	ptr, err := indexFile.Seek(0, os.SEEK_END)
 	indexOffset := uint64(ptr)
-	ptr, err = indexFile.Seek(0, os.SEEK_CUR)
+	ptr, err = dataFile.Seek(0, os.SEEK_END)
 	dataOffset := uint64(ptr)
 
 	dataWriter := bufio.NewWriterSize(dataFile, config.Base.FileBuffer)
@@ -59,4 +59,7 @@ func persistRecord(record *common.Record, indexOffset uint64, indexWriter *bufio
 	record.Seek = indexOffset
 	_, err = indexWriter.Write(record.Serialize())
 	common.FaceIt(err)
+
+	indexWriter.Flush()
+	dataWriter.Flush()
 }

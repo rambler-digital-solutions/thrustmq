@@ -5,25 +5,16 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/clients/golang/producer"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
-	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
 	"math/rand"
 	"os"
 	"testing"
-	"time"
 )
-
-func bootstrapIntake(t *testing.T) {
-	rand.Seed(time.Now().UTC().UnixNano())
-	go intake.Init()
-	time.Sleep(1e7)
-}
-
 
 func TestIntakePersistence(t *testing.T) {
 	bootstrapIntake(t)
+
 	expectedPayload := rand.Uint32()
-	buffer := make([]byte, 4)
-	binary.LittleEndian.PutUint32(buffer, expectedPayload)
+	buffer := common.BinUint32(expectedPayload)
 	messages := make([]producer.Message, 1)
 	messages[0] = producer.Message{Length: len(buffer), Payload: buffer}
 
@@ -45,6 +36,6 @@ func TestIntakePersistence(t *testing.T) {
 
 	actualPayload := binary.LittleEndian.Uint32(record.Data)
 	if actualPayload != expectedPayload {
-		t.Fatal("payload mismatch", actualPayload, expectedPayload)
+		t.Fatalf("payload mismatch! got: %d expected: %d", actualPayload, expectedPayload)
 	}
 }

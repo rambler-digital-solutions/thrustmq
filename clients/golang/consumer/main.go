@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"net"
 	"os"
-	"log"
 )
 
 type Message struct {
@@ -44,7 +43,6 @@ func SendHeader(batchSize int, bucketId uint64) {
 	binary.LittleEndian.PutUint64(buffer[0:8], uint64(rand.Int63()))
 	binary.LittleEndian.PutUint64(buffer[8:16], bucketId)
 	binary.LittleEndian.PutUint32(buffer[16:20], uint32(batchSize))
-	log.Print("consumer header, size:", batchSize, "bucket:", bucketId, "id:", buffer[0:8])
 	Send(buffer)
 }
 
