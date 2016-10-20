@@ -8,7 +8,6 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
 	"io"
-	"log"
 	"net"
 )
 
@@ -21,28 +20,39 @@ func getBatchSize(reader *bufio.Reader) int {
 	return int(binary.LittleEndian.Uint32(batchSizeBuffer))
 }
 
+func getMessage(i int, ackChannel chan *common.IntakeStruct, reader *bufio.Reader) *common.IntakeStruct {
+	message := &common.IntakeStruct{}
+	message.AckChannel = ackChannel
+	message.NumberInBatch = i
+	if !message.Deserialize(reader) {
+		return nil
+	}
+	return message
+}
+
 func suck(connection net.Conn) {
 	logging.NewProducer(connection.RemoteAddr())
 	defer logging.LostProducer(connection.RemoteAddr())
 
 	reader := bufio.NewReaderSize(connection, config.Base.NetworkBuffer)
-
 	for {
 		batchSize := getBatchSize(reader)
+		if batchSize == 0 {
+			return
+		}
+
 		ackChannel := make(chan *common.IntakeStruct, batchSize)
 		messages := make([]*common.IntakeStruct, batchSize)
+		response := make([]byte, batchSize)
+
 		for i := 0; i < batchSize; i++ {
-			messages[i] = &common.IntakeStruct{}
-			messages[i].AckChannel = ackChannel
-			messages[i].NumberInBatch = i
-			if !messages[i].Deserialize(reader) {
-				log.Print("Could not deserialize message...")
+			messages[i] = getMessage(i, ackChannel, reader)
+			if messages[i] == nil {
 				return
 			}
 			CompressorChannel <- messages[i]
 		}
 
-		response := make([]byte, batchSize)
 		for i := 0; i < batchSize; i++ {
 			message := <-ackChannel
 			response[message.NumberInBatch] = message.Status
