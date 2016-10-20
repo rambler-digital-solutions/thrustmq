@@ -39,14 +39,14 @@ func burst() {
 		_, err = indexFile.Seek(int64(ptr), os.SEEK_SET)
 		common.FaceIt(err)
 
-		record := common.IndexRecord{}
+		record := common.Record{}
 		record.Deserialize(indexFile)
 
 		burn(record, dataFile)
 	}
 }
 
-func burn(record common.IndexRecord, dataFile *os.File) {
+func burn(record common.Record, dataFile *os.File) {
 	if record.Sent != 0 {
 		if _, ok := ConnectionsMap[record.Connection]; ok {
 			return

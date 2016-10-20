@@ -9,16 +9,6 @@ import (
 	"runtime"
 )
 
-func writeData(file *bufio.Writer, record *common.IndexRecord) {
-	_, err := file.Write(record.Data)
-	common.FaceIt(err)
-}
-
-func writeIndex(file *bufio.Writer, record *common.IndexRecord, offset uint64) {
-	record.DataSeek = offset
-	file.Write(record.Serialize())
-}
-
 func compressorStage1() {
 	for {
 		message := <-CompressorChannel
@@ -37,9 +27,9 @@ func compressorStage2() {
 	common.FaceIt(err)
 
 	ptr, err := indexFile.Seek(0, os.SEEK_CUR)
-	IndexOffset := uint64(ptr)
+	indexOffset := uint64(ptr)
 	ptr, err = indexFile.Seek(0, os.SEEK_CUR)
-	DataOffset := uint64(ptr)
+	dataOffset := uint64(ptr)
 
 	dataWriter := bufio.NewWriterSize(dataFile, config.Base.FileBuffer)
 	indexWriter := bufio.NewWriterSize(indexFile, config.Base.FileBuffer)
@@ -47,17 +37,26 @@ func compressorStage2() {
 	for {
 		select {
 		case message := <-Stage2CompressorChannel:
-			writeData(dataWriter, message.Record)
-			writeIndex(indexWriter, message.Record, DataOffset)
-
-			IndexOffset += common.IndexSize
-			DataOffset += uint64(message.Record.DataLength)
+			persistRecord(message.Record, indexOffset, indexWriter, dataOffset, dataWriter)
 
 			message.AckChannel <- message.NumberInBatch
+
+			indexOffset += common.IndexSize
+			dataOffset += message.Record.DataLength
 		default:
 			indexWriter.Flush()
 			dataWriter.Flush()
 			runtime.Gosched()
 		}
 	}
+}
+
+func persistRecord(record *common.Record, indexOffset uint64, indexWriter *bufio.Writer, dataOffset uint64, dataWriter *bufio.Writer) {
+	record.DataSeek = dataOffset
+	_, err := dataWriter.Write(record.Data)
+	common.FaceIt(err)
+
+	record.Seek = indexOffset
+	_, err = indexWriter.Write(record.Serialize())
+	common.FaceIt(err)
 }

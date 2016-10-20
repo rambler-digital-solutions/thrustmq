@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-type IndexRecord struct {
+type Record struct {
 	Seek       uint64
 	DataSeek   uint64
 	DataLength uint64
@@ -21,16 +21,16 @@ type IndexRecord struct {
 	Retries   uint64
 }
 
-type RecordPipe chan *IndexRecord
+type RecordPipe chan *Record
 type RecordPipes []RecordPipe
 
 var IndexSize uint64 = 8 * 9
 
-func (self *IndexRecord) Slots() []*uint64 {
+func (self *Record) Slots() []*uint64 {
 	return []*uint64{&self.DataSeek, &self.DataLength, &self.BucketId, &self.Connection, &self.Created, &self.Enqueued, &self.Sent, &self.Delivered, &self.Retries}
 }
 
-func (self *IndexRecord) Serialize() []byte {
+func (self *Record) Serialize() []byte {
 	buffer := make([]byte, IndexSize)
 	slots := self.Slots()
 	for i := range slots {
@@ -39,7 +39,7 @@ func (self *IndexRecord) Serialize() []byte {
 	return buffer
 }
 
-func (self *IndexRecord) Deserialize(reader io.Reader) {
+func (self *Record) Deserialize(reader io.Reader) {
 	buffer := make([]byte, IndexSize)
 	io.ReadFull(reader, buffer)
 	slots := self.Slots()
@@ -48,7 +48,7 @@ func (self *IndexRecord) Deserialize(reader io.Reader) {
 	}
 }
 
-func (self *IndexRecord) Merge(other *IndexRecord) {
+func (self *Record) Merge(other *Record) {
 	slots1 := self.Slots()
 	slots2 := self.Slots()
 	for i := range slots1 {
@@ -56,7 +56,7 @@ func (self *IndexRecord) Merge(other *IndexRecord) {
 	}
 }
 
-func (self *IndexRecord) LoadData(file *os.File) {
+func (self *Record) LoadData(file *os.File) {
 	_, err := file.Seek(int64(self.DataSeek), os.SEEK_SET)
 	if err != nil {
 		return

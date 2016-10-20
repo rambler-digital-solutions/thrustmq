@@ -69,7 +69,7 @@ func offTestRecipienceOfSingleMessage(t *testing.T) {
 	consumer.Disconnect()
 	randomNumber := uint64(rand.Int63())
 	binary.LittleEndian.PutUint64(buffer, randomNumber)
-	exhaust.CombustorChannel <- &common.IndexRecord{DataLength: 8, Data: buffer[0:8]}
+	exhaust.CombustorChannel <- &common.Record{DataLength: 8, Data: buffer[0:8]}
 	checkCombustor(t, 1)
 
 	bootstrapExhaust(t)
@@ -107,7 +107,7 @@ func offTestRecipienceOfMultipleMessages(t *testing.T) {
 		randomNumbers[i] = uint64(rand.Int63())
 		payload := make([]byte, 8)
 		binary.LittleEndian.PutUint64(payload, randomNumbers[i])
-		exhaust.CombustorChannel <- &common.IndexRecord{DataLength: 8, Data: buffer[0:8]}
+		exhaust.CombustorChannel <- &common.Record{DataLength: 8, Data: buffer[0:8]}
 	}
 
 	bootstrapExhaust(t)

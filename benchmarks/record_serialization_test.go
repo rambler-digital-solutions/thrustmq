@@ -37,7 +37,7 @@ func prepare(n int) {
 func BenchmarkRecordSerialization(b *testing.B) {
 	indexWriter := getBufferedWriter()
 	for i := 0; i < b.N; i++ {
-		record := common.IndexRecord{}
+		record := common.Record{}
 		slots := record.Slots()
 		for i := 0; i < len(slots); i++ {
 			*slots[i] = uint64(rand.Int63())
@@ -54,7 +54,7 @@ func BenchmarkRecordSequentialDeserialization(b *testing.B) {
 
 	indexReader := getBufferedReader()
 	for i := 0; i < b.N; i++ {
-		readRecord := common.IndexRecord{}
+		readRecord := common.Record{}
 		readRecord.Deserialize(indexReader)
 		if readRecord.Connection != uint64(i+1) {
 			b.Errorf("data corruption at record #%d %d", i, readRecord.Connection)
@@ -69,7 +69,7 @@ func BenchmarkRecordRandomDeserialization(b *testing.B) {
 	indexFile := getFile()
 	for i := 0; i < b.N; i++ {
 		indexFile.Seek(int64(b.N-1-i)*int64(common.IndexSize), os.SEEK_SET)
-		readRecord := common.IndexRecord{}
+		readRecord := common.Record{}
 		readRecord.Deserialize(indexFile)
 		if readRecord.Connection != uint64(b.N-i) {
 			b.Errorf("data corruption at record #%d %d", i, readRecord.Connection)

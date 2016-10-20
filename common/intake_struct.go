@@ -5,24 +5,24 @@ import (
 	"io"
 )
 
-type MessageStruct struct {
+type IntakeStruct struct {
 	AckChannel    chan int
 	NumberInBatch int
-	Record        *IndexRecord
+	Record        *Record
 }
 
-type MessageChannel chan *MessageStruct
+type IntakeChannel chan *IntakeStruct
 
 var MessageHeaderSize = 12
 
-func (self *MessageStruct) Deserialize(reader io.Reader) bool {
+func (self *IntakeStruct) Deserialize(reader io.Reader) bool {
 	header := make([]byte, MessageHeaderSize)
 	bytesRead, _ := io.ReadFull(reader, header)
 	if bytesRead != MessageHeaderSize {
 		return false
 	}
 
-	self.Record = &IndexRecord{}
+	self.Record = &Record{}
 	self.Record.BucketId = binary.LittleEndian.Uint64(header[0:8])
 	self.Record.DataLength = uint64(binary.LittleEndian.Uint32(header[8:12]))
 
@@ -35,7 +35,7 @@ func (self *MessageStruct) Deserialize(reader io.Reader) bool {
 	return true
 }
 
-func (self *MessageStruct) Serialize() []byte {
+func (self *IntakeStruct) Serialize() []byte {
 	buffer := make([]byte, 4+self.Record.DataLength)
 	binary.LittleEndian.PutUint32(buffer[0:4], uint32(self.Record.DataLength))
 	copy(buffer[4:], self.Record.Data[:])

@@ -40,7 +40,7 @@ func (self *ConnectionStruct) SendActualBatchSize(batchSize int) {
 	self.Writer.Write(buffer)
 }
 
-func (self *ConnectionStruct) SendMessage(message IndexRecord) error {
+func (self *ConnectionStruct) SendMessage(message Record) error {
 	bytes := message.Serialize()
 	_, err := self.Writer.Write(bytes)
 	return err
@@ -54,7 +54,7 @@ func (self *ConnectionStruct) GetAcks(batchSize int) ([]byte, error) {
 
 func (self *ConnectionStruct) Ping() bool {
 	self.SendActualBatchSize(1)
-	message := IndexRecord{}
+	message := Record{}
 	self.SendMessage(message)
 	self.Writer.Flush()
 

@@ -36,7 +36,7 @@ func TestIntakePersistence(t *testing.T) {
 	stat, err := indexFile.Stat()
 	indexFile.Seek(stat.Size()-int64(common.IndexSize), os.SEEK_SET)
 
-	record := common.IndexRecord{}
+	record := common.Record{}
 	record.Deserialize(indexFile)
 
 	dataFile, err := os.OpenFile(config.Base.Data, os.O_RDONLY, 0666)

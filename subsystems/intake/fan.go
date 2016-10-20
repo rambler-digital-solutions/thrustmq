@@ -32,14 +32,14 @@ func suck(connection net.Conn) {
 		ackChannel := make(chan int, batchSize)
 
 		for i := 0; i < batchSize; i++ {
-			message := common.MessageStruct{}
+			message := &common.IntakeStruct{}
 			message.AckChannel = ackChannel
 			message.NumberInBatch = i
 			if !message.Deserialize(reader) {
 				log.Print("Could not deserialize message...")
 				return
 			}
-			CompressorChannel <- &message
+			CompressorChannel <- message
 		}
 
 		response := make([]byte, batchSize)

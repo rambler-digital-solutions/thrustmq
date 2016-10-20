@@ -36,7 +36,7 @@ func registerDisconnect(connectionStruct common.ConnectionStruct) {
 	logging.LostConsumer(connectionStruct.Connection.RemoteAddr(), len(ConnectionsMap))
 }
 
-func sendBatch(client common.ConnectionStruct, batchSize int, ackArray []common.IndexRecord) {
+func sendBatch(client common.ConnectionStruct, batchSize int, ackArray []common.Record) {
 	client.SendActualBatchSize(batchSize)
 	for i := 0; i < batchSize; i++ {
 		record := *<-CombustorChannel
@@ -54,7 +54,7 @@ func sendBatch(client common.ConnectionStruct, batchSize int, ackArray []common.
 	client.Writer.Flush()
 }
 
-func recieveAcks(client common.ConnectionStruct, batchSize int, ackArray []common.IndexRecord) {
+func recieveAcks(client common.ConnectionStruct, batchSize int, ackArray []common.Record) {
 	acks, _ := client.GetAcks(batchSize)
 	for i := 0; i < batchSize; i++ {
 		record := ackArray[i]
@@ -79,7 +79,7 @@ func blow(connection net.Conn) {
 		batchSize = common.Min(int(client.BatchSize), len(CombustorChannel))
 
 		if batchSize > 0 {
-			ackArray := make([]common.IndexRecord, batchSize)
+			ackArray := make([]common.Record, batchSize)
 			sendBatch(client, batchSize, ackArray)
 			recieveAcks(client, batchSize, ackArray)
 		} else {

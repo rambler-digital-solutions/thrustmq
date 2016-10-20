@@ -12,7 +12,7 @@ func TestRecordSerialization(t *testing.T) {
 	common.FaceIt(err)
 	defer indexFile.Close()
 
-	record := common.IndexRecord{}
+	record := common.Record{}
 
 	slots := record.Slots()
 	for i := 0; i < len(slots); i++ {
@@ -23,7 +23,7 @@ func TestRecordSerialization(t *testing.T) {
 	indexFile.Write(record.Serialize())
 
 	indexFile.Seek(0, os.SEEK_SET)
-	readRecord := common.IndexRecord{}
+	readRecord := common.Record{}
 	readRecord.Deserialize(indexFile)
 
 	readSlots := readRecord.Slots()

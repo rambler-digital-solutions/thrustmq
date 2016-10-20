@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	Stage2CompressorChannel common.MessageChannel = make(common.MessageChannel, config.Intake.CompressorBuffer)
-	CompressorChannel       common.MessageChannel = make(common.MessageChannel, config.Intake.CompressorBuffer)
+	Stage2CompressorChannel common.IntakeChannel = make(common.IntakeChannel, config.Intake.CompressorBuffer)
+	CompressorChannel       common.IntakeChannel = make(common.IntakeChannel, config.Intake.CompressorBuffer)
 )
 
 func Init() {

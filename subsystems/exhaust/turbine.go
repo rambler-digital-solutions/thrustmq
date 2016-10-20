@@ -23,7 +23,7 @@ func turbine() {
 }
 
 func mark(notificationsLen int, file *os.File) {
-	hash := make(map[uint64]*common.IndexRecord)
+	hash := make(map[uint64]*common.Record)
 
 	for i := 0; i < notificationsLen; i++ {
 		recordFromChannel := <-TurbineChannel
@@ -33,18 +33,18 @@ func mark(notificationsLen int, file *os.File) {
 	flush(hash, file)
 }
 
-func merge(hash map[uint64]*common.IndexRecord, record *common.IndexRecord, file *os.File) {
+func merge(hash map[uint64]*common.Record, record *common.Record, file *os.File) {
 	if _, ok := hash[record.Seek]; ok {
 		hash[record.Seek].Merge(record)
 	} else {
 		_, err := file.Seek(int64(record.Seek), os.SEEK_SET)
 		common.FaceIt(err)
-		hash[record.Seek] = &common.IndexRecord{}
+		hash[record.Seek] = &common.Record{}
 		hash[record.Seek].Deserialize(file)
 	}
 }
 
-func flush(hash map[uint64]*common.IndexRecord, file *os.File) {
+func flush(hash map[uint64]*common.Record, file *os.File) {
 	for _, record := range hash {
 		_, err := file.Seek(int64(record.Seek), os.SEEK_SET)
 		common.FaceIt(err)
