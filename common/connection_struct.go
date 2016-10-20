@@ -20,7 +20,6 @@ type ConnectionStruct struct {
 }
 
 type ConnectionsMap map[uint64]ConnectionStruct
-type BucketsMap map[uint64]([]uint64)
 
 var ConnectionHeaderSize = 20
 

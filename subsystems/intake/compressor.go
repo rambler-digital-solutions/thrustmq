@@ -58,6 +58,7 @@ func persistRecord(record *common.Record, indexOffset uint64, indexWriter *bufio
 	common.FaceIt(err)
 
 	record.Seek = indexOffset
+	record.Created = uint64(time.Now().UnixNano())
 	_, err = indexWriter.Write(record.Serialize())
 	common.FaceIt(err)
 

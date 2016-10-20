@@ -7,6 +7,8 @@ import (
 	"runtime"
 )
 
+var TurbineMap map[uint64]*common.Record
+
 func turbine() {
 	file, err := os.OpenFile(config.Base.Index, os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)

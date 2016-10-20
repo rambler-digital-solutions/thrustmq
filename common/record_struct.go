@@ -19,6 +19,8 @@ type Record struct {
 	Sent      uint64
 	Delivered uint64
 	Retries   uint64
+
+	Dirty bool
 }
 
 type RecordPipe chan *Record

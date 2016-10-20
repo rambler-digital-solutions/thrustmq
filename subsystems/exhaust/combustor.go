@@ -9,51 +9,59 @@ import (
 	"strconv"
 )
 
-var combustorThreshold = config.Exhaust.CombustionBuffer / 2
-var turbineThreshold = config.Exhaust.TurbineBuffer / 2
+func forward() {
+	// grab messages in channel & pass them to nozzles
+
+	// if there's no connection for this bucket - do nothing
+	// else send it to the nozzle (RR), add dirty sent record to turbine (with retries++)
+
+	// same logic for file reader
+
+	// record.Enqueued = common.TimestampUint64()
+	// record.Retries++
+}
 
 func combustion() {
 	for {
+		select {
+		case record := <-CombustorChannel:
+			forward(record)
+		default:
+			runtime.Gosched()
+		}
+	}
+}
+
+func afterburner() {
+	indexFile, err := os.OpenFile(config.Base.Index, os.O_RDWR|os.O_CREATE, 0666)
+	common.FaceIt(err)
+	defer indexFile.Close()
+
+	for {
 		if len(TurbineChannel) < turbineThreshold && len(CombustorChannel) < combustorThreshold && State.Tail < State.Head {
-			burst()
+			burn(getReader(), dataFile)
 		} else {
 			runtime.Gosched()
 		}
 	}
 }
 
-func burst() {
-	indexFile, err := os.OpenFile(config.Base.Index, os.O_RDWR|os.O_CREATE, 0666)
-	common.FaceIt(err)
-	defer indexFile.Close()
-
-	dataFile, err := os.OpenFile(config.Base.Data, os.O_RDONLY|os.O_CREATE, 0666)
-	common.FaceIt(err)
-	defer dataFile.Close()
-
+func getReader() {
 	stat, err := indexFile.Stat()
+	common.FaceIt(err)
 	State.Head = uint64(stat.Size())
-
-	logging.Debug("bursting", strconv.Itoa(int(State.Tail)), strconv.Itoa(int(State.Head)))
-	for ptr := State.Tail; ptr <= State.Head-common.IndexSize; ptr += common.IndexSize {
-		_, err = indexFile.Seek(int64(ptr), os.SEEK_SET)
-		common.FaceIt(err)
-
-		record := common.Record{}
-		record.Deserialize(indexFile)
-
-		burn(record, dataFile)
-	}
+	_, err = indexFile.Seek(State.Tail, os.SEEK_SET)
+	common.FaceIt(err)
+	indexReader = bufio.NewReaderSize(reader, config.Base.NetworkBuffer)
 }
 
-func burn(record common.Record, dataFile *os.File) {
-	if record.Sent != 0 {
-		if _, ok := ConnectionsMap[record.Connection]; ok {
-			return
-		}
+func burn() {
+	logging.Debug("bursting", strconv.Itoa(int(State.Tail)), strconv.Itoa(int(State.Head)))
+
+	for ptr := State.Tail; ptr <= State.Head-common.IndexSize; ptr += common.IndexSize {
+		record := common.Record{}
+		record.Deserialize(indexFile)
+		record.Seek = ptr
+		forward(record)
 	}
-	CombustorChannel <- &record
-	record.Enqueued = common.TimestampUint64()
-	record.Retries++
-	TurbineChannel <- &record
 }

@@ -9,11 +9,9 @@ import (
 )
 
 var (
-	TurbineChannel                         = make(common.RecordPipe, config.Exhaust.TurbineBuffer)
 	CombustorChannel common.RecordPipe     = make(common.RecordPipe, config.Exhaust.CombustionBuffer)
 	ConnectionsMap   common.ConnectionsMap = make(common.ConnectionsMap)
-	bucketsMap       common.BucketsMap     = make(common.BucketsMap)
-	State            StateStruct           = loadState()
+	State            common.StateStruct    = loadState()
 )
 
 func Init() {
@@ -25,6 +23,7 @@ func Init() {
 	common.FaceIt(err)
 
 	//go combustion()
+	//go afterburner()
 	//go turbine()
 
 	var connection net.Conn
