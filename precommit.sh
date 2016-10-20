@@ -2,6 +2,5 @@
 
 ./format.sh
 go test ./tests/...
-go test -bench=. -benchmem ./benchmarks/... > .bench
+go test -bench=. -benchmem ./benchmarks/...
 git add -A
-git diff --cached

@@ -34,9 +34,7 @@ func (self *ConnectionStruct) DeserializeHeader() {
 }
 
 func (self *ConnectionStruct) SendActualBatchSize(batchSize int) {
-	buffer := make([]byte, 4)
-	binary.LittleEndian.PutUint32(buffer, uint32(batchSize))
-	self.Writer.Write(buffer)
+	self.Writer.Write(BinUint32(uint32(batchSize)))
 }
 
 func (self *ConnectionStruct) SendMessage(record *Record) error {
