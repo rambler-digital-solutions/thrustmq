@@ -5,13 +5,14 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/clients/golang/producer"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
+	"github.com/rambler-digital-solutions/thrustmq/tests/helper"
 	"math/rand"
 	"os"
 	"testing"
 )
 
 func TestIntakePersistence(t *testing.T) {
-	bootstrapIntake(t)
+	helper.BootstrapIntake(t)
 
 	expectedPayload := rand.Uint32()
 	buffer := common.BinUint32(expectedPayload)

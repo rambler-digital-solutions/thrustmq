@@ -9,7 +9,7 @@
         "CombustionBuffer": 1024,
         "NozzleBuffer": 1024,
         "Chamber": "data/chamber",
-        "HeartbeatRate": 1e8
+        "HeartbeatRate": 1e9
     },
     "Logfile": "data/system.log",
     "Index": "data/index",

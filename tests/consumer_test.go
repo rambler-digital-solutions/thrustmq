@@ -4,49 +4,16 @@ import (
 	"encoding/binary"
 	"github.com/rambler-digital-solutions/thrustmq/clients/golang/consumer"
 	"github.com/rambler-digital-solutions/thrustmq/common"
-	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
+	"github.com/rambler-digital-solutions/thrustmq/tests/helper"
 	"math/rand"
 	"testing"
-	"time"
 )
-
-var exhaustInitialized bool = false
-var buffer []byte = make([]byte, 1024)
-
-func checkCombustor(t *testing.T, size int) {
-	if len(exhaust.CombustorChannel) != size {
-		t.Fatalf("combustor channel size %d (should be %d)", len(exhaust.CombustorChannel), size)
-	}
-}
-
-func checkConnections(t *testing.T, size int) {
-	time.Sleep(1e8)
-	if len(exhaust.ConnectionsMap) != size {
-		t.Fatalf("%d connections instead of %d", len(exhaust.ConnectionsMap), size)
-	}
-}
-
-func bootstrapExhaust(t *testing.T) {
-	if !exhaustInitialized {
-		rand.Seed(time.Now().UTC().UnixNano())
-		logging.Init()
-		exhaust.State.Tail = exhaust.State.Head
-		go exhaust.Init()
-		time.Sleep(1e7)
-		exhaustInitialized = true
-	}
-
-	consumer.Disconnect()
-	checkConnections(t, 0)
-	consumer.Connect()
-	checkConnections(t, 1)
-}
 
 func TestPing(t *testing.T) {
 	consumer.Disconnect()
 
-	bootstrapExhaust(t)
+	helper.BootstrapExhaust(t)
 
 	consumer.SendHeader(1, uint64(rand.Int63()))
 
@@ -65,20 +32,18 @@ func TestPing(t *testing.T) {
 	}
 }
 
-func offTestRecipienceOfSingleMessage(t *testing.T) {
-	consumer.Disconnect()
+func TestRecipienceOfSingleMessage(t *testing.T) {
 	randomNumber := uint64(rand.Int63())
-	binary.LittleEndian.PutUint64(buffer, randomNumber)
-	exhaust.CombustorChannel <- &common.Record{DataLength: 8, Data: buffer[0:8]}
-	checkCombustor(t, 1)
 
-	bootstrapExhaust(t)
+	helper.BootstrapExhaust(t)
+
+	channel := exhaust.ConnectionsMap[common.State.ConnectionId].Channel
+	record := &common.Record{DataLength: 8, Data: common.BinUint64(randomNumber)}
+	channel <- record
+	helper.CheckConnectionChannel(t, common.State.ConnectionId, 1)
 
 	consumer.SendHeader(1, uint64(rand.Uint32()))
-
 	messages := consumer.RecieveBatch()
-	checkCombustor(t, 0)
-
 	consumer.SendAcks(1)
 
 	expectedBatchSize := 1
@@ -99,20 +64,19 @@ func offTestRecipienceOfSingleMessage(t *testing.T) {
 	}
 }
 
-func offTestRecipienceOfMultipleMessages(t *testing.T) {
-	consumer.Disconnect()
+func TestRecipienceOfMultipleMessages(t *testing.T) {
+	helper.BootstrapExhaust(t)
+
 	batchSize := 3
 	randomNumbers := make([]uint64, batchSize)
+	channel := exhaust.ConnectionsMap[common.State.ConnectionId].Channel
 	for i := 0; i < batchSize; i++ {
 		randomNumbers[i] = uint64(rand.Int63())
-		payload := make([]byte, 8)
-		binary.LittleEndian.PutUint64(payload, randomNumbers[i])
-		exhaust.CombustorChannel <- &common.Record{DataLength: 8, Data: buffer[0:8]}
+		record := &common.Record{DataLength: 8, Data: common.BinUint64(randomNumbers[i])}
+		channel <- record
 	}
 
-	bootstrapExhaust(t)
 	consumer.SendHeader(batchSize, uint64(rand.Int63()))
-
 	messages := consumer.RecieveBatch()
 	consumer.SendAcks(batchSize)
 

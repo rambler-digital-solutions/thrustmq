@@ -2,29 +2,13 @@ package tests
 
 import (
 	"github.com/rambler-digital-solutions/thrustmq/clients/golang/producer"
-	"github.com/rambler-digital-solutions/thrustmq/logging"
-	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
+	"github.com/rambler-digital-solutions/thrustmq/tests/helper"
 	"math/rand"
 	"testing"
-	"time"
 )
 
-var intakeInitialized bool = false
-
-func bootstrapIntake(t *testing.T) {
-	if !intakeInitialized {
-		logging.Init()
-		go intake.Init()
-		rand.Seed(time.Now().UTC().UnixNano())
-		time.Sleep(1e6)
-		intakeInitialized = true
-	}
-	producer.Disconnect()
-	producer.Connect()
-}
-
 func TestSendOneMessage(t *testing.T) {
-	bootstrapIntake(t)
+	helper.BootstrapIntake(t)
 
 	messages := make([]producer.Message, 1)
 	messages[0] = producer.Message{}
@@ -42,7 +26,7 @@ func TestSendOneMessage(t *testing.T) {
 }
 
 func TestSendSeveralMessages(t *testing.T) {
-	bootstrapIntake(t)
+	helper.BootstrapIntake(t)
 
 	numberOfMessages := 3
 	messages := make([]producer.Message, numberOfMessages)

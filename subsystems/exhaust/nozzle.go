@@ -70,7 +70,7 @@ func blow(connection net.Conn) {
 	defer registerDisconnect(client)
 
 	for {
-		batchSize := common.Min(int(client.BatchSize), len(CombustorChannel))
+		batchSize := common.Min(int(client.BatchSize), len(client.Channel))
 
 		if batchSize > 0 {
 			batch := make([]*common.Record, batchSize)
