@@ -25,10 +25,6 @@ func registerConnect(connection net.Conn) *common.ConnectionStruct {
 
 	ConnectionsMap[connectionStruct.Id] = connectionStruct
 	logging.NewConsumer(connectionStruct, len(ConnectionsMap))
-
-	connectionStruct.DeserializeHeader()
-	logging.NewConsumerHeader(connectionStruct)
-
 	return connectionStruct
 }
 
@@ -68,6 +64,11 @@ func recieveAcks(client *common.ConnectionStruct, batch []*common.Record) {
 func blow(connection net.Conn) {
 	client := registerConnect(connection)
 	defer registerDisconnect(client)
+
+	if !client.DeserializeHeader() {
+		return
+	}
+	logging.NewConsumerHeader(client)
 
 	for {
 		batchSize := common.Min(int(client.BatchSize), len(client.Channel))

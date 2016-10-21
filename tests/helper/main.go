@@ -51,6 +51,12 @@ func CheckCombustor(t *testing.T, size int) {
 	}
 }
 
+func CheckRecordsMap(t *testing.T, size int) {
+	if len(exhaust.RecordsMap) != size {
+		t.Fatalf("record map size %d (should be %d)", len(exhaust.RecordsMap), size)
+	}
+}
+
 func CheckConnections(t *testing.T, size int) {
 	time.Sleep(1e8)
 	if len(exhaust.ConnectionsMap) != size {

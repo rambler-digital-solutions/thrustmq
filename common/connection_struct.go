@@ -23,14 +23,18 @@ type ConnectionsMap map[uint64]*ConnectionStruct
 
 var ConnectionHeaderSize = 20
 
-func (self *ConnectionStruct) DeserializeHeader() {
+func (self *ConnectionStruct) DeserializeHeader() bool {
 	buffer := make([]byte, ConnectionHeaderSize)
 	_, err := io.ReadFull(self.Reader, buffer)
-	FaceIt(err)
+	if err != nil {
+		return false
+	}
 
 	self.Client = binary.LittleEndian.Uint64(buffer[0:8])
 	self.Bucket = binary.LittleEndian.Uint64(buffer[8:16])
 	self.BatchSize = binary.LittleEndian.Uint32(buffer[16:20])
+
+	return true
 }
 
 func (self *ConnectionStruct) SendActualBatchSize(batchSize int) {

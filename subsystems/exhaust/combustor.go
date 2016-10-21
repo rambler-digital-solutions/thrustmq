@@ -14,7 +14,6 @@ func forward(record *common.Record) {
 		delete(RecordsMap, record.Seek)
 		return
 	}
-
 	for _, connection := range ConnectionsMap {
 		if connection.Bucket == record.Bucket && len(connection.Channel) != cap(connection.Channel) {
 			record.Connection = connection.Id

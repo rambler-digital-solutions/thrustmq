@@ -23,9 +23,9 @@ func recordInMemory(record *common.Record) bool {
 
 func connectionAlive(id uint64) bool {
 	if _, ok := ConnectionsMap[id]; ok {
-		return false
+		return true
 	}
-	return true
+	return false
 }
 
 func bucketRequired(id uint64) bool {
