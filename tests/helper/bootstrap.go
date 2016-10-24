@@ -40,33 +40,8 @@ func BootstrapExhaust(t *testing.T) {
 	}
 
 	consumer.Disconnect()
+
 	CheckConnections(t, 0)
 	consumer.Connect()
 	CheckConnections(t, 1)
-}
-
-func CheckCombustor(t *testing.T, size int) {
-	if len(exhaust.CombustorChannel) != size {
-		t.Fatalf("combustor channel size %d (should be %d)", len(exhaust.CombustorChannel), size)
-	}
-}
-
-func CheckRecordsMap(t *testing.T, size int) {
-	if len(exhaust.RecordsMap) != size {
-		t.Fatalf("record map size %d (should be %d)", len(exhaust.RecordsMap), size)
-	}
-}
-
-func CheckConnections(t *testing.T, size int) {
-	time.Sleep(1e8)
-	if len(exhaust.ConnectionsMap) != size {
-		t.Fatalf("%d connections instead of %d", len(exhaust.ConnectionsMap), size)
-	}
-}
-
-func CheckConnectionChannel(t *testing.T, id uint64, size int) {
-	actual := len(exhaust.ConnectionsMap[common.State.ConnectionId].Channel)
-	if actual != size {
-		t.Fatalf("%d record in %d connection channel (should be %d)", actual, id, size)
-	}
 }

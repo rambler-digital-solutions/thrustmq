@@ -17,9 +17,7 @@ func TestTurbineFlush(t *testing.T) {
 	record := &common.Record{}
 	record.Created = uint64(rand.Int63())
 	record.Dirty = true
-	exhaust.RecordsMutex.Lock()
-	exhaust.RecordsMap[0] = record
-	exhaust.RecordsMutex.Unlock()
+	exhaust.MapRecord(record)
 
 	time.Sleep(1e7)
 
@@ -41,9 +39,7 @@ func TestTurbineRemoveSent(t *testing.T) {
 
 	record := &common.Record{}
 	record.Delivered = common.TimestampUint64()
-	exhaust.RecordsMutex.Lock()
-	exhaust.RecordsMap[0] = record
-	exhaust.RecordsMutex.Unlock()
+	exhaust.MapRecord(record)
 
 	helper.CheckRecordsMap(t, 1)
 	time.Sleep(1e7)
@@ -62,17 +58,15 @@ func TestTurbineRequeueOnDeadConnection(t *testing.T) {
 	connectionId := uint64(rand.Int63())
 	deadConnectionId := uint64(rand.Int63())
 
-	record := &common.Record{Bucket: bucket}
+	record := &common.Record{}
+	record.Bucket = bucket
 	record.Connection = deadConnectionId
 	record.Enqueued = common.TimestampUint64()
-	exhaust.RecordsMutex.Lock()
-	exhaust.RecordsMap[0] = record
-	exhaust.RecordsMutex.Unlock()
 
-	exhaust.ConnectionsMap[connectionId] = &common.ConnectionStruct{Id: connectionId, Bucket: bucket}
-	exhaust.ConnectionsMap[connectionId].Channel = make(common.RecordPipe, config.Exhaust.NozzleBuffer)
+	helper.ForgeConnection(t, connectionId, bucket)
+	exhaust.MapRecord(record)
 
-	time.Sleep(1e6)
+	time.Sleep(1e7)
 
 	exhaust.ProcessRecord(record, indexFile)
 

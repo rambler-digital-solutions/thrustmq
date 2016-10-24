@@ -56,7 +56,6 @@ func recieveAcks(client *common.ConnectionStruct, batch []*common.Record) {
 			batch[i].Delivered = common.TimestampUint64()
 		} else {
 			log.Print("returning record to combustor")
-			log.Print(acks[i])
 		}
 	}
 }

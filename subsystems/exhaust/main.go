@@ -12,31 +12,69 @@ import (
 var (
 	CombustorChannel common.RecordPipe     = make(common.RecordPipe, config.Exhaust.CombustionBuffer)
 	ConnectionsMap   common.ConnectionsMap = make(common.ConnectionsMap)
-	ConnectionsMutex *sync.Mutex           = &sync.Mutex{}
+	ConnectionsMutex *sync.RWMutex         = &sync.RWMutex{}
 	RecordsMap       common.RecordsMap     = make(common.RecordsMap)
-	RecordsMutex     *sync.Mutex           = &sync.Mutex{}
+	RecordsMutex     *sync.RWMutex         = &sync.RWMutex{}
 )
 
-func recordInMemory(record *common.Record) bool {
-	if _, ok := ConnectionsMap[record.Seek]; ok {
-		return false
-	}
-	return true
+func DeleteRecord(record *common.Record) {
+	RecordsMutex.Lock()
+	delete(RecordsMap, record.Seek)
+	RecordsMutex.Unlock()
 }
 
-func connectionAlive(id uint64) bool {
-	if _, ok := ConnectionsMap[id]; ok {
+func MapRecord(record *common.Record) {
+	RecordsMutex.Lock()
+	RecordsMap[record.Seek] = record
+	RecordsMutex.Unlock()
+}
+
+func recordInMemory(record *common.Record) bool {
+	RecordsMutex.RLock()
+	_, ok := RecordsMap[record.Seek]
+	RecordsMutex.RUnlock()
+	if ok {
 		return true
 	}
 	return false
 }
 
-func bucketRequired(id uint64) bool {
+func MapConnection(connection *common.ConnectionStruct) {
+	ConnectionsMutex.Lock()
+	ConnectionsMap[connection.Id] = connection
+	ConnectionsMutex.Unlock()
+}
+
+func DeleteConnection(connection *common.ConnectionStruct) {
+	ConnectionsMutex.Lock()
+	delete(ConnectionsMap, connection.Id)
+	ConnectionsMutex.Unlock()
+}
+
+func DeleteConnectionById(id uint64) {
+	ConnectionsMutex.Lock()
+	delete(ConnectionsMap, id)
+	ConnectionsMutex.Unlock()
+}
+
+func connectionAlive(id uint64) bool {
+	ConnectionsMutex.RLock()
+	_, ok := ConnectionsMap[id]
+	ConnectionsMutex.RUnlock()
+	if ok {
+		return true
+	}
+	return false
+}
+
+func BucketRequired(bucketId uint64) bool {
+	ConnectionsMutex.RLock()
 	for _, connection := range ConnectionsMap {
-		if id == connection.Bucket {
+		if bucketId == connection.Bucket {
 			return true
 		}
 	}
+	ConnectionsMutex.RUnlock()
 	return false
 }
 

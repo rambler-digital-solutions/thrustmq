@@ -4,16 +4,19 @@ import (
 	"bufio"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
-	"log"
 	"os"
 	"runtime"
 )
 
 func forward(record *common.Record) {
-	if !bucketRequired(record.Bucket) {
-		delete(RecordsMap, record.Seek)
+	if !BucketRequired(record.Bucket) {
+		DeleteRecord(record)
 		return
 	}
+	if record.Dirty || record.Enqueued > 0 {
+		return
+	}
+	ConnectionsMutex.RLock()
 	for _, connection := range ConnectionsMap {
 		if connection.Bucket == record.Bucket && len(connection.Channel) != cap(connection.Channel) {
 			record.Connection = connection.Id
@@ -23,6 +26,7 @@ func forward(record *common.Record) {
 			connection.Channel <- record
 		}
 	}
+	ConnectionsMutex.RUnlock()
 }
 
 func combustor() {
@@ -60,12 +64,19 @@ func getReader(indexFile *os.File) *bufio.Reader {
 }
 
 func burn(reader *bufio.Reader) {
-	log.Print("burning", common.State.Tail, common.State.Head)
-
 	for ptr := common.State.Tail; ptr <= common.State.Head-common.IndexSize; ptr += common.IndexSize {
 		record := &common.Record{}
 		record.Deserialize(reader)
 		record.Seek = ptr
+		if !recordInMemory(record) {
+			RecordsMutex.Lock()
+			RecordsMap[record.Seek] = record
+			RecordsMutex.Unlock()
+		} else {
+			RecordsMutex.RLock()
+			record = RecordsMap[record.Seek]
+			RecordsMutex.RUnlock()
+		}
 		forward(record)
 	}
 }

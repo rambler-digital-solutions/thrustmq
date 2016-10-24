@@ -16,28 +16,24 @@ func turbine() {
 		for _, record := range RecordsMap {
 			ProcessRecord(record, file)
 		}
-
 		runtime.Gosched()
 	}
 }
 
 func ProcessRecord(record *common.Record, file *os.File) {
+	if record == nil {
+		return
+	}
 	if record.Dirty {
 		flushToDisk(file, record)
 	}
 	if record.Delivered != 0 {
-		deleteRecord(record)
+		DeleteRecord(record)
 	} else {
 		if record.Enqueued > 0 && !connectionAlive(record.Connection) {
 			enqueueAgain(record)
 		}
 	}
-}
-
-func deleteRecord(record *common.Record) {
-	RecordsMutex.Lock()
-	delete(RecordsMap, record.Seek)
-	RecordsMutex.Unlock()
 }
 
 func enqueueAgain(record *common.Record) {
