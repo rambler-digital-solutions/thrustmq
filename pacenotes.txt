@@ -2,6 +2,7 @@
 - if you write disk blocks - than performance skyrockets (x5, bufio)
 - context switches are evil
 - buffered sequential read is x10 times faster than random one
+- channels & mutexes
 
 https://www.gitbook.com/
 https://pages.github.com/

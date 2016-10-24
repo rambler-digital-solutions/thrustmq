@@ -19,6 +19,7 @@ func forward(record *common.Record) {
 			record.Connection = connection.Id
 			record.Enqueued = common.TimestampUint64()
 			record.Retries++
+			record.Dirty = true
 			connection.Channel <- record
 		}
 	}

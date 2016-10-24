@@ -6,12 +6,15 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"net"
+	"sync"
 )
 
 var (
 	CombustorChannel common.RecordPipe     = make(common.RecordPipe, config.Exhaust.CombustionBuffer)
 	ConnectionsMap   common.ConnectionsMap = make(common.ConnectionsMap)
+	ConnectionsMutex *sync.Mutex           = &sync.Mutex{}
 	RecordsMap       common.RecordsMap     = make(common.RecordsMap)
+	RecordsMutex     *sync.Mutex           = &sync.Mutex{}
 )
 
 func recordInMemory(record *common.Record) bool {

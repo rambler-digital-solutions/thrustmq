@@ -14,9 +14,12 @@ import (
 func TestTurbineFlush(t *testing.T) {
 	helper.BootstrapExhaust(t)
 
-	exhaust.RecordsMap[0] = &common.Record{}
-	exhaust.RecordsMap[0].Created = uint64(rand.Int63())
-	exhaust.RecordsMap[0].Dirty = true
+	record := &common.Record{}
+	record.Created = uint64(rand.Int63())
+	record.Dirty = true
+	exhaust.RecordsMutex.Lock()
+	exhaust.RecordsMap[0] = record
+	exhaust.RecordsMutex.Unlock()
 
 	time.Sleep(1e7)
 
@@ -36,8 +39,12 @@ func TestTurbineFlush(t *testing.T) {
 func TestTurbineRemoveSent(t *testing.T) {
 	helper.BootstrapExhaust(t)
 
-	exhaust.RecordsMap[0] = &common.Record{}
-	exhaust.RecordsMap[0].Delivered = common.TimestampUint64()
+	record := &common.Record{}
+	record.Delivered = common.TimestampUint64()
+	exhaust.RecordsMutex.Lock()
+	exhaust.RecordsMap[0] = record
+	exhaust.RecordsMutex.Unlock()
+
 	helper.CheckRecordsMap(t, 1)
 	time.Sleep(1e7)
 	helper.CheckRecordsMap(t, 0)
@@ -48,16 +55,36 @@ func TestTurbineRequeueOnDeadConnection(t *testing.T) {
 	helper.CheckCombustor(t, 0)
 	helper.CheckRecordsMap(t, 0)
 
+	indexFile, err := os.OpenFile(config.Base.Index, os.O_RDWR|os.O_CREATE, 0666)
+	common.FaceIt(err)
+
 	bucket := uint64(rand.Int63())
 	connectionId := uint64(rand.Int63())
-	exhaust.RecordsMap[0] = &common.Record{Bucket: bucket}
-	exhaust.RecordsMap[0].Connection = connectionId
+	deadConnectionId := uint64(rand.Int63())
+
+	record := &common.Record{Bucket: bucket}
+	record.Connection = deadConnectionId
+	record.Enqueued = common.TimestampUint64()
+	exhaust.RecordsMutex.Lock()
+	exhaust.RecordsMap[0] = record
+	exhaust.RecordsMutex.Unlock()
+
 	exhaust.ConnectionsMap[connectionId] = &common.ConnectionStruct{Id: connectionId, Bucket: bucket}
 	exhaust.ConnectionsMap[connectionId].Channel = make(common.RecordPipe, config.Exhaust.NozzleBuffer)
 
-	time.Sleep(1e7)
+	time.Sleep(1e6)
 
-	if exhaust.RecordsMap[0].Retries != 1 {
-		t.Fatalf("record wasn't Enqueued (%d retries)", exhaust.RecordsMap[0].Retries)
+	exhaust.ProcessRecord(record, indexFile)
+
+	exhaust.RecordsMutex.Lock()
+	retries := exhaust.RecordsMap[0].Retries
+	exhaust.RecordsMutex.Unlock()
+	if retries != 1 {
+		t.Fatalf("record wasn't Enqueued (%d retries) / combustor %d / recordsMap %d", retries, len(exhaust.CombustorChannel), len(exhaust.RecordsMap))
+	}
+
+	enqueuedToConnection := len(exhaust.ConnectionsMap[connectionId].Channel)
+	if enqueuedToConnection != 1 {
+		t.Fatalf("record wasn't added to connection queue (%d items)", enqueuedToConnection)
 	}
 }
