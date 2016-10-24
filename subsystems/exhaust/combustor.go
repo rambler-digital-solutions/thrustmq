@@ -9,11 +9,7 @@ import (
 )
 
 func forward(record *common.Record) {
-	if !BucketRequired(record.Bucket) {
-		DeleteRecord(record)
-		return
-	}
-	if record.Dirty || record.Enqueued > 0 {
+	if record.Enqueued > 0 {
 		return
 	}
 	ConnectionsMutex.RLock()
@@ -23,6 +19,7 @@ func forward(record *common.Record) {
 			record.Enqueued = common.TimestampUint64()
 			record.Retries++
 			record.Dirty = true
+			TurbineChannel <- record
 			connection.Channel <- record
 		}
 	}

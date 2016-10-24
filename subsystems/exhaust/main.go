@@ -11,6 +11,7 @@ import (
 
 var (
 	CombustorChannel common.RecordPipe     = make(common.RecordPipe, config.Exhaust.CombustionBuffer)
+	TurbineChannel   common.RecordPipe     = make(common.RecordPipe, config.Exhaust.CombustionBuffer)
 	ConnectionsMap   common.ConnectionsMap = make(common.ConnectionsMap)
 	ConnectionsMutex *sync.RWMutex         = &sync.RWMutex{}
 	RecordsMap       common.RecordsMap     = make(common.RecordsMap)
@@ -26,6 +27,7 @@ func Init() {
 	go combustor()
 	go afterburner()
 	go turbine()
+	go turbineStage2()
 
 	var connection net.Conn
 	for {

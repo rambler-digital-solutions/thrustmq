@@ -68,15 +68,21 @@ func TestRecipienceOfMultipleMessages(t *testing.T) {
 	helper.BootstrapExhaust(t)
 
 	batchSize := 3
+	bucketId := uint64(rand.Int63())
 	randomNumbers := make([]uint64, batchSize)
 	channel := exhaust.ConnectionsMapGet(common.State.ConnectionId).Channel
+	if len(channel) != 0 {
+		for i := 0; i < len(channel); i++ {
+			<-channel
+		}
+	}
 	for i := 0; i < batchSize; i++ {
 		randomNumbers[i] = uint64(rand.Int63())
-		record := &common.Record{DataLength: 8, Data: common.BinUint64(randomNumbers[i])}
+		record := &common.Record{DataLength: 8, Data: common.BinUint64(randomNumbers[i]), Bucket: bucketId}
 		channel <- record
 	}
 
-	consumer.SendHeader(batchSize, uint64(rand.Int63()))
+	consumer.SendHeader(batchSize, bucketId)
 	messages := consumer.RecieveBatch()
 	consumer.SendAcks(batchSize)
 
@@ -95,7 +101,7 @@ func TestRecipienceOfMultipleMessages(t *testing.T) {
 		}
 		actualNumber := binary.LittleEndian.Uint64(messages[i].Payload)
 		if !common.Contains(randomNumbers, actualNumber) {
-			t.Fatalf("recieved number %d was not sent at all cat ", actualNumber)
+			t.Fatalf("recieved number %d was not sent at all / step %d / conn %d", actualNumber, i, len(channel))
 		}
 	}
 }
