@@ -1,6 +1,7 @@
 package exhaust
 
 import (
+	"container/list"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 )
 
@@ -91,10 +92,50 @@ func ConnectionAlive(id uint64) bool {
 }
 
 func BucketRequired(bucketId uint64) bool {
-	for _, connection := range ConnectionsMap {
-		if bucketId == connection.Bucket {
-			return true
-		}
+	BucketsMutex.RLock()
+	result := BucketsMap[bucketId]
+	BucketsMutex.RUnlock()
+	if result == nil {
+		return false
 	}
-	return false
+	return true
+}
+
+func RegisterBucketSink(client *common.ConnectionStruct) {
+	BucketsMutex.Lock()
+	if BucketsMap[client.Bucket] == nil {
+		BucketsMap[client.Bucket] = &list.List{}
+	}
+	client.ListElement = BucketsMap[client.Bucket].PushBack(client)
+	BucketsMutex.Unlock()
+}
+
+func UnregisterBucketSink(client *common.ConnectionStruct) {
+	if client.ListElement == nil {
+		return
+	}
+
+	BucketsMutex.Lock()
+	list := BucketsMap[client.Bucket]
+	list.Remove(client.ListElement)
+	client.ListElement = nil
+
+	if BucketsMap[client.Bucket].Len() == 0 {
+		delete(BucketsMap, client.Bucket)
+	}
+
+	BucketsMutex.Unlock()
+}
+
+func nextConnFor(bucketId uint64) *common.ConnectionStruct {
+	BucketsMutex.Lock()
+	if BucketsMap[bucketId] == nil {
+		BucketsMutex.Unlock()
+		return nil
+	}
+	connectionEl := BucketsMap[bucketId].Front()
+	BucketsMap[bucketId].MoveToBack(connectionEl)
+	connection, _ := connectionEl.Value.(*common.ConnectionStruct)
+	BucketsMutex.Unlock()
+	return connection
 }

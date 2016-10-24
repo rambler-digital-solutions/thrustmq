@@ -29,6 +29,7 @@ func registerConnect(connection net.Conn) *common.ConnectionStruct {
 }
 
 func registerDisconnect(connectionStruct *common.ConnectionStruct) {
+	UnregisterBucketSink(connectionStruct)
 	DeleteConnection(connectionStruct)
 	logging.LostConsumer(connectionStruct.Connection.RemoteAddr(), ConnectionsMapLength())
 }
@@ -66,7 +67,9 @@ func blow(connection net.Conn) {
 	client := registerConnect(connection)
 	defer registerDisconnect(client)
 
-	if !client.DeserializeHeader() {
+	if client.DeserializeHeader() {
+		RegisterBucketSink(client)
+	} else {
 		return
 	}
 	logging.NewConsumerHeader(client)

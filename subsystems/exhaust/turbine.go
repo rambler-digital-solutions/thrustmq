@@ -14,7 +14,6 @@ func turbine() {
 			ProcessRecord(record)
 		}
 		RecordsMutex.Unlock()
-
 		runtime.Gosched()
 	}
 }
@@ -25,7 +24,6 @@ func ProcessRecord(record *common.Record) {
 	} else {
 		if record.Enqueued > 0 && !ConnectionAlive(record.Connection) {
 			record.Enqueued = 0
-			record.Connection = 0
 			CombustorChannel <- record
 		}
 	}
@@ -43,7 +41,6 @@ func turbineStage2() {
 			common.FaceIt(err)
 			file.Write(record.Serialize())
 			record.Dirty = false
-			file.Sync()
 		}
 	}
 }

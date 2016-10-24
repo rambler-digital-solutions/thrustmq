@@ -1,6 +1,7 @@
 package exhaust
 
 import (
+	"container/list"
 	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
@@ -16,6 +17,8 @@ var (
 	ConnectionsMutex *sync.RWMutex         = &sync.RWMutex{}
 	RecordsMap       common.RecordsMap     = make(common.RecordsMap)
 	RecordsMutex     *sync.RWMutex         = &sync.RWMutex{}
+	BucketsMap       map[uint64]*list.List = make(map[uint64]*list.List)
+	BucketsMutex     *sync.RWMutex         = &sync.RWMutex{}
 )
 
 func Init() {

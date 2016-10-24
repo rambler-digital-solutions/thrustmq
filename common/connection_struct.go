@@ -2,6 +2,7 @@ package common
 
 import (
 	"bufio"
+	"container/list"
 	"encoding/binary"
 	"io"
 	"log"
@@ -9,14 +10,15 @@ import (
 )
 
 type ConnectionStruct struct {
-	Connection net.Conn
-	Bucket     uint64
-	Client     uint64
-	BatchSize  uint32
-	Id         uint64
-	Reader     *bufio.Reader
-	Writer     *bufio.Writer
-	Channel    RecordPipe
+	Connection  net.Conn
+	Bucket      uint64
+	Client      uint64
+	BatchSize   uint32
+	Id          uint64
+	Reader      *bufio.Reader
+	Writer      *bufio.Writer
+	Channel     RecordPipe
+	ListElement *list.Element
 }
 
 type ConnectionsMap map[uint64]*ConnectionStruct

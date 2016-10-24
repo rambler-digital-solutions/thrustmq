@@ -12,18 +12,20 @@ func forward(record *common.Record) {
 	if record.Enqueued > 0 {
 		return
 	}
-	ConnectionsMutex.RLock()
-	for _, connection := range ConnectionsMap {
-		if connection.Bucket == record.Bucket && len(connection.Channel) != cap(connection.Channel) {
-			record.Connection = connection.Id
-			record.Enqueued = common.TimestampUint64()
-			record.Retries++
-			record.Dirty = true
-			TurbineChannel <- record
-			connection.Channel <- record
-		}
+
+	connection := nextConnFor(record.Bucket)
+	if connection == nil {
+		return
 	}
-	ConnectionsMutex.RUnlock()
+
+	if len(connection.Channel) != cap(connection.Channel) {
+		record.Connection = connection.Id
+		record.Enqueued = common.TimestampUint64()
+		record.Retries++
+		record.Dirty = true
+		TurbineChannel <- record
+		connection.Channel <- record
+	}
 }
 
 func combustor() {
