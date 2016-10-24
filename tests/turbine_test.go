@@ -26,24 +26,25 @@ func TestTurbineFlush(t *testing.T) {
 	recordOnDisk := &common.Record{}
 	recordOnDisk.Deserialize(indexFile)
 
-	if recordOnDisk.Created != exhaust.RecordsMap[0].Created {
+	recordInMemory := exhaust.RecordsMapGet(0)
+	if recordOnDisk.Created != recordInMemory.Created {
 		t.Fatalf("record on disk has wrong Created field %d (%d expected)", recordOnDisk.Created, exhaust.RecordsMap[0].Created)
 	}
-	if exhaust.RecordsMap[0].Dirty {
+	if recordInMemory.Dirty {
 		t.Fatalf("record wasn't marked as 'clear' in RecordMap =(")
 	}
 }
 
 func TestTurbineRemoveSent(t *testing.T) {
 	helper.BootstrapExhaust(t)
-
+	exhaust.ClearRecordsMap()
 	record := &common.Record{}
 	record.Delivered = common.TimestampUint64()
 	exhaust.MapRecord(record)
-
-	helper.CheckRecordsMap(t, 1)
-	time.Sleep(1e7)
-	helper.CheckRecordsMap(t, 0)
+	time.Sleep(1e5)
+	if exhaust.RecordsMapGet(record.Seek) != nil {
+		t.Fatalf("record wasn't deleted %v", record)
+	}
 }
 
 func TestTurbineRequeueOnDeadConnection(t *testing.T) {
@@ -70,14 +71,12 @@ func TestTurbineRequeueOnDeadConnection(t *testing.T) {
 
 	exhaust.ProcessRecord(record, indexFile)
 
-	exhaust.RecordsMutex.Lock()
-	retries := exhaust.RecordsMap[0].Retries
-	exhaust.RecordsMutex.Unlock()
+	retries := exhaust.RecordsMapGet(0).Retries
 	if retries != 1 {
 		t.Fatalf("record wasn't Enqueued (%d retries) / combustor %d / recordsMap %d", retries, len(exhaust.CombustorChannel), len(exhaust.RecordsMap))
 	}
 
-	enqueuedToConnection := len(exhaust.ConnectionsMap[connectionId].Channel)
+	enqueuedToConnection := len(exhaust.ConnectionsMapGet(connectionId).Channel)
 	if enqueuedToConnection != 1 {
 		t.Fatalf("record wasn't added to connection queue (%d items)", enqueuedToConnection)
 	}

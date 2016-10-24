@@ -22,15 +22,15 @@ func registerConnect(connection net.Conn) *common.ConnectionStruct {
 	connectionStruct.Reader = bufio.NewReaderSize(connection, config.Base.NetworkBuffer)
 	connectionStruct.Writer = bufio.NewWriterSize(connection, config.Base.NetworkBuffer)
 	connectionStruct.Channel = make(common.RecordPipe, config.Exhaust.NozzleBuffer)
+	MapConnection(connectionStruct)
 
-	ConnectionsMap[connectionStruct.Id] = connectionStruct
-	logging.NewConsumer(connectionStruct, len(ConnectionsMap))
+	logging.NewConsumer(connectionStruct, ConnectionsMapLength())
 	return connectionStruct
 }
 
 func registerDisconnect(connectionStruct *common.ConnectionStruct) {
-	delete(ConnectionsMap, connectionStruct.Id)
-	logging.LostConsumer(connectionStruct.Connection.RemoteAddr(), len(ConnectionsMap))
+	DeleteConnection(connectionStruct)
+	logging.LostConsumer(connectionStruct.Connection.RemoteAddr(), ConnectionsMapLength())
 }
 
 func sendBatch(client *common.ConnectionStruct, batch []*common.Record) {

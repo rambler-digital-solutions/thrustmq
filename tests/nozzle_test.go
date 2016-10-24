@@ -37,7 +37,7 @@ func TestRecipienceOfSingleMessage(t *testing.T) {
 
 	helper.BootstrapExhaust(t)
 
-	channel := exhaust.ConnectionsMap[common.State.ConnectionId].Channel
+	channel := exhaust.ConnectionsMapGet(common.State.ConnectionId).Channel
 	record := &common.Record{DataLength: 8, Data: common.BinUint64(randomNumber)}
 	channel <- record
 	helper.CheckConnectionChannel(t, common.State.ConnectionId, 1)
@@ -69,7 +69,7 @@ func TestRecipienceOfMultipleMessages(t *testing.T) {
 
 	batchSize := 3
 	randomNumbers := make([]uint64, batchSize)
-	channel := exhaust.ConnectionsMap[common.State.ConnectionId].Channel
+	channel := exhaust.ConnectionsMapGet(common.State.ConnectionId).Channel
 	for i := 0; i < batchSize; i++ {
 		randomNumbers[i] = uint64(rand.Int63())
 		record := &common.Record{DataLength: 8, Data: common.BinUint64(randomNumbers[i])}

@@ -27,6 +27,5 @@ func ForgeConnection(t *testing.T, connectionId uint64, bucketId uint64) {
 	connection.Id = connectionId
 	connection.Bucket = bucketId
 	connection.Channel = make(common.RecordPipe, config.Exhaust.NozzleBuffer)
-
 	exhaust.MapConnection(connection)
 }

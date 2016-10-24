@@ -15,10 +15,7 @@ func TestCombustorDiscardByBucket(t *testing.T) {
 	record := &common.Record{}
 	record.Created = uint64(rand.Int63())
 	record.Bucket = uint64(rand.Int63())
-
-	exhaust.RecordsMutex.Lock()
-	exhaust.RecordsMap[0] = record
-	exhaust.RecordsMutex.Unlock()
+	exhaust.MapRecord(record)
 
 	exhaust.CombustorChannel <- record
 

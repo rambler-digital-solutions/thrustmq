@@ -13,23 +13,24 @@ func CheckCombustor(t *testing.T, size int) {
 }
 
 func CheckRecordsMap(t *testing.T, size int) {
-	if len(exhaust.RecordsMap) != size {
-		t.Fatalf("record map size %d (should be %d)", len(exhaust.RecordsMap), size)
+	if exhaust.RecordsMapLength() != size {
+		t.Fatalf("record map size %d (should be %d)", exhaust.RecordsMapLength(), size)
 	}
 }
 
 func CheckConnections(t *testing.T, size int) {
 	time.Sleep(1e8)
-	if len(exhaust.ConnectionsMap) != size {
-		t.Fatalf("%d connections instead of %d", len(exhaust.ConnectionsMap), size)
+	if exhaust.ConnectionsMapLength() != size {
+		t.Fatalf("%d connections instead of %d", exhaust.ConnectionsMapLength(), size)
 	}
 }
 
 func CheckConnectionChannel(t *testing.T, id uint64, size int) {
-	exhaust.ConnectionsMutex.RLock()
-	actual := len(exhaust.ConnectionsMap[id].Channel)
-	exhaust.ConnectionsMutex.RUnlock()
-	if actual != size {
-		t.Fatalf("%d record in %d connection channel (should be %d)", actual, id, size)
+	connection := exhaust.ConnectionsMapGet(id)
+	if connection == nil {
+		t.Fatalf("connection is closed!")
+	}
+	if len(connection.Channel) != size {
+		t.Fatalf("%d record in %d connection channel (should be %d)", len(connection.Channel), id, size)
 	}
 }

@@ -47,7 +47,8 @@ func afterburner() {
 
 	for {
 		if len(CombustorChannel) < cap(CombustorChannel)/2 && common.State.Tail < common.State.Head {
-			burn(getReader(indexFile))
+			reader := getReader(indexFile)
+			burn(reader)
 		} else {
 			runtime.Gosched()
 		}
@@ -68,15 +69,9 @@ func burn(reader *bufio.Reader) {
 		record := &common.Record{}
 		record.Deserialize(reader)
 		record.Seek = ptr
-		if !recordInMemory(record) {
-			RecordsMutex.Lock()
-			RecordsMap[record.Seek] = record
-			RecordsMutex.Unlock()
-		} else {
-			RecordsMutex.RLock()
-			record = RecordsMap[record.Seek]
-			RecordsMutex.RUnlock()
+		if !RecordInMemory(record) {
+			MapRecord(record)
+			CombustorChannel <- record
 		}
-		forward(record)
 	}
 }

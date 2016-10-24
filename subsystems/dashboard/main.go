@@ -43,9 +43,9 @@ func Init() {
 		statusLine += fmt.Sprintf("%4d->cp %4d->cp2 %4d->cb rms=%4d", len(intake.CompressorChannel), len(intake.Stage2CompressorChannel), len(exhaust.CombustorChannel), len(exhaust.RecordsMap))
 		statusLine += fmt.Sprintf("|rq %d cid: %d", oplog.Requeued, common.State.ConnectionId)
 		statusLine += fmt.Sprintf("|h %d t %d s: %d c: %.2f", common.State.Head, common.State.Tail, common.State.Distance()/uint64(common.IndexSize), common.State.Capacity)
-		for _, connectionStruct := range exhaust.ConnectionsMap {
-			statusLine += fmt.Sprintf("%4d ", len(connectionStruct.Channel))
-		}
+		// for _, connectionStruct := range exhaust.ConnectionsMap {
+		// 	statusLine += fmt.Sprintf("%4d ", len(connectionStruct.Channel))
+		// }
 		statusLine += fmt.Sprintf("|%.2f KPa", float32(oplog.IntakeTotal-oplog.ExhaustTotal)/1000)
 
 		output(statusLine)

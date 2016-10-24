@@ -3,6 +3,7 @@ package exhaust
 import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
+	"log"
 	"os"
 	"runtime"
 )
@@ -13,24 +14,25 @@ func turbine() {
 	defer file.Close()
 
 	for {
+		RecordsMutex.Lock()
 		for _, record := range RecordsMap {
 			ProcessRecord(record, file)
 		}
+		RecordsMutex.Unlock()
+
 		runtime.Gosched()
 	}
 }
 
 func ProcessRecord(record *common.Record, file *os.File) {
-	if record == nil {
-		return
-	}
 	if record.Dirty {
 		flushToDisk(file, record)
 	}
 	if record.Delivered != 0 {
-		DeleteRecord(record)
+		log.Print("delete", record)
+		delete(RecordsMap, record.Seek)
 	} else {
-		if record.Enqueued > 0 && !connectionAlive(record.Connection) {
+		if record.Enqueued > 0 && !ConnectionAlive(record.Connection) {
 			enqueueAgain(record)
 		}
 	}

@@ -39,8 +39,9 @@ func BootstrapExhaust(t *testing.T) {
 		exhaustInitialized = true
 	}
 
-	consumer.Disconnect()
+	exhaust.ClearRecordsMap()
 
+	consumer.Disconnect()
 	CheckConnections(t, 0)
 	consumer.Connect()
 	CheckConnections(t, 1)
