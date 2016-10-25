@@ -12,18 +12,16 @@ func forward(record *common.Record) {
 	if record.Enqueued > 0 {
 		return
 	}
-
 	connection := nextConnFor(record.Bucket)
 	if connection == nil {
 		return
 	}
-
 	if len(connection.Channel) != cap(connection.Channel) {
 		record.Connection = connection.Id
 		record.Enqueued = common.TimestampUint64()
 		record.Retries++
 		record.Dirty = true
-		TurbineChannel <- record
+		TurbineStage2Channel <- record
 		connection.Channel <- record
 	}
 }

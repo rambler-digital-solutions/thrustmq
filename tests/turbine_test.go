@@ -19,7 +19,7 @@ func TestTurbineFlush(t *testing.T) {
 	record.Seek = 0
 	record.Dirty = true
 	exhaust.MapRecord(record)
-	exhaust.TurbineChannel <- record
+	exhaust.TurbineStage2Channel <- record
 
 	time.Sleep(1e6)
 
