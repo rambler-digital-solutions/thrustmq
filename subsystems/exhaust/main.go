@@ -11,8 +11,8 @@ import (
 
 var (
 	CombustorChannel   common.RecordPipe     = make(common.RecordPipe, config.Exhaust.CombustionBuffer)
-	AfterburnerChannel common.RecordPipe     = make(common.RecordPipe, config.Exhaust.CombustionBuffer)
-	TurbineChannel     common.RecordPipe     = make(common.RecordPipe, config.Exhaust.CombustionBuffer)
+	AfterburnerChannel common.RecordPipe     = make(common.RecordPipe, config.Exhaust.AfterburnerBuffer)
+	TurbineChannel     common.RecordPipe     = make(common.RecordPipe, config.Exhaust.TurbineBuffer)
 	ConnectionsMap     common.ConnectionsMap = make(common.ConnectionsMap)
 	RecordsMap         common.RecordsMap     = make(common.RecordsMap)
 	BucketsMap         common.BucketsMap     = make(common.BucketsMap)

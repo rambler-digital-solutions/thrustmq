@@ -7,12 +7,13 @@ import (
 )
 
 type exhaustConfigStruct struct {
-	Port             int
-	TurbineBuffer    int
-	CombustionBuffer int
-	NozzleBuffer     int
-	HeartbeatRate    int
-	Chamber          string
+	Port              int
+	TurbineBuffer     int
+	CombustionBuffer  int
+	NozzleBuffer      int
+	HeartbeatRate     int
+	AfterburnerBuffer int
+	Chamber           string
 }
 
 type intakeConfigStruct struct {

@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestIntake(t *testing.T) {
@@ -22,6 +23,8 @@ func TestIntake(t *testing.T) {
 	producer.Connect()
 	producer.SendBatch(messages)
 	producer.GetAcks(1)
+
+	time.Sleep(1e6)
 
 	indexFile, err := os.OpenFile(config.Base.Index, os.O_RDONLY, 0666)
 	common.FaceIt(err)
