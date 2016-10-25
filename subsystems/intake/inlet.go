@@ -30,6 +30,7 @@ func getMessage(i int, ackChannel chan *common.IntakeStruct, reader *bufio.Reade
 	return message
 }
 
+// Handler for producer connection
 func suck(connection net.Conn) {
 	logging.NewProducer(connection.RemoteAddr())
 	defer logging.LostProducer(connection.RemoteAddr())
@@ -38,6 +39,7 @@ func suck(connection net.Conn) {
 	for {
 		batchSize := getBatchSize(reader)
 		if batchSize == 0 {
+			// non standard request, treating like an exit
 			return
 		}
 

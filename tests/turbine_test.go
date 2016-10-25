@@ -19,7 +19,7 @@ func TestTurbineFlush(t *testing.T) {
 	record.Seek = 0
 	record.Dirty = true
 	exhaust.MapRecord(record)
-	exhaust.TurbineStage2Channel <- record
+	exhaust.TurbineChannel <- record
 
 	time.Sleep(1e6)
 
@@ -64,10 +64,10 @@ func TestTurbineRequeueOnDeadConnection(t *testing.T) {
 	record.Connection = deadConnectionId
 	record.Enqueued = common.TimestampUint64()
 	exhaust.MapRecord(record)
+	exhaust.AfterburnerChannel <- record
 
 	time.Sleep(1e7)
 
-	exhaust.ProcessRecord(record)
 	retries := exhaust.RecordsMapGet(seek).Retries
 	if retries != 1 {
 		t.Fatalf("record wasn't Enqueued (%d retries) / combustor %d / recordsMap %d", retries, len(exhaust.CombustorChannel), len(exhaust.RecordsMap))

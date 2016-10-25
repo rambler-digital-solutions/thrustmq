@@ -56,7 +56,7 @@ func recieveAcks(client *common.ConnectionStruct, batch []*common.Record) {
 		if acks[i] == 1 {
 			batch[i].Delivered = common.TimestampUint64()
 			batch[i].Dirty = true
-			TurbineStage2Channel <- batch[i]
+			TurbineChannel <- batch[i]
 		} else {
 			log.Print("returning record to combustor")
 		}

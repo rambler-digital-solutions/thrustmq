@@ -13,7 +13,7 @@ func turbine() {
 		RecordsMutex.Lock()
 		for _, record := range RecordsMap {
 			select {
-			case TurbineChannel <- record:
+			case AfterburnerChannel <- record:
 			default:
 			}
 		}
@@ -22,31 +22,14 @@ func turbine() {
 	}
 }
 
-func turbineProcessor() {
-	for {
-		record := <-TurbineChannel
-		ProcessRecord(record)
-	}
-}
-
-func ProcessRecord(record *common.Record) {
-	if record.Delivered != 0 || !BucketRequired(record.Bucket) {
-		DeleteRecord(record)
-	} else {
-		if record.Enqueued > 0 && !ConnectionAlive(record.Connection) {
-			record.Enqueued = 0
-			CombustorChannel <- record
-		}
-	}
-}
-
+// Flushes "dirty" records to disk
 func turbineStage2() {
 	file, err := os.OpenFile(config.Base.Index, os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	defer file.Close()
 
 	for {
-		record := <-TurbineStage2Channel
+		record := <-TurbineChannel
 		if record.Dirty {
 			_, err := file.Seek(int64(record.Seek), os.SEEK_SET)
 			common.FaceIt(err)

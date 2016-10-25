@@ -10,17 +10,21 @@ import (
 	"time"
 )
 
+// first stage of compressor just passes message simultaneously to:
+//  the exhaust (delivery)
+//  and the second stage of the compressor (storage)
 func compressorStage1() {
 	for {
 		message := <-CompressorChannel
 		Stage2CompressorChannel <- message
 		select {
-		case exhaust.CombustorChannel <- message.Record:
+		case exhaust.CombustorChannel <- message.Record: // combustor is full, do nothing
 		default:
 		}
 	}
 }
 
+// Flush records to the disk, assign offsets, send acks
 func compressorStage2() {
 	indexFile, err := os.OpenFile(config.Base.Index, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	common.FaceIt(err)
@@ -46,6 +50,7 @@ func compressorStage2() {
 			indexOffset += common.IndexSize
 			dataOffset += message.Record.DataLength
 		default:
+			// nothing to do. let's flush data to the disk
 			indexWriter.Flush()
 			dataWriter.Flush()
 			runtime.Gosched()
@@ -53,16 +58,13 @@ func compressorStage2() {
 	}
 }
 
+// Flush the message to the disk
 func persistRecord(record *common.Record, indexOffset uint64, indexWriter *bufio.Writer, dataOffset uint64, dataWriter *bufio.Writer) {
-	record.DataSeek = dataOffset
 	_, err := dataWriter.Write(record.Data)
 	common.FaceIt(err)
-
 	record.Seek = indexOffset
+	record.DataSeek = dataOffset
 	record.Created = uint64(time.Now().UnixNano())
 	_, err = indexWriter.Write(record.Serialize())
 	common.FaceIt(err)
-
-	indexWriter.Flush()
-	dataWriter.Flush()
 }
