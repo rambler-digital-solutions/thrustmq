@@ -7,7 +7,13 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
 	"os"
 	"runtime"
+	"strconv"
 	"time"
+)
+
+var (
+	IndexOffset uint64
+	DataOffset  uint64
 )
 
 // first stage of compressor just passes message simultaneously to:
@@ -24,31 +30,43 @@ func compressorStage1() {
 	}
 }
 
-// Flush records to the disk, assign offsets, send acks
-func compressorStage2() {
-	indexFile, err := os.OpenFile(config.Base.Index, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+// Data are stored in chunks, thus we need a switch to another file now and then
+func nextChunkFile() (*bufio.Writer, *bufio.Writer) {
+	chunkNumber := common.OffsetToChunk(IndexOffset)
+
+	indexFile, err := os.OpenFile(config.Base.Index+strconv.Itoa(chunkNumber), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	common.FaceIt(err)
-	dataFile, err := os.OpenFile(config.Base.Data, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	dataFile, err := os.OpenFile(config.Base.Data+strconv.Itoa(chunkNumber), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	common.FaceIt(err)
 
 	ptr, err := indexFile.Seek(0, os.SEEK_END)
-	indexOffset := uint64(ptr)
+	IndexOffset = common.ChunkToOffset(chunkNumber) + uint64(ptr)
 	ptr, err = dataFile.Seek(0, os.SEEK_END)
-	dataOffset := uint64(ptr)
+	DataOffset = common.ChunkToOffset(chunkNumber) + uint64(ptr)
 
 	dataWriter := bufio.NewWriterSize(dataFile, config.Base.FileBuffer)
 	indexWriter := bufio.NewWriterSize(indexFile, config.Base.FileBuffer)
 
+	return indexWriter, dataWriter
+}
+
+// Flush records to the disk, assign offsets, send acks
+func compressorStage2() {
+	indexWriter, dataWriter := nextChunkFile()
+
 	for {
 		select {
 		case message := <-Stage2CompressorChannel:
-			persistRecord(message.Record, indexOffset, indexWriter, dataOffset, dataWriter)
+			persistRecord(message.Record, indexWriter, dataWriter)
 
 			message.Status = 1
 			message.AckChannel <- message
 
-			indexOffset += common.IndexSize
-			dataOffset += message.Record.DataLength
+			IndexOffset += common.IndexSize
+			DataOffset += message.Record.DataLength
+			if IndexOffset/common.IndexSize%config.Base.ChunkSize == 0 {
+				indexWriter, dataWriter = nextChunkFile()
+			}
 		default:
 			// nothing to do. let's flush data to the disk
 			indexWriter.Flush()
@@ -59,11 +77,11 @@ func compressorStage2() {
 }
 
 // Flush the message to the disk
-func persistRecord(record *common.Record, indexOffset uint64, indexWriter *bufio.Writer, dataOffset uint64, dataWriter *bufio.Writer) {
+func persistRecord(record *common.Record, indexWriter *bufio.Writer, dataWriter *bufio.Writer) {
 	_, err := dataWriter.Write(record.Data)
 	common.FaceIt(err)
-	record.Seek = indexOffset
-	record.DataSeek = dataOffset
+	record.Seek = IndexOffset
+	record.DataSeek = DataOffset
 	record.Created = uint64(time.Now().UnixNano())
 	_, err = indexWriter.Write(record.Serialize())
 	common.FaceIt(err)

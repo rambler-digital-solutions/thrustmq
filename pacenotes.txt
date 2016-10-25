@@ -9,8 +9,10 @@
 # FCU iterates between tail -> head % config.MaxRecordsPerFile
 # if head % config.MaxRecordsPerFile > #chunk, then remove chunk!
 
-
-
-
 https://www.gitbook.com/
 https://pages.github.com/
+
+TODO:
+- store data in chunk files   (Wed)
+- create throughput benchmark (Thu)
+- beef up comments and README (Fri)

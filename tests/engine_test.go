@@ -5,9 +5,11 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/clients/golang/producer"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
+	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
 	"github.com/rambler-digital-solutions/thrustmq/tests/helper"
 	"math/rand"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -26,15 +28,16 @@ func TestIntake(t *testing.T) {
 
 	time.Sleep(1e6)
 
-	indexFile, err := os.OpenFile(config.Base.Index, os.O_RDONLY, 0666)
+	chunkNumber := common.OffsetToChunk(intake.IndexOffset)
+
+	indexFile, err := os.OpenFile(config.Base.Index+strconv.Itoa(chunkNumber), os.O_RDONLY, 0666)
 	common.FaceIt(err)
-	stat, err := indexFile.Stat()
-	indexFile.Seek(stat.Size()-int64(common.IndexSize), os.SEEK_SET)
+	indexFile.Seek(int64(intake.IndexOffset-common.IndexSize), os.SEEK_SET)
 
 	record := common.Record{}
 	record.Deserialize(indexFile)
 
-	dataFile, err := os.OpenFile(config.Base.Data, os.O_RDONLY, 0666)
+	dataFile, err := os.OpenFile(config.Base.Data+strconv.Itoa(chunkNumber), os.O_RDONLY, 0666)
 	common.FaceIt(err)
 	record.LoadData(dataFile)
 

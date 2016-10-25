@@ -34,3 +34,9 @@ func TestRecordSerialization(t *testing.T) {
 		}
 	}
 }
+
+// Writes several chunks of records and checks that
+// 1. files were created
+// 2. position pointer is set correctly
+func TestRecordsChunking(t *testing.T) {
+}

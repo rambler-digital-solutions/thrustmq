@@ -15,6 +15,7 @@
     "Logfile": "data/system.log",
     "Index": "data/index",
     "Data": "data/messages",
+    "ChunkSize": 1000,
     "FileBuffer": 4096,
     "NetworkBuffer": 1024,
     "Debug": true

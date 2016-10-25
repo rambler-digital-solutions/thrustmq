@@ -30,6 +30,7 @@ type ConfigStruct struct {
 	Logfile       string
 	FileBuffer    int
 	NetworkBuffer int
+	ChunkSize     uint64
 }
 
 func loadConfig() ConfigStruct {
