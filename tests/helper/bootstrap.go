@@ -35,7 +35,7 @@ func BootstrapExhaust(t *testing.T) {
 		logging.Init()
 		common.State.Tail = common.State.Head
 		go exhaust.Init()
-		time.Sleep(1e7)
+		time.Sleep(1e6)
 		exhaustInitialized = true
 	}
 
