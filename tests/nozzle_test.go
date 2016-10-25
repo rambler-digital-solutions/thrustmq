@@ -10,11 +10,10 @@ import (
 	"testing"
 )
 
+// Connect to nozzle and wait for ping message (zero length)
 func TestPing(t *testing.T) {
 	consumer.Disconnect()
-
 	helper.BootstrapExhaust(t)
-
 	consumer.SendHeader(1, uint64(rand.Int63()))
 
 	messages := consumer.RecieveBatch()
@@ -32,13 +31,15 @@ func TestPing(t *testing.T) {
 	}
 }
 
+// Send single message, check that recieved data matches sent one
 func TestRecipienceOfSingleMessage(t *testing.T) {
-	randomNumber := uint64(rand.Int63())
-
 	helper.BootstrapExhaust(t)
 
+	randomNumber := uint64(rand.Int63())
 	channel := exhaust.ConnectionsMapGet(common.State.ConnectionId).Channel
-	record := &common.Record{DataLength: 8, Data: common.BinUint64(randomNumber)}
+	record := &common.Record{}
+	record.DataLength = 8
+	record.Data = common.BinUint64(randomNumber)
 	channel <- record
 	helper.CheckConnectionChannel(t, common.State.ConnectionId, 1)
 
@@ -64,6 +65,7 @@ func TestRecipienceOfSingleMessage(t *testing.T) {
 	}
 }
 
+// Send several messages, check that recieved data matches sent one
 func TestRecipienceOfMultipleMessages(t *testing.T) {
 	helper.BootstrapExhaust(t)
 
@@ -71,14 +73,16 @@ func TestRecipienceOfMultipleMessages(t *testing.T) {
 	bucketId := uint64(rand.Int63())
 	randomNumbers := make([]uint64, batchSize)
 	channel := exhaust.ConnectionsMapGet(common.State.ConnectionId).Channel
-	if len(channel) != 0 {
-		for i := 0; i < len(channel); i++ {
-			<-channel
-		}
+	// clear the channel
+	for len(channel) != 0 {
+		<-channel
 	}
 	for i := 0; i < batchSize; i++ {
 		randomNumbers[i] = uint64(rand.Int63())
-		record := &common.Record{DataLength: 8, Data: common.BinUint64(randomNumbers[i]), Bucket: bucketId}
+		record := &common.Record{}
+		record.DataLength = 8
+		record.Data = common.BinUint64(randomNumbers[i])
+		record.Bucket = bucketId
 		channel <- record
 	}
 
