@@ -8,26 +8,26 @@ import (
 )
 
 type StateStruct struct {
-	Tail         uint64
-	Head         uint64
+	MinOffset    uint64
+	MaxOffset    uint64
 	Capacity     float32
 	ConnectionId uint64
 }
 
-var State StateStruct = loadState()
+var State *StateStruct = loadState()
 
-func loadState() StateStruct {
+func loadState() *StateStruct {
 	if _, err := os.Stat(config.Exhaust.Chamber); err == nil {
 		file, err := os.OpenFile(config.Exhaust.Chamber, os.O_RDONLY|os.O_CREATE, 0666)
 		FaceIt(err)
 		dec := gob.NewDecoder(file)
-		result := StateStruct{}
+		result := &StateStruct{}
 		err = dec.Decode(&result)
 		FaceIt(err)
 		file.Close()
 		return result
 	}
-	return StateStruct{Tail: 0, ConnectionId: 1}
+	return &StateStruct{}
 }
 
 func SaveState() {
@@ -44,5 +44,5 @@ func SaveState() {
 }
 
 func (self *StateStruct) Distance() uint64 {
-	return self.Head - self.Tail
+	return self.MaxOffset - self.MinOffset
 }

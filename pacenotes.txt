@@ -3,6 +3,14 @@
 - context switches are evil
 - buffered sequential read is x10 times faster than random one
 - channels & mutexes
+- uint64 is 16 million terabytes
+
+# Combustor splits into chunks sequentially... % config.MaxRecordsPerFile
+# FCU iterates between tail -> head % config.MaxRecordsPerFile
+# if head % config.MaxRecordsPerFile > #chunk, then remove chunk!
+
+
+
 
 https://www.gitbook.com/
 https://pages.github.com/

@@ -23,15 +23,15 @@ func TestInstantiationOfStoredMessages(t *testing.T) {
 
 	helper.BootstrapExhaust(t)
 	helper.ForgeConnection(t, connectionId, bucketId)
-	common.State.Tail = 0
-	common.State.Head = common.IndexSize * uint64(numberOfRecords-1)
+	common.State.MinOffset = 0
+	common.State.MaxOffset = common.IndexSize * uint64(numberOfRecords-1)
 
 	time.Sleep(1e7)
 
 	helper.CheckConnectionChannel(t, connectionId, numberOfRecords)
 
-	if common.State.Head < common.State.Tail {
-		t.Fatalf("head %d lt tail %d", common.State.Head, common.State.Tail)
+	if common.State.MaxOffset < common.State.MinOffset {
+		t.Fatalf("head %d lt tail %d", common.State.MaxOffset, common.State.MinOffset)
 	}
 
 	exhaust.DeleteConnectionById(connectionId)

@@ -33,7 +33,7 @@ func BootstrapExhaust(t *testing.T) {
 	if !exhaustInitialized {
 		rand.Seed(time.Now().UTC().UnixNano())
 		logging.Init()
-		common.State.Tail = common.State.Head
+		common.State.MinOffset = common.State.MaxOffset
 		go exhaust.Init()
 		time.Sleep(1e6)
 		exhaustInitialized = true
