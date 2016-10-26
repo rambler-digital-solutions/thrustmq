@@ -24,7 +24,7 @@ func TestIntake(t *testing.T) {
 	producer.SendBatch(messages)
 	producer.GetAcks(1)
 
-	time.Sleep(1e6)
+	time.Sleep(1e7)
 
 	offset := common.State.IndexOffset - common.IndexSize
 	chunk := common.OffsetToChunkString(offset)
