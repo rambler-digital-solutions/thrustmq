@@ -45,9 +45,8 @@ func loadConfig() Struct {
 		panic(err)
 	}
 
-	var config ConfigStruct
+	var config Struct
 	json.Unmarshal(raw, &config)
-
 	return config
 }
 
