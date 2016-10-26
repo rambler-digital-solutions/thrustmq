@@ -22,3 +22,6 @@ install: true
 
 git:
   depth: 3
+
+notifications:
+  email: false
