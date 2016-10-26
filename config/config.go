@@ -31,6 +31,7 @@ type ConfigStruct struct {
 	FileBuffer    int
 	NetworkBuffer int
 	ChunkSize     uint64
+	MaxChunks     uint64
 }
 
 func loadConfig() ConfigStruct {

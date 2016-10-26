@@ -5,15 +5,14 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
+	"log"
 	"os"
 	"runtime"
-	"strconv"
 	"time"
 )
 
 var (
-	IndexOffset uint64
-	DataOffset  uint64
+	DataOffset uint64
 )
 
 // first stage of compressor just passes message simultaneously to:
@@ -30,45 +29,47 @@ func compressorStage1() {
 	}
 }
 
-// Data are stored in chunks, thus we need a switch to another file now and then
-func nextChunkFile() (*bufio.Writer, *bufio.Writer) {
-	chunkNumber := common.OffsetToChunk(IndexOffset)
-
-	indexFile, err := os.OpenFile(config.Base.Index+strconv.Itoa(chunkNumber), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+// Data are stored in chunks, thus we need a switch to a new one when current is full
+func nextChunkFile() (*os.File, *os.File, *bufio.Writer, *bufio.Writer) {
+	indexFile, err := os.OpenFile(config.Base.Index+common.State.StringChunkNumber(), os.O_WRONLY|os.O_CREATE, 0666)
 	common.FaceIt(err)
-	dataFile, err := os.OpenFile(config.Base.Data+strconv.Itoa(chunkNumber), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+	_, err = indexFile.Seek(common.State.IndexSeek(), os.SEEK_SET)
 	common.FaceIt(err)
 
-	ptr, err := indexFile.Seek(0, os.SEEK_END)
-	IndexOffset = common.ChunkToOffset(chunkNumber) + uint64(ptr)
-	ptr, err = dataFile.Seek(0, os.SEEK_END)
-	DataOffset = common.ChunkToOffset(chunkNumber) + uint64(ptr)
+	dataFile, err := os.OpenFile(config.Base.Data+common.State.StringChunkNumber(), os.O_WRONLY|os.O_CREATE, 0666)
+	common.FaceIt(err)
+	ptr, err := dataFile.Seek(0, os.SEEK_END)
+	DataOffset = uint64(ptr)
 
 	dataWriter := bufio.NewWriterSize(dataFile, config.Base.FileBuffer)
 	indexWriter := bufio.NewWriterSize(indexFile, config.Base.FileBuffer)
 
-	return indexWriter, dataWriter
+	return indexFile, dataFile, indexWriter, dataWriter
 }
 
 // Flush records to the disk, assign offsets, send acks
 func compressorStage2() {
-	indexWriter, dataWriter := nextChunkFile()
-
+	indexFile, dataFile, indexWriter, dataWriter := nextChunkFile()
 	for {
 		select {
 		case message := <-Stage2CompressorChannel:
+			if common.State.SwitchChunk() {
+				indexWriter.Flush()
+				dataWriter.Flush()
+				indexFile.Close()
+				dataFile.Close()
+				indexFile, dataFile, indexWriter, dataWriter = nextChunkFile()
+				log.Print("compressor switched to a new chunk #", common.State.ChunkNumber(), " seek:", common.State.IndexOffset, " dataSeek:", DataOffset)
+			}
 			persistRecord(message.Record, indexWriter, dataWriter)
-
-			message.Status = 1
-			message.AckChannel <- message
-
-			IndexOffset += common.IndexSize
+			common.State.NextIndexOffset()
 			DataOffset += message.Record.DataLength
-			if IndexOffset/common.IndexSize%config.Base.ChunkSize == 0 {
-				indexWriter, dataWriter = nextChunkFile()
+			if message.AckChannel != nil {
+				message.Status = 1
+				message.AckChannel <- message
 			}
 		default:
-			// nothing to do. let's flush data to the disk
+			// nothing to do. let's flush data to the file
 			indexWriter.Flush()
 			dataWriter.Flush()
 			runtime.Gosched()
@@ -80,7 +81,7 @@ func compressorStage2() {
 func persistRecord(record *common.Record, indexWriter *bufio.Writer, dataWriter *bufio.Writer) {
 	_, err := dataWriter.Write(record.Data)
 	common.FaceIt(err)
-	record.Seek = IndexOffset
+	record.Seek = common.State.IndexOffset
 	record.DataSeek = DataOffset
 	record.Created = uint64(time.Now().UnixNano())
 	_, err = indexWriter.Write(record.Serialize())

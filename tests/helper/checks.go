@@ -1,7 +1,9 @@
 package helper
 
 import (
+	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
+	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
 	"testing"
 	"time"
 )
@@ -22,6 +24,19 @@ func CheckConnections(t *testing.T, size int) {
 	time.Sleep(1e8)
 	if exhaust.ConnectionsMapLength() != size {
 		t.Fatalf("%d connections instead of %d", exhaust.ConnectionsMapLength(), size)
+	}
+}
+
+func CheckChunkNumber(t *testing.T, expectation uint64) {
+	actualChunkNumber := common.State.ChunkNumber()
+	if actualChunkNumber != expectation {
+		t.Fatalf("chunk number mismatch! got: %d expected: %d", actualChunkNumber, expectation)
+	}
+}
+
+func CheckUncompressedMessages(t *testing.T, expectation int) {
+	if len(intake.Stage2CompressorChannel) != expectation {
+		t.Fatalf("there are uncompressed messages: %d messages instead of %d", len(intake.Stage2CompressorChannel), expectation)
 	}
 }
 

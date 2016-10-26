@@ -3,8 +3,11 @@ package tests
 import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
+	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
+	"github.com/rambler-digital-solutions/thrustmq/tests/helper"
 	"os"
 	"testing"
+	"time"
 )
 
 // Write single record on disk, then read it and check if they are the same
@@ -38,5 +41,37 @@ func TestRecordSerialization(t *testing.T) {
 // Writes several chunks of records and checks that
 // 1. files were created
 // 2. position pointer is set correctly
-func TestRecordsChunking(t *testing.T) {
+func TestChunkSwitching(t *testing.T) {
+	helper.BootstrapIntake(t)
+
+	common.State.IndexOffset = 0
+
+	for i := 0; i < int(config.Base.ChunkSize+1); i++ {
+		message := &common.IntakeStruct{}
+		message.Record = &common.Record{}
+		intake.Stage2CompressorChannel <- message
+	}
+
+	time.Sleep(1e7)
+
+	helper.CheckUncompressedMessages(t, 0)
+	helper.CheckChunkNumber(t, 1)
+}
+
+// Check that chunks are being circularly overwritten
+func TestChunkOverride(t *testing.T) {
+	helper.BootstrapIntake(t)
+
+	common.State.IndexOffset = config.Base.ChunkSize * (config.Base.MaxChunks - 1) * common.IndexSize
+
+	for i := 0; i < int(config.Base.ChunkSize+1); i++ {
+		message := &common.IntakeStruct{}
+		message.Record = &common.Record{Bucket: 666}
+		intake.Stage2CompressorChannel <- message
+	}
+
+	time.Sleep(1e7)
+
+	helper.CheckUncompressedMessages(t, 0)
+	helper.CheckChunkNumber(t, 0)
 }
