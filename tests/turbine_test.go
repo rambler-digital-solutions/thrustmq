@@ -24,7 +24,7 @@ func TestTurbineFlush(t *testing.T) {
 	exhaust.MapRecord(record)
 	exhaust.TurbineChannel <- record
 
-	time.Sleep(1e6)
+	time.Sleep(1e7)
 
 	indexFile, err := os.OpenFile(config.Base.Index, os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
@@ -34,7 +34,7 @@ func TestTurbineFlush(t *testing.T) {
 	recordOnDisk.Deserialize(indexFile)
 
 	if recordOnDisk.Created != record.Created {
-		t.Fatalf("record on disk has wrong Created field %d (%d expected)", recordOnDisk.Created, exhaust.RecordsMap[0].Created)
+		t.Fatalf("record on disk has wrong Created field %d (%d expected)", recordOnDisk.Created, record.Created)
 	}
 	if record.Dirty {
 		t.Fatalf("record wasn't marked as 'clear' in RecordMap =(")
