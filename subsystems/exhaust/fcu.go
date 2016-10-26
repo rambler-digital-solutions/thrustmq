@@ -32,7 +32,7 @@ func rmFile(offset uint64) {
 func fuelControlUnit() {
 	for {
 		// rm processed chunks
-		for chunkNumber, _ := range ChunksMap {
+		for chunkNumber := range ChunksMap {
 			if common.ChunkToOffset(int(chunkNumber+1)) <= common.State.MinOffset {
 				log.Print("FCU removes #", chunkNumber, " ", common.State.MinOffset, " >= ", common.ChunkToOffset(int(chunkNumber+1)))
 				rmFile(common.ChunkToOffset(int(chunkNumber)))

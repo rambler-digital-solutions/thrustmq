@@ -21,7 +21,7 @@ type intakeConfigStruct struct {
 	CompressorBuffer int
 }
 
-type ConfigStruct struct {
+type Struct struct {
 	Intake        intakeConfigStruct
 	Exhaust       exhaustConfigStruct
 	Data          string
@@ -34,7 +34,7 @@ type ConfigStruct struct {
 	MaxChunks     uint64
 }
 
-func loadConfig() ConfigStruct {
+func loadConfig() Struct {
 	filename := "./config.json"
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		filename = "../config.json"

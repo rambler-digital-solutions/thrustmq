@@ -16,7 +16,7 @@ type StateStruct struct {
 	ConnectionID uint64
 }
 
-var State *StateStruct = loadState()
+var State = loadState()
 
 func loadState() *StateStruct {
 	if _, err := os.Stat(config.Exhaust.Chamber); err == nil {
@@ -39,7 +39,7 @@ func SaveState() {
 	}
 }
 
-func (self *StateStruct) Save() {
+func (state *StateStruct) Save() {
 	file, err := os.OpenFile(config.Exhaust.Chamber, os.O_WRONLY|os.O_CREATE, 0666)
 	FaceIt(err)
 	enc := gob.NewEncoder(file)
@@ -49,46 +49,46 @@ func (self *StateStruct) Save() {
 	file.Close()
 }
 
-func (self *StateStruct) Distance() uint64 {
-	return self.MaxOffset - self.MinOffset
+func (state *StateStruct) Distance() uint64 {
+	return state.MaxOffset - state.MinOffset
 }
 
-func (self *StateStruct) SwitchChunk() bool {
-	result := self.SwitchChunkByOffset(self.IndexOffset)
-	if result && self.ChunkNumber() >= config.Base.MaxChunks {
-		self.IndexOffset = 0
+func (state *StateStruct) SwitchChunk() bool {
+	result := state.SwitchChunkByOffset(state.IndexOffset)
+	if result && state.ChunkNumber() >= config.Base.MaxChunks {
+		state.IndexOffset = 0
 	}
 	return result
 }
 
-func (self *StateStruct) SwitchChunkByOffset(offset uint64) bool {
+func (state *StateStruct) SwitchChunkByOffset(offset uint64) bool {
 	return (offset/IndexSize)%config.Base.ChunkSize == 0
 }
 
-func (self *StateStruct) NextIndexOffset() {
-	self.IndexOffset += IndexSize
+func (state *StateStruct) NextIndexOffset() {
+	state.IndexOffset += IndexSize
 }
 
-func (self *StateStruct) ChunkNumber() uint64 {
-	return self.ChunkNumberByOffset(self.IndexOffset)
+func (state *StateStruct) ChunkNumber() uint64 {
+	return state.ChunkNumberByOffset(state.IndexOffset)
 }
 
-func (self *StateStruct) ChunkNumberByOffset(offset uint64) uint64 {
+func (state *StateStruct) ChunkNumberByOffset(offset uint64) uint64 {
 	return offset / IndexSize / config.Base.ChunkSize
 }
 
-func (self *StateStruct) StringChunkNumber() string {
-	return strconv.Itoa(int(self.ChunkNumber()))
+func (state *StateStruct) StringChunkNumber() string {
+	return strconv.Itoa(int(state.ChunkNumber()))
 }
 
-func (self *StateStruct) StringChunkNumberByOffset(offset uint64) string {
-	return strconv.Itoa(int(self.ChunkNumberByOffset(offset)))
+func (state *StateStruct) StringChunkNumberByOffset(offset uint64) string {
+	return strconv.Itoa(int(state.ChunkNumberByOffset(offset)))
 }
 
-func (self *StateStruct) IndexSeek() int64 {
-	return OffsetToChunkSeek(self.IndexOffset)
+func (state *StateStruct) IndexSeek() int64 {
+	return OffsetToChunkSeek(state.IndexOffset)
 }
 
-func (self *StateStruct) IndexSeekByOffset(offset uint64) int64 {
+func (state *StateStruct) IndexSeekByOffset(offset uint64) int64 {
 	return OffsetToChunkSeek(offset)
 }

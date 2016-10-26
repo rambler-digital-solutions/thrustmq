@@ -13,7 +13,7 @@ type Message struct {
 	Payload []byte
 }
 
-var connection net.Conn = nil
+var connection net.Conn
 
 func Connect() {
 	conn, err := net.Dial("tcp", "127.0.0.1:1888")
