@@ -5,8 +5,18 @@ go:
   - master
 
 script:
-  - go test ./tests/...
   - go build thrustmq.go
+
+  - go test ./tests/afterburner_test.go
+  - go test ./tests/combustor_test.go
+  - go test ./tests/compressor_test.go
+  - go test ./tests/engine_test.go
+  - go test ./tests/fcu_test.go
+  - go test ./tests/inlet_test.go
+  - go test ./tests/nozzle_test.go
+  - go test ./tests/turbine_test.go
+
+  - go test -bench=. -benchmem ./benchmarks/...
 
 install: true
 
