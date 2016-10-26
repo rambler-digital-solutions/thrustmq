@@ -6,3 +6,9 @@ go:
 
 script:
   - go test .tests/...
+  - go build thrustmq.go
+
+install: true
+
+git:
+  depth: 3
