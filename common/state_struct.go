@@ -54,11 +54,15 @@ func (self *StateStruct) Distance() uint64 {
 }
 
 func (self *StateStruct) SwitchChunk() bool {
-	result := (self.IndexOffset/IndexSize)%config.Base.ChunkSize == 0
+	result := self.SwitchChunkByOffset(self.IndexOffset)
 	if result && self.ChunkNumber() >= config.Base.MaxChunks {
 		self.IndexOffset = 0
 	}
 	return result
+}
+
+func (self *StateStruct) SwitchChunkByOffset(offset uint64) bool {
+	return (offset/IndexSize)%config.Base.ChunkSize == 0
 }
 
 func (self *StateStruct) NextIndexOffset() {
@@ -66,13 +70,25 @@ func (self *StateStruct) NextIndexOffset() {
 }
 
 func (self *StateStruct) ChunkNumber() uint64 {
-	return self.IndexOffset / IndexSize / config.Base.ChunkSize
+	return self.ChunkNumberByOffset(self.IndexOffset)
+}
+
+func (self *StateStruct) ChunkNumberByOffset(offset uint64) uint64 {
+	return offset / IndexSize / config.Base.ChunkSize
 }
 
 func (self *StateStruct) StringChunkNumber() string {
 	return strconv.Itoa(int(self.ChunkNumber()))
 }
 
+func (self *StateStruct) StringChunkNumberByOffset(offset uint64) string {
+	return strconv.Itoa(int(self.ChunkNumberByOffset(offset)))
+}
+
 func (self *StateStruct) IndexSeek() int64 {
 	return OffsetToChunkSeek(self.IndexOffset)
+}
+
+func (self *StateStruct) IndexSeekByOffset(offset uint64) int64 {
+	return OffsetToChunkSeek(offset)
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func DumpRecords(records []*common.Record) {
-	indexFile, err := os.OpenFile(config.Base.Index, os.O_RDWR|os.O_CREATE, 0666)
+	indexFile, err := os.OpenFile(config.Base.Index+"0", os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	indexFile.Seek(0, os.SEEK_SET)
 	for i := range records {

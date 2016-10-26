@@ -6,6 +6,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"net"
+	"os"
 	"sync"
 )
 
@@ -16,6 +17,7 @@ var (
 	ConnectionsMap     common.ConnectionsMap = make(common.ConnectionsMap)
 	RecordsMap         common.RecordsMap     = make(common.RecordsMap)
 	BucketsMap         common.BucketsMap     = make(common.BucketsMap)
+	ChunksMap          map[uint64]*os.File   = make(map[uint64]*os.File)
 	ConnectionsMutex   *sync.RWMutex         = &sync.RWMutex{}
 	RecordsMutex       *sync.RWMutex         = &sync.RWMutex{}
 	BucketsMutex       *sync.RWMutex         = &sync.RWMutex{}
@@ -29,9 +31,9 @@ func Init() {
 
 	go afterburner()
 	go combustor()
-	go fuelControlUnit()
 	go turbine()
 	go turbineStage2()
+	go fuelControlUnit()
 
 	var connection net.Conn
 	for {

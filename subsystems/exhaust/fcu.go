@@ -1,41 +1,80 @@
 package exhaust
 
 import (
-	"bufio"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
+	"log"
 	"os"
 	"runtime"
+	"time"
 )
 
-func fuelControlUnit() {
-	indexFile, err := os.OpenFile(config.Base.Index, os.O_RDWR|os.O_CREATE, 0666)
-	common.FaceIt(err)
-	defer indexFile.Close()
+func getFile(offset uint64) *os.File {
+	chunk := common.State.ChunkNumberByOffset(offset)
+	file := ChunksMap[chunk]
+	if file == nil {
+		path := config.Base.Index + common.State.StringChunkNumberByOffset(offset)
+		file, err := os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
+		common.FaceIt(err)
+		log.Print("FCU maps #", chunk, " to ", path)
+		ChunksMap[chunk] = file
+		return file
+	}
+	return file
+}
 
+func rmFile(offset uint64) {
+	os.Remove(config.Base.Index + common.State.StringChunkNumberByOffset(offset))
+	os.Remove(config.Base.Data + common.State.StringChunkNumberByOffset(offset))
+	delete(ChunksMap, common.State.ChunkNumberByOffset(offset))
+}
+
+func fuelControlUnit() {
 	for {
-		if len(CombustorChannel) < cap(CombustorChannel)/2 && common.State.MinOffset < common.State.MaxOffset {
-			stat, err := indexFile.Stat()
-			common.FaceIt(err)
-			common.State.MaxOffset = uint64(stat.Size())
-			_, err = indexFile.Seek(int64(common.State.MinOffset), os.SEEK_SET)
-			common.FaceIt(err)
-			reader := bufio.NewReaderSize(indexFile, config.Base.NetworkBuffer)
-			inject(reader)
-		} else {
-			runtime.Gosched()
+		// rm processed chunks
+		for chunkNumber, _ := range ChunksMap {
+			if common.ChunkToOffset(int(chunkNumber+1)) <= common.State.MinOffset {
+				log.Print("FCU removes #", chunkNumber, " ", common.State.MinOffset, " >= ", common.ChunkToOffset(int(chunkNumber+1)))
+				rmFile(common.ChunkToOffset(int(chunkNumber)))
+			}
 		}
+		// process records
+		if len(CombustorChannel) < cap(CombustorChannel)/2 {
+			start := true
+			for offset := common.State.MinOffset; offset < common.State.IndexOffset; offset += common.IndexSize {
+				if RecordInMemory(&common.Record{Seek: offset}) {
+					continue
+				}
+
+				file := getFile(offset)
+				if inject(file, offset) {
+					// log.Print("FCU injects ", offset)
+					start = false
+				} else {
+					if start {
+						log.Print("FCU changes MinOffset to ", offset)
+						common.State.MinOffset = offset + common.IndexSize
+					}
+				}
+			}
+		}
+		time.Sleep(1e6)
+		runtime.Gosched()
 	}
 }
 
-func inject(reader *bufio.Reader) {
-	for ptr := common.State.MinOffset; ptr <= common.State.MaxOffset-common.IndexSize; ptr += common.IndexSize {
-		record := &common.Record{}
-		record.Deserialize(reader)
-		record.Seek = ptr
-		if !RecordInMemory(record) {
-			MapRecord(record)
+func inject(file *os.File, offset uint64) bool {
+	_, err := file.Seek(common.State.IndexSeekByOffset(offset), os.SEEK_SET)
+	common.FaceIt(err)
+	record := &common.Record{}
+	record.Deserialize(file)
+	record.Seek = offset
+	if !RecordInMemory(record) {
+		MapRecord(record)
+		if record.Delivered == 0 {
 			CombustorChannel <- record
+			return true
 		}
 	}
+	return false
 }

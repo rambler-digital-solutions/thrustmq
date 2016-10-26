@@ -18,5 +18,5 @@ func OffsetToChunkSeek(offset uint64) int64 {
 }
 
 func ChunkToOffset(number int) uint64 {
-	return uint64(number) * IndexSize / config.Base.ChunkSize
+	return uint64(number) * IndexSize * config.Base.ChunkSize
 }

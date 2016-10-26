@@ -3,7 +3,8 @@
 - context switches are evil
 - buffered sequential read is x10 times faster than random one
 - channels & mutexes
-- uint64 is 16 million terabytes
+- uint64 is 16 million terabytes (what if offset is gt uint64?)
+- different order of magnitude (23 ms to 1 ms)
 
 # Combustor splits into chunks sequentially... % config.MaxRecordsPerFile
 # FCU iterates between tail -> head % config.MaxRecordsPerFile
