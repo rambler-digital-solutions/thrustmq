@@ -1,5 +1,8 @@
 # ThrustMQ (WIP)
 
+[![Build Status](https://travis-ci.org/rambler-digital-solutions/thrustmq.svg?branch=develop)](https://travis-ci.org/rambler-digital-solutions/thrustmq)
+[![Code Climate](https://codeclimate.com/github/rambler-digital-solutions/thrustmq/badges/gpa.svg)](https://codeclimate.com/github/rambler-digital-solutions/thrustmq)
+
 Plain Golang message queue designed for speed, durability & simplicity.
 
 How ThrustMQ stands against competition:

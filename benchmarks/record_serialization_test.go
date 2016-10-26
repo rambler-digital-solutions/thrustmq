@@ -17,14 +17,14 @@ func getBufferedWriter() *bufio.Writer {
 }
 
 func getBufferedReader() *bufio.Reader {
-	indexFile, err := os.OpenFile(config.Base.Index+"_bench", os.O_RDONLY, 0666)
+	indexFile, err := os.OpenFile(config.Base.Index+"_bench", os.O_RDONLY|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	indexFile.Seek(0, os.SEEK_SET)
 	return bufio.NewReaderSize(indexFile, config.Base.FileBuffer)
 }
 
 func getFile() *os.File {
-	indexFile, err := os.OpenFile(config.Base.Index+"_bench", os.O_RDONLY, 0666)
+	indexFile, err := os.OpenFile(config.Base.Index+"_bench", os.O_RDONLY|os.O_CREATE, 0666)
 	common.FaceIt(err)
 
 	return indexFile
