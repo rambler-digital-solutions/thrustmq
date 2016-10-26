@@ -1,9 +1,10 @@
 engines:
   golint:
     enabled: true
+    checks:
+      GoLint/Comments/DocComments:
+        enabled: false
   gofmt:
-    enabled: true
-  govet:
     enabled: true
 
 ratings:

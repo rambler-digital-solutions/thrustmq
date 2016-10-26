@@ -44,7 +44,7 @@ func RecordInMemory(record *common.Record) bool {
 
 func MapConnection(connection *common.ConnectionStruct) {
 	ConnectionsMutex.Lock()
-	ConnectionsMap[connection.Id] = connection
+	ConnectionsMap[connection.ID] = connection
 	ConnectionsMutex.Unlock()
 }
 
@@ -71,19 +71,19 @@ func ConnectionsMapGet(key uint64) *common.ConnectionStruct {
 
 func DeleteConnection(connection *common.ConnectionStruct) {
 	ConnectionsMutex.Lock()
-	delete(ConnectionsMap, connection.Id)
+	delete(ConnectionsMap, connection.ID)
 	ConnectionsMutex.Unlock()
 }
 
-func DeleteConnectionById(id uint64) {
+func DeleteConnectionByID(ID uint64) {
 	ConnectionsMutex.Lock()
-	delete(ConnectionsMap, id)
+	delete(ConnectionsMap, ID)
 	ConnectionsMutex.Unlock()
 }
 
-func ConnectionAlive(id uint64) bool {
+func ConnectionAlive(ID uint64) bool {
 	ConnectionsMutex.RLock()
-	_, ok := ConnectionsMap[id]
+	_, ok := ConnectionsMap[ID]
 	ConnectionsMutex.RUnlock()
 	if ok {
 		return true
@@ -91,9 +91,9 @@ func ConnectionAlive(id uint64) bool {
 	return false
 }
 
-func BucketRequired(bucketId uint64) bool {
+func BucketRequired(bucketID uint64) bool {
 	BucketsMutex.RLock()
-	result := BucketsMap[bucketId]
+	result := BucketsMap[bucketID]
 	BucketsMutex.RUnlock()
 	if result == nil {
 		return false
@@ -127,14 +127,14 @@ func UnregisterBucketSink(client *common.ConnectionStruct) {
 	BucketsMutex.Unlock()
 }
 
-func nextConnFor(bucketId uint64) *common.ConnectionStruct {
+func nextConnFor(bucketID uint64) *common.ConnectionStruct {
 	BucketsMutex.Lock()
-	if BucketsMap[bucketId] == nil {
+	if BucketsMap[bucketID] == nil {
 		BucketsMutex.Unlock()
 		return nil
 	}
-	connectionEl := BucketsMap[bucketId].Front()
-	BucketsMap[bucketId].MoveToBack(connectionEl)
+	connectionEl := BucketsMap[bucketID].Front()
+	BucketsMap[bucketID].MoveToBack(connectionEl)
 	connection, _ := connectionEl.Value.(*common.ConnectionStruct)
 	BucketsMutex.Unlock()
 	return connection

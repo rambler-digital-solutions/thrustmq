@@ -13,7 +13,7 @@ type StateStruct struct {
 	MaxOffset    uint64
 	IndexOffset  uint64
 	Capacity     float32
-	ConnectionId uint64
+	ConnectionID uint64
 }
 
 var State *StateStruct = loadState()

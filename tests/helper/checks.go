@@ -40,12 +40,12 @@ func CheckUncompressedMessages(t *testing.T, expectation int) {
 	}
 }
 
-func CheckConnectionChannel(t *testing.T, id uint64, size int) {
-	connection := exhaust.ConnectionsMapGet(id)
+func CheckConnectionChannel(t *testing.T, ID uint64, size int) {
+	connection := exhaust.ConnectionsMapGet(ID)
 	if connection == nil {
 		t.Fatalf("connection is closed!")
 	}
 	if len(connection.Channel) != size {
-		t.Fatalf("%d record in %d connection channel (should be %d)", len(connection.Channel), id, size)
+		t.Fatalf("%d record in %d connection channel (should be %d)", len(connection.Channel), ID, size)
 	}
 }

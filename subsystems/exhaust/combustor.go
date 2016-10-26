@@ -14,7 +14,7 @@ func forward(record *common.Record) {
 		return
 	}
 	if len(connection.Channel) != cap(connection.Channel) {
-		record.Connection = connection.Id
+		record.Connection = connection.ID
 		record.Enqueued = common.TimestampUint64()
 		record.Retries++
 		record.Dirty = true

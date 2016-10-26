@@ -29,48 +29,48 @@ type RecordsMap map[uint64]*Record
 
 var IndexSize uint64 = 8 * 9
 
-func (self *Record) Slots() []*uint64 {
-	return []*uint64{&self.DataSeek, &self.DataLength, &self.Bucket, &self.Connection, &self.Created, &self.Enqueued, &self.Sent, &self.Delivered, &self.Retries}
+func (record *Record) Slots() []*uint64 {
+	return []*uint64{&record.DataSeek, &record.DataLength, &record.Bucket, &record.Connection, &record.Created, &record.Enqueued, &record.Sent, &record.Delivered, &record.Retries}
 }
 
-func (self *Record) Serialize() []byte {
+func (record *Record) Serialize() []byte {
 	buffer := make([]byte, IndexSize)
-	slots := self.Slots()
+	slots := record.Slots()
 	for i := range slots {
 		binary.LittleEndian.PutUint64(buffer[i*8:(i+1)*8], *slots[i])
 	}
 	return buffer
 }
 
-func (self *Record) Deserialize(reader io.Reader) {
+func (record *Record) Deserialize(reader io.Reader) {
 	buffer := make([]byte, IndexSize)
 	io.ReadFull(reader, buffer)
-	slots := self.Slots()
+	slots := record.Slots()
 	for i := range slots {
 		*slots[i] = binary.LittleEndian.Uint64(buffer[i*8 : (i+1)*8])
 	}
 }
 
-func (self *Record) Merge(other *Record) {
-	slots1 := self.Slots()
-	slots2 := self.Slots()
+func (record *Record) Merge(other *Record) {
+	slots1 := record.Slots()
+	slots2 := record.Slots()
 	for i := range slots1 {
 		*slots1[i] = Max(*slots1[i], *slots2[i])
 	}
 }
 
-func (self *Record) LoadData(file *os.File) {
-	_, err := file.Seek(int64(self.DataSeek), os.SEEK_SET)
+func (record *Record) LoadData(file *os.File) {
+	_, err := file.Seek(int64(record.DataSeek), os.SEEK_SET)
 	if err != nil {
 		return
 	}
-	self.Data = make([]byte, self.DataLength)
-	io.ReadFull(file, self.Data)
+	record.Data = make([]byte, record.DataLength)
+	io.ReadFull(file, record.Data)
 }
 
-func (self *Record) NetworkSerialize() []byte {
-	buffer := make([]byte, 4+self.DataLength)
-	binary.LittleEndian.PutUint32(buffer[0:4], uint32(self.DataLength))
-	copy(buffer[4:], self.Data[:])
+func (record *Record) NetworkSerialize() []byte {
+	buffer := make([]byte, 4+record.DataLength)
+	binary.LittleEndian.PutUint32(buffer[0:4], uint32(record.DataLength))
+	copy(buffer[4:], record.Data[:])
 	return buffer
 }

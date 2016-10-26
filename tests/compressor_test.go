@@ -59,7 +59,7 @@ func TestChunkSwitching(t *testing.T) {
 }
 
 // Check that chunks are being circularly overwritten
-func TestChunkOverride(t *testing.T) {
+func TestChunkOverrIDe(t *testing.T) {
 	helper.BootstrapIntake(t)
 
 	common.State.IndexOffset = config.Base.ChunkSize * (config.Base.MaxChunks - 1) * common.IndexSize

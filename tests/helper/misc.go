@@ -19,12 +19,12 @@ func DumpRecords(records []*common.Record) {
 	indexFile.Sync()
 }
 
-func ForgeConnection(t *testing.T, connectionId uint64, bucketId uint64) {
+func ForgeConnection(t *testing.T, connectionID uint64, bucketID uint64) {
 	consumer.Disconnect()
 	CheckConnections(t, 0)
 	connection := &common.ConnectionStruct{}
-	connection.Id = connectionId
-	connection.Bucket = bucketId
+	connection.ID = connectionID
+	connection.Bucket = bucketID
 	connection.Channel = make(common.RecordPipe, config.Exhaust.NozzleBuffer)
 	exhaust.MapConnection(connection)
 	exhaust.RegisterBucketSink(connection)

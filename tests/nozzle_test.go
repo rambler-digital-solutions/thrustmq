@@ -36,12 +36,12 @@ func TestRecipienceOfSingleMessage(t *testing.T) {
 	helper.BootstrapExhaust(t)
 
 	randomNumber := uint64(rand.Int63())
-	channel := exhaust.ConnectionsMapGet(common.State.ConnectionId).Channel
+	channel := exhaust.ConnectionsMapGet(common.State.ConnectionID).Channel
 	record := &common.Record{}
 	record.DataLength = 8
 	record.Data = common.BinUint64(randomNumber)
 	channel <- record
-	helper.CheckConnectionChannel(t, common.State.ConnectionId, 1)
+	helper.CheckConnectionChannel(t, common.State.ConnectionID, 1)
 
 	consumer.SendHeader(1, uint64(rand.Uint32()))
 	messages := consumer.RecieveBatch()
@@ -70,9 +70,9 @@ func TestRecipienceOfMultipleMessages(t *testing.T) {
 	helper.BootstrapExhaust(t)
 
 	batchSize := 3
-	bucketId := uint64(rand.Int63())
+	bucketID := uint64(rand.Int63())
 	randomNumbers := make([]uint64, batchSize)
-	channel := exhaust.ConnectionsMapGet(common.State.ConnectionId).Channel
+	channel := exhaust.ConnectionsMapGet(common.State.ConnectionID).Channel
 	// clear the channel
 	for len(channel) != 0 {
 		<-channel
@@ -82,11 +82,11 @@ func TestRecipienceOfMultipleMessages(t *testing.T) {
 		record := &common.Record{}
 		record.DataLength = 8
 		record.Data = common.BinUint64(randomNumbers[i])
-		record.Bucket = bucketId
+		record.Bucket = bucketID
 		channel <- record
 	}
 
-	consumer.SendHeader(batchSize, bucketId)
+	consumer.SendHeader(batchSize, bucketID)
 	messages := consumer.RecieveBatch()
 	consumer.SendAcks(batchSize)
 

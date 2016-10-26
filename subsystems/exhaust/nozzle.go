@@ -14,11 +14,11 @@ import (
 )
 
 func registerConnect(connection net.Conn) *common.ConnectionStruct {
-	common.State.ConnectionId++
+	common.State.ConnectionID++
 
 	connectionStruct := &common.ConnectionStruct{}
 	connectionStruct.Connection = connection
-	connectionStruct.Id = common.State.ConnectionId
+	connectionStruct.ID = common.State.ConnectionID
 	connectionStruct.Reader = bufio.NewReaderSize(connection, config.Base.NetworkBuffer)
 	connectionStruct.Writer = bufio.NewWriterSize(connection, config.Base.NetworkBuffer)
 	connectionStruct.Channel = make(common.RecordPipe, config.Exhaust.NozzleBuffer)
@@ -82,7 +82,7 @@ func blow(connection net.Conn) {
 			sendBatch(client, batch)
 			recieveAcks(client, batch)
 		} else {
-			logging.Debug("Trying to ping client", strconv.FormatInt(int64(client.Id), 4), "...")
+			logging.Debug("Trying to ping client", strconv.FormatInt(int64(client.ID), 4), "...")
 			time.Sleep(time.Duration(config.Exhaust.HeartbeatRate) * time.Nanosecond)
 			runtime.Gosched()
 			if !client.Ping() {

@@ -16,22 +16,22 @@ type IntakeChannel chan *IntakeStruct
 
 var MessageHeaderSize = 12
 
-func (self *IntakeStruct) Deserialize(reader io.Reader) bool {
+func (wrapper *IntakeStruct) Deserialize(reader io.Reader) bool {
 	header := make([]byte, MessageHeaderSize)
 	bytesRead, _ := io.ReadFull(reader, header)
 	if bytesRead != MessageHeaderSize {
 		return false
 	}
 
-	self.Record = &Record{}
-	self.Record.Bucket = binary.LittleEndian.Uint64(header[0:8])
-	self.Record.DataLength = uint64(binary.LittleEndian.Uint32(header[8:12]))
+	wrapper.Record = &Record{}
+	wrapper.Record.Bucket = binary.LittleEndian.Uint64(header[0:8])
+	wrapper.Record.DataLength = uint64(binary.LittleEndian.Uint32(header[8:12]))
 
-	buffer := make([]byte, self.Record.DataLength)
+	buffer := make([]byte, wrapper.Record.DataLength)
 	bytesRead, _ = io.ReadFull(reader, buffer)
-	if uint64(bytesRead) != self.Record.DataLength {
+	if uint64(bytesRead) != wrapper.Record.DataLength {
 		return false
 	}
-	self.Record.Data = buffer
+	wrapper.Record.Data = buffer
 	return true
 }

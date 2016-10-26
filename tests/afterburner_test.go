@@ -30,15 +30,15 @@ func TestAfterburnerRequeueOnDeadConnection(t *testing.T) {
 	helper.BootstrapExhaust(t)
 
 	seek := uint64(rand.Int63())
-	bucketId := uint64(rand.Int63())
-	connectionId := uint64(rand.Int63())
-	deadConnectionId := uint64(rand.Int63())
-	helper.ForgeConnection(t, connectionId, bucketId)
+	bucketID := uint64(rand.Int63())
+	connectionID := uint64(rand.Int63())
+	deadConnectionID := uint64(rand.Int63())
+	helper.ForgeConnection(t, connectionID, bucketID)
 
 	record := &common.Record{}
 	record.Seek = seek
-	record.Bucket = bucketId
-	record.Connection = deadConnectionId
+	record.Bucket = bucketID
+	record.Connection = deadConnectionID
 	record.Enqueued = common.TimestampUint64()
 	exhaust.MapRecord(record)
 	exhaust.AfterburnerChannel <- record
@@ -50,10 +50,10 @@ func TestAfterburnerRequeueOnDeadConnection(t *testing.T) {
 		t.Fatalf("record wasn't Enqueued (%d retries)", retries)
 	}
 
-	enqueuedToConnection := len(exhaust.ConnectionsMapGet(connectionId).Channel)
+	enqueuedToConnection := len(exhaust.ConnectionsMapGet(connectionID).Channel)
 	if enqueuedToConnection != 1 {
 		t.Fatalf("record wasn't added to connection queue (%d items)", enqueuedToConnection)
 	}
 
-	exhaust.DeleteConnectionById(connectionId)
+	exhaust.DeleteConnectionByID(connectionID)
 }

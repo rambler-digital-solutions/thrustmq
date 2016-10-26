@@ -43,10 +43,10 @@ Producer:
 ```
 ->
 BatchSize uint32
-BucketId uint64, Length uint64, data []byte
-BucketId uint64, Length uint64, data []byte
+bucketID uint64, Length uint64, data []byte
+bucketID uint64, Length uint64, data []byte
 ...
-BucketId uint64, Length uint64, data []byte
+bucketID uint64, Length uint64, data []byte
 ```
 
 ```
@@ -58,7 +58,7 @@ Consumer:
 ```
 <-
 ConsumerId uint64
-BucketId uint64
+bucketID uint64
 BatchSize uint32
 ```
 
