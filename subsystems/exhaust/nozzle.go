@@ -73,16 +73,15 @@ func blow(connection net.Conn) {
 		return
 	}
 	logging.NewConsumerHeader(client)
-
+	time.Sleep(1e6) // allows data to arrive
 	for {
 		batchSize := common.Min(int(client.BatchSize), len(client.Channel))
-
 		if batchSize > 0 {
 			batch := make([]*common.Record, batchSize)
 			sendBatch(client, batch)
 			recieveAcks(client, batch)
 		} else {
-			logging.Debug("Trying to ping client", strconv.FormatInt(int64(client.ID), 4), "...")
+			log.Print("Trying to ping client ", strconv.FormatInt(int64(client.ID), 4), "...")
 			time.Sleep(time.Duration(config.Exhaust.HeartbeatRate) * time.Nanosecond)
 			runtime.Gosched()
 			if !client.Ping() {

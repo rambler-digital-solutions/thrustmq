@@ -3,6 +3,7 @@ package consumer
 import (
 	"encoding/binary"
 	"fmt"
+	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -54,7 +55,7 @@ func SendAcks(batchSize int) {
 	Send(buffer)
 }
 
-func RecieveBatch() []Message {
+func RecieveBatchOrPing() []Message {
 	buffer := make([]byte, 4)
 	Recieve(buffer)
 	batchSize := int(binary.LittleEndian.Uint32(buffer[0:4]))
@@ -68,5 +69,15 @@ func RecieveBatch() []Message {
 		batch[i] = Message{Length: length, Payload: payload}
 	}
 
+	return batch
+}
+
+func RecieveBatch() []Message {
+	batch := RecieveBatchOrPing()
+	for len(batch) == 1 && batch[0].Length == 0 {
+		log.Print("CLIENT: got ping")
+		SendAcks(1)
+		batch = RecieveBatchOrPing()
+	}
 	return batch
 }

@@ -110,10 +110,10 @@ func TestFCUFileDeletion(t *testing.T) {
 	helper.DumpRecords(records)
 
 	helper.BootstrapExhaust(t)
-	common.State.MinOffset = 0
 	common.State.IndexOffset = common.IndexSize * uint64(numberOfRecords)
+	common.State.MinOffset = common.State.IndexOffset
 
-	time.Sleep(1e7)
+	time.Sleep(1e8)
 
 	exhaust.DeleteConnectionByID(connectionID)
 	_, err := os.Stat(config.Base.Index + "0")

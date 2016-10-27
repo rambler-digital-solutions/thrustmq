@@ -5,6 +5,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
+	"log"
 	"os"
 	"testing"
 )
@@ -13,10 +14,23 @@ func DumpRecords(records []*common.Record) {
 	indexFile, err := os.OpenFile(config.Base.Index+"0", os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	indexFile.Seek(0, os.SEEK_SET)
+	dataFile, err := os.OpenFile(config.Base.Data+"0", os.O_RDWR|os.O_CREATE, 0666)
+	common.FaceIt(err)
+	dataFile.Seek(0, os.SEEK_SET)
+
+	var dataOffset uint64 = 0
+
 	for i := range records {
+		log.Print("dumping ", records[i].Data)
+		dataFile.Write(records[i].Data)
+		records[i].DataSeek = dataOffset
+		dataOffset += uint64(len(records[i].Data))
 		indexFile.Write(records[i].Serialize())
 	}
 	indexFile.Sync()
+	dataFile.Sync()
+	common.State.MinOffset = 0
+	common.State.IndexOffset = common.IndexSize * uint64(len(records))
 }
 
 func ForgeConnection(t *testing.T, connectionID uint64, bucketID uint64) {

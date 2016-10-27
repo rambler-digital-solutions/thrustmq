@@ -2,6 +2,7 @@ package exhaust
 
 import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
+	"log"
 	"runtime"
 )
 
@@ -18,8 +19,10 @@ func forward(record *common.Record) {
 		record.Enqueued = common.TimestampUint64()
 		record.Retries++
 		record.Dirty = true
+		log.Print("to turbine and connection!~ ", record)
 		TurbineChannel <- record
 		connection.Channel <- record
+		log.Print("done~ ")
 	}
 }
 

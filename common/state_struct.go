@@ -10,7 +10,6 @@ import (
 
 type StateStruct struct {
 	MinOffset    uint64
-	MaxOffset    uint64
 	IndexOffset  uint64
 	Capacity     float32
 	ConnectionID uint64
@@ -50,7 +49,7 @@ func (state *StateStruct) Save() {
 }
 
 func (state *StateStruct) Distance() uint64 {
-	return state.MaxOffset - state.MinOffset
+	return state.IndexOffset - state.MinOffset
 }
 
 func (state *StateStruct) SwitchChunk() bool {

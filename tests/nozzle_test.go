@@ -16,7 +16,7 @@ func TestPing(t *testing.T) {
 	helper.BootstrapExhaust(t)
 	consumer.SendHeader(1, uint64(rand.Int63()))
 
-	messages := consumer.RecieveBatch()
+	messages := consumer.RecieveBatchOrPing()
 	consumer.SendAcks(1)
 
 	expectedBatchSize := 1

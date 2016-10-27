@@ -41,6 +41,7 @@ func fuelControlUnit() {
 		// process records
 		if len(CombustorChannel) < cap(CombustorChannel)/2 {
 			start := true
+			// log.Print("FCU pass ", common.State.MinOffset, "->",common.State.IndexOffset)
 			for offset := common.State.MinOffset; offset < common.State.IndexOffset; offset += common.IndexSize {
 				if RecordInMemory(&common.Record{Seek: offset}) {
 					continue
@@ -71,7 +72,11 @@ func inject(file *os.File, offset uint64) bool {
 	if !RecordInMemory(record) {
 		MapRecord(record)
 		if record.Delivered == 0 {
+			dataFile, err := os.OpenFile(config.Base.Data+common.State.StringChunkNumberByOffset(offset), os.O_RDONLY|os.O_CREATE, 0666)
+			common.FaceIt(err)
+			record.LoadData(dataFile)
 			CombustorChannel <- record
+			dataFile.Close()
 			return true
 		}
 	}
