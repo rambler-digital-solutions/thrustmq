@@ -81,14 +81,13 @@ func TestMovementOfMinOffset(t *testing.T) {
 			records[i].Delivered = common.TimestampUint64()
 		}
 	}
-	helper.DumpRecords(records)
-
 	helper.BootstrapExhaust(t)
+	helper.DumpRecords(records)
 	helper.ForgeConnection(t, connectionID, bucketID)
 	common.State.MinOffset = 0
 	common.State.IndexOffset = common.IndexSize * uint64(numberOfRecords)
 
-	time.Sleep(1e7)
+	time.Sleep(1e8)
 
 	exhaust.DeleteConnectionByID(connectionID)
 	if common.State.MinOffset != common.State.IndexOffset-common.IndexSize {
