@@ -3,14 +3,14 @@ package producer
 import (
 	"encoding/binary"
 	"fmt"
-	"math/rand"
 	"net"
 	"os"
 )
 
 type Message struct {
-	Length  int
-	Payload []byte
+	Length   int
+	Payload  []byte
+	BucketID uint64
 }
 
 var connection net.Conn
@@ -41,17 +41,18 @@ func Recieve(buffer []byte) {
 	connection.Read(buffer)
 }
 
-func SendBatch(messages []Message) {
+func SendBatch(messages []*Message) {
 	lengthBuffer := make([]byte, 4)
-	longBuffer := make([]byte, 8)
 	binary.LittleEndian.PutUint32(lengthBuffer, uint32(len(messages)))
 	Send(lengthBuffer)
 
 	for i := range messages {
-		binary.LittleEndian.PutUint64(longBuffer, uint64(rand.Int63()))
-		Send(longBuffer)
-		binary.LittleEndian.PutUint32(lengthBuffer, uint32(messages[i].Length))
-		Send(lengthBuffer)
+		bucketBuffer := make([]byte, 8)
+		binary.LittleEndian.PutUint64(bucketBuffer, messages[i].BucketID)
+		Send(bucketBuffer)
+		length2Buffer := make([]byte, 4)
+		binary.LittleEndian.PutUint32(length2Buffer, uint32(messages[i].Length))
+		Send(length2Buffer)
 		Send(messages[i].Payload)
 	}
 }

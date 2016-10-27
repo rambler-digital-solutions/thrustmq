@@ -6,12 +6,13 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/clients/golang/producer"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
-	// "github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
 	"github.com/rambler-digital-solutions/thrustmq/tests/helper"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
+	// "github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
+	// "log"
 )
 
 // Send message via golang producer client and make sure that it was stored on disk
@@ -20,8 +21,8 @@ func TestIntake(t *testing.T) {
 
 	expectedPayload := rand.Uint32()
 	buffer := common.BinUint32(expectedPayload)
-	messages := make([]producer.Message, 1)
-	messages[0] = producer.Message{Length: len(buffer), Payload: buffer}
+	messages := make([]*producer.Message, 1)
+	messages[0] = &producer.Message{Length: len(buffer), Payload: buffer}
 
 	producer.Connect()
 	producer.SendBatch(messages)
@@ -51,7 +52,6 @@ func TestIntake(t *testing.T) {
 
 // Connect to MQ via golang consumer client and recieve several messages from disk
 func TestExhaust(t *testing.T) {
-
 	batchSize := 3
 	expectedMessageLength := 8
 	bucketID := uint64(rand.Int63())
@@ -66,9 +66,10 @@ func TestExhaust(t *testing.T) {
 		record.Bucket = bucketID
 		records = append(records, record)
 	}
+	helper.BootstrapExhaust(t)
+
 	helper.DumpRecords(records)
 
-	helper.BootstrapExhaust(t)
 	consumer.SendHeader(batchSize, bucketID)
 	messages := consumer.RecieveBatch()
 	consumer.SendAcks(batchSize)
@@ -91,4 +92,47 @@ func TestExhaust(t *testing.T) {
 
 // Send message via golang producer client and recieve it via golang consumer client
 func TestSystem(t *testing.T) {
+	helper.BootstrapIntake(t)
+	helper.BootstrapExhaust(t)
+
+	batchSize := 3
+	bucketID := uint64(rand.Int63())
+	expectedMessageLength := 8
+
+	payloads := make([]uint64, batchSize)
+	messages := make([]*producer.Message, batchSize)
+	for i := 0; i < batchSize; i++ {
+		payloads[i] = uint64(rand.Int63())
+		buffer := common.BinUint64(payloads[i])
+		messages[i] = &producer.Message{}
+		messages[i].Length = len(buffer)
+		messages[i].BucketID = bucketID
+		messages[i].Payload = buffer
+	}
+
+	producer.Connect()
+	producer.SendBatch(messages)
+	producer.GetAcks(batchSize)
+
+	time.Sleep(1e6)
+
+	consumer.SendHeader(batchSize, bucketID)
+
+	messagesRecieved := consumer.RecieveBatch()
+	consumer.SendAcks(batchSize)
+
+	if len(messagesRecieved) != batchSize {
+		t.Fatalf("batch size is expected to be %d (%d instead)", batchSize, len(messagesRecieved))
+	}
+
+	for i := 0; i < batchSize; i++ {
+		actualMessageLength := messagesRecieved[i].Length
+		if actualMessageLength != expectedMessageLength {
+			t.Fatalf("message length is expected to be %d (%d instead)", expectedMessageLength, actualMessageLength)
+		}
+		actualNumber := binary.LittleEndian.Uint64(messagesRecieved[i].Payload)
+		if !common.Contains(payloads, actualNumber) {
+			t.Fatalf("recieved number %d was not sent at all", actualNumber)
+		}
+	}
 }

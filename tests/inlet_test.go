@@ -11,8 +11,8 @@ import (
 func TestSendOneMessage(t *testing.T) {
 	helper.BootstrapIntake(t)
 
-	messages := make([]producer.Message, 1)
-	messages[0] = producer.Message{}
+	messages := make([]*producer.Message, 1)
+	messages[0] = &producer.Message{}
 	producer.SendBatch(messages)
 	acks := producer.GetAcks(1)
 
@@ -31,10 +31,10 @@ func TestSendSeveralMessages(t *testing.T) {
 	helper.BootstrapIntake(t)
 
 	numberOfMessages := 3
-	messages := make([]producer.Message, numberOfMessages)
+	messages := make([]*producer.Message, numberOfMessages)
 	for i := 0; i < numberOfMessages; i++ {
 		payload := make([]byte, rand.Intn(1024))
-		messages[i] = producer.Message{Length: len(payload), Payload: payload}
+		messages[i] = &producer.Message{Length: len(payload), Payload: payload}
 	}
 
 	producer.SendBatch(messages)

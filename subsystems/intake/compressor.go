@@ -63,7 +63,10 @@ func compressorStage2() {
 			}
 			persistRecord(message.Record, indexWriter, dataWriter)
 			common.State.NextIndexOffset()
+			// log.Print("compressing ", message.Record, " chunk ", common.State.ChunkNumber())
 			DataOffset += message.Record.DataLength
+			// indexWriter.Flush()
+			// dataWriter.Flush()
 			if message.AckChannel != nil {
 				message.Status = 1
 				message.AckChannel <- message

@@ -3,6 +3,7 @@ package helper
 import (
 	"github.com/rambler-digital-solutions/thrustmq/clients/golang/consumer"
 	"github.com/rambler-digital-solutions/thrustmq/clients/golang/producer"
+	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
@@ -17,6 +18,8 @@ var (
 )
 
 func BootstrapIntake(t *testing.T) {
+	common.State.MinOffset = 0
+	common.State.IndexOffset = 0
 	if !intakeInitialized {
 		logging.Init()
 		go intake.Init()
@@ -29,6 +32,8 @@ func BootstrapIntake(t *testing.T) {
 }
 
 func BootstrapExhaust(t *testing.T) {
+	common.State.MinOffset = 0
+	common.State.IndexOffset = 0
 	if !exhaustInitialized {
 		rand.Seed(time.Now().UTC().UnixNano())
 		logging.Init()

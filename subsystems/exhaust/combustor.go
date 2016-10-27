@@ -7,6 +7,7 @@ import (
 )
 
 func forward(record *common.Record) {
+	// log.Print("forward ", record)
 	if record.Enqueued > 0 {
 		return
 	}

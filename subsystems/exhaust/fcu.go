@@ -69,6 +69,7 @@ func inject(file *os.File, offset uint64) bool {
 	record := &common.Record{}
 	record.Deserialize(file)
 	record.Seek = offset
+	// log.Print("fcu ", record, " chunk ", common.State.StringChunkNumberByOffset(offset))
 	if !RecordInMemory(record) {
 		MapRecord(record)
 		if record.Delivered == 0 {
