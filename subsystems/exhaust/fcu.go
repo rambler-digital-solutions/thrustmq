@@ -48,7 +48,6 @@ func fuelControlUnit() {
 
 				file := getFile(offset)
 				if inject(file, offset) {
-					// log.Print("FCU injects ", offset)
 					start = false
 				} else {
 					if start {
