@@ -22,7 +22,7 @@ func BootstrapIntake(t *testing.T) {
 		logging.Init()
 		go intake.Init()
 		rand.Seed(time.Now().UTC().UnixNano())
-		time.Sleep(1e6)
+		time.Sleep(1e7)
 		intakeInitialized = true
 	}
 	producer.Disconnect()
@@ -35,7 +35,7 @@ func BootstrapExhaust(t *testing.T) {
 		logging.Init()
 		common.State.MinOffset = common.State.MaxOffset
 		go exhaust.Init()
-		time.Sleep(1e6)
+		time.Sleep(1e7)
 		exhaustInitialized = true
 	}
 
