@@ -30,7 +30,16 @@ type RecordsMap map[uint64]*Record
 var IndexSize uint64 = 8 * 9
 
 func (record *Record) Slots() []*uint64 {
-	return []*uint64{&record.DataSeek, &record.DataLength, &record.Bucket, &record.Connection, &record.Created, &record.Enqueued, &record.Sent, &record.Delivered, &record.Retries}
+	return []*uint64{
+		&record.DataSeek,
+		&record.DataLength,
+		&record.Bucket,
+		&record.Connection,
+		&record.Created,
+		&record.Enqueued,
+		&record.Sent,
+		&record.Delivered,
+		&record.Retries}
 }
 
 func (record *Record) Serialize() []byte {

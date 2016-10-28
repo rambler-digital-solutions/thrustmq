@@ -12,7 +12,7 @@ import (
 
 // Write single record on disk, then read it and check if they are the same
 func TestRecordSerialization(t *testing.T) {
-	indexFile, err := os.OpenFile(config.Base.Index+"_test", os.O_RDWR|os.O_CREATE, 0666)
+	indexFile, err := os.OpenFile(config.Base.IndexPrefix+"_test", os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	defer indexFile.Close()
 
@@ -44,7 +44,7 @@ func TestRecordSerialization(t *testing.T) {
 func TestChunkSwitching(t *testing.T) {
 	helper.BootstrapIntake(t)
 
-	common.State.IndexOffset = 0
+	common.State.NextWriteOffset = 0
 
 	for i := 0; i < int(config.Base.ChunkSize+1); i++ {
 		message := &common.IntakeStruct{}
@@ -62,7 +62,7 @@ func TestChunkSwitching(t *testing.T) {
 func TestChunkOverrIDe(t *testing.T) {
 	helper.BootstrapIntake(t)
 
-	common.State.IndexOffset = config.Base.ChunkSize * (config.Base.MaxChunks - 1) * common.IndexSize
+	common.State.NextWriteOffset = config.Base.ChunkSize * (config.Base.MaxChunks - 1) * common.IndexSize
 
 	for i := 0; i < int(config.Base.ChunkSize+1); i++ {
 		message := &common.IntakeStruct{}

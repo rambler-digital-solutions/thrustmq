@@ -9,17 +9,17 @@ import (
 )
 
 type StateStruct struct {
-	MinOffset    uint64
-	IndexOffset  uint64
-	Capacity     float32
-	ConnectionID uint64
+	UndeliveredOffset uint64
+	NextWriteOffset   uint64
+	Capacity          float32
+	ConnectionID      uint64
 }
 
 var State = loadState()
 
 func loadState() *StateStruct {
-	if _, err := os.Stat(config.Exhaust.Chamber); err == nil {
-		file, err := os.OpenFile(config.Exhaust.Chamber, os.O_RDONLY|os.O_CREATE, 0666)
+	if _, err := os.Stat(config.Base.StateFile); err == nil {
+		file, err := os.OpenFile(config.Base.StateFile, os.O_RDONLY|os.O_CREATE, 0666)
 		FaceIt(err)
 		dec := gob.NewDecoder(file)
 		result := &StateStruct{}
@@ -39,7 +39,7 @@ func SaveState() {
 }
 
 func (state *StateStruct) Save() {
-	file, err := os.OpenFile(config.Exhaust.Chamber, os.O_WRONLY|os.O_CREATE, 0666)
+	file, err := os.OpenFile(config.Base.StateFile, os.O_WRONLY|os.O_CREATE, 0666)
 	FaceIt(err)
 	enc := gob.NewEncoder(file)
 	err = enc.Encode(State)
@@ -49,13 +49,13 @@ func (state *StateStruct) Save() {
 }
 
 func (state *StateStruct) Distance() uint64 {
-	return state.IndexOffset - state.MinOffset
+	return state.NextWriteOffset - state.UndeliveredOffset
 }
 
 func (state *StateStruct) SwitchChunk() bool {
-	result := state.SwitchChunkByOffset(state.IndexOffset)
+	result := state.SwitchChunkByOffset(state.NextWriteOffset)
 	if result && state.ChunkNumber() >= config.Base.MaxChunks {
-		state.IndexOffset = 0
+		state.NextWriteOffset = 0
 	}
 	return result
 }
@@ -64,12 +64,12 @@ func (state *StateStruct) SwitchChunkByOffset(offset uint64) bool {
 	return (offset/IndexSize)%config.Base.ChunkSize == 0
 }
 
-func (state *StateStruct) NextIndexOffset() {
-	state.IndexOffset += IndexSize
+func (state *StateStruct) NextNextWriteOffset() {
+	state.NextWriteOffset += IndexSize
 }
 
 func (state *StateStruct) ChunkNumber() uint64 {
-	return state.ChunkNumberByOffset(state.IndexOffset)
+	return state.ChunkNumberByOffset(state.NextWriteOffset)
 }
 
 func (state *StateStruct) ChunkNumberByOffset(offset uint64) uint64 {
@@ -85,7 +85,7 @@ func (state *StateStruct) StringChunkNumberByOffset(offset uint64) string {
 }
 
 func (state *StateStruct) IndexSeek() int64 {
-	return OffsetToChunkSeek(state.IndexOffset)
+	return OffsetToChunkSeek(state.NextWriteOffset)
 }
 
 func (state *StateStruct) IndexSeekByOffset(offset uint64) int64 {

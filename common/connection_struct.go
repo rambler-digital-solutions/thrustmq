@@ -58,13 +58,12 @@ func (connection *ConnectionStruct) GetAcks(batchSize int) ([]byte, error) {
 
 func (connection *ConnectionStruct) Ping() bool {
 	connection.SendActualBatchSize(1)
-	message := &Record{}
-	connection.SendMessage(message)
+	connection.SendMessage(&Record{})
 	connection.Writer.Flush()
 
 	acks, err := connection.GetAcks(1)
 	if err != nil || acks[0] != 1 {
-		log.Print("Ping failed")
+		log.Print("Ping failed. ", err)
 		return false
 	}
 

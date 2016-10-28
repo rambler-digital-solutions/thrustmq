@@ -31,12 +31,12 @@ func compressorStage1() {
 
 // Data are stored in chunks, thus we need a switch to a new one when current is full
 func nextChunkFile() (*os.File, *os.File, *bufio.Writer, *bufio.Writer) {
-	indexFile, err := os.OpenFile(config.Base.Index+common.State.StringChunkNumber(), os.O_WRONLY|os.O_CREATE, 0666)
+	indexFile, err := os.OpenFile(config.Base.IndexPrefix+common.State.StringChunkNumber(), os.O_WRONLY|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	_, err = indexFile.Seek(common.State.IndexSeek(), os.SEEK_SET)
 	common.FaceIt(err)
 
-	dataFile, err := os.OpenFile(config.Base.Data+common.State.StringChunkNumber(), os.O_WRONLY|os.O_CREATE, 0666)
+	dataFile, err := os.OpenFile(config.Base.DataPrefix+common.State.StringChunkNumber(), os.O_WRONLY|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	ptr, err := dataFile.Seek(0, os.SEEK_END)
 	DataOffset = uint64(ptr)
@@ -59,10 +59,10 @@ func compressorStage2() {
 				indexFile.Close()
 				dataFile.Close()
 				indexFile, dataFile, indexWriter, dataWriter = nextChunkFile()
-				log.Print("compressor switched to a new chunk #", common.State.ChunkNumber(), " seek:", common.State.IndexOffset, " dataSeek:", DataOffset)
+				log.Print("compressor switched to a new chunk #", common.State.ChunkNumber(), " seek:", common.State.NextWriteOffset, " dataSeek:", DataOffset)
 			}
 			persistRecord(message.Record, indexWriter, dataWriter)
-			common.State.NextIndexOffset()
+			common.State.NextNextWriteOffset()
 			// log.Print("compressing ", message.Record, " chunk ", common.State.ChunkNumber())
 			DataOffset += message.Record.DataLength
 			// indexWriter.Flush()
@@ -84,7 +84,7 @@ func compressorStage2() {
 func persistRecord(record *common.Record, indexWriter *bufio.Writer, dataWriter *bufio.Writer) {
 	_, err := dataWriter.Write(record.Data)
 	common.FaceIt(err)
-	record.Seek = common.State.IndexOffset
+	record.Seek = common.State.NextWriteOffset
 	record.DataSeek = DataOffset
 	record.Created = uint64(time.Now().UnixNano())
 	_, err = indexWriter.Write(record.Serialize())

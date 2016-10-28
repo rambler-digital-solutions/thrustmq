@@ -25,16 +25,16 @@ func TestInstantiationOfStoredMessages(t *testing.T) {
 
 	helper.BootstrapExhaust(t)
 	helper.ForgeConnection(t, connectionID, bucketID)
-	common.State.MinOffset = 0
-	common.State.IndexOffset = common.IndexSize * uint64(numberOfRecords)
+	common.State.UndeliveredOffset = 0
+	common.State.NextWriteOffset = common.IndexSize * uint64(numberOfRecords)
 
 	time.Sleep(1e7)
 
 	helper.CheckConnectionChannel(t, connectionID, numberOfRecords)
 
 	exhaust.DeleteConnectionByID(connectionID)
-	if common.State.IndexOffset < common.State.MinOffset {
-		t.Fatalf("head %d lt tail %d", common.State.IndexOffset, common.State.MinOffset)
+	if common.State.NextWriteOffset < common.State.UndeliveredOffset {
+		t.Fatalf("head %d lt tail %d", common.State.NextWriteOffset, common.State.UndeliveredOffset)
 	}
 
 }
@@ -56,20 +56,20 @@ func TestInstantiationOfUndeliveredMessages(t *testing.T) {
 
 	helper.BootstrapExhaust(t)
 	helper.ForgeConnection(t, connectionID, bucketID)
-	common.State.MinOffset = 0
-	common.State.IndexOffset = common.IndexSize * uint64(numberOfRecords)
+	common.State.UndeliveredOffset = 0
+	common.State.NextWriteOffset = common.IndexSize * uint64(numberOfRecords)
 
 	time.Sleep(1e7)
 
 	helper.CheckConnectionChannel(t, connectionID, numberOfRecords/2)
 	exhaust.DeleteConnectionByID(connectionID)
-	if common.State.IndexOffset < common.State.MinOffset {
-		t.Fatalf("head %d lt tail %d", common.State.IndexOffset, common.State.MinOffset)
+	if common.State.NextWriteOffset < common.State.UndeliveredOffset {
+		t.Fatalf("head %d lt tail %d", common.State.NextWriteOffset, common.State.UndeliveredOffset)
 	}
 }
 
-// Test that FCU moves MinOffset
-func TestMovementOfMinOffset(t *testing.T) {
+// Test that FCU moves UndeliveredOffset
+func TestMovementOfUndeliveredOffset(t *testing.T) {
 	numberOfRecords := 4
 	connectionID := uint64(rand.Int63())
 	bucketID := uint64(rand.Int63())
@@ -84,14 +84,14 @@ func TestMovementOfMinOffset(t *testing.T) {
 	helper.BootstrapExhaust(t)
 	helper.DumpRecords(records)
 	helper.ForgeConnection(t, connectionID, bucketID)
-	common.State.MinOffset = 0
-	common.State.IndexOffset = common.IndexSize * uint64(numberOfRecords)
+	common.State.UndeliveredOffset = 0
+	common.State.NextWriteOffset = common.IndexSize * uint64(numberOfRecords)
 
 	time.Sleep(1e8)
 
 	exhaust.DeleteConnectionByID(connectionID)
-	if common.State.MinOffset != common.State.IndexOffset-common.IndexSize {
-		t.Fatalf("min offset does not move %d - %d", common.State.MinOffset, common.State.IndexOffset)
+	if common.State.UndeliveredOffset != common.State.NextWriteOffset-common.IndexSize {
+		t.Fatalf("min offset does not move %d - %d", common.State.UndeliveredOffset, common.State.NextWriteOffset)
 	}
 }
 
@@ -109,17 +109,17 @@ func TestFCUFileDeletion(t *testing.T) {
 	helper.DumpRecords(records)
 
 	helper.BootstrapExhaust(t)
-	common.State.IndexOffset = common.IndexSize * uint64(numberOfRecords)
-	common.State.MinOffset = common.State.IndexOffset
+	common.State.NextWriteOffset = common.IndexSize * uint64(numberOfRecords)
+	common.State.UndeliveredOffset = common.State.NextWriteOffset
 
 	time.Sleep(1e8)
 
 	exhaust.DeleteConnectionByID(connectionID)
-	_, err := os.Stat(config.Base.Index + "0")
+	_, err := os.Stat(config.Base.IndexPrefix + "0")
 	if !os.IsNotExist(err) {
 		t.Fatalf("index file still exists!")
 	}
-	_, err = os.Stat(config.Base.Data + "0")
+	_, err = os.Stat(config.Base.DataPrefix + "0")
 	if !os.IsNotExist(err) {
 		t.Fatalf("data file still exists!")
 	}

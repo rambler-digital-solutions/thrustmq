@@ -11,10 +11,10 @@ import (
 )
 
 func DumpRecords(records []*common.Record) {
-	indexFile, err := os.OpenFile(config.Base.Index+"0", os.O_RDWR|os.O_CREATE, 0666)
+	indexFile, err := os.OpenFile(config.Base.IndexPrefix+"0", os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	indexFile.Seek(0, os.SEEK_SET)
-	dataFile, err := os.OpenFile(config.Base.Data+"0", os.O_RDWR|os.O_CREATE, 0666)
+	dataFile, err := os.OpenFile(config.Base.DataPrefix+"0", os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	dataFile.Seek(0, os.SEEK_SET)
 
@@ -29,8 +29,8 @@ func DumpRecords(records []*common.Record) {
 	}
 	indexFile.Sync()
 	dataFile.Sync()
-	common.State.MinOffset = 0
-	common.State.IndexOffset = common.IndexSize * uint64(len(records))
+	common.State.UndeliveredOffset = 0
+	common.State.NextWriteOffset = common.IndexSize * uint64(len(records))
 }
 
 func ForgeConnection(t *testing.T, connectionID uint64, bucketID uint64) {

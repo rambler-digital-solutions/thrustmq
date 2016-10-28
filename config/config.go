@@ -13,7 +13,6 @@ type exhaustConfigStruct struct {
 	NozzleBuffer      int
 	HeartbeatRate     int
 	AfterburnerBuffer int
-	Chamber           string
 }
 
 type intakeConfigStruct struct {
@@ -24,8 +23,9 @@ type intakeConfigStruct struct {
 type Struct struct {
 	Intake        intakeConfigStruct
 	Exhaust       exhaustConfigStruct
-	Data          string
-	Index         string
+	StateFile     string
+	DataPrefix    string
+	IndexPrefix   string
 	Debug         bool
 	Logfile       string
 	FileBuffer    int

@@ -30,16 +30,16 @@ func TestIntake(t *testing.T) {
 
 	time.Sleep(1e7)
 
-	offset := common.State.IndexOffset - common.IndexSize
+	offset := common.State.NextWriteOffset - common.IndexSize
 	chunk := common.OffsetToChunkString(offset)
-	indexFile, err := os.OpenFile(config.Base.Index+chunk, os.O_RDONLY, 0666)
+	indexFile, err := os.OpenFile(config.Base.IndexPrefix+chunk, os.O_RDONLY, 0666)
 	common.FaceIt(err)
 	_, err = indexFile.Seek(common.OffsetToChunkSeek(offset), os.SEEK_SET)
 	common.FaceIt(err)
 
 	record := &common.Record{}
 	record.Deserialize(indexFile)
-	dataFile, err := os.OpenFile(config.Base.Data+chunk, os.O_RDONLY, 0666)
+	dataFile, err := os.OpenFile(config.Base.DataPrefix+chunk, os.O_RDONLY, 0666)
 	common.FaceIt(err)
 	record.LoadData(dataFile)
 

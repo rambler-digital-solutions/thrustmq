@@ -18,8 +18,8 @@ var (
 )
 
 func BootstrapIntake(t *testing.T) {
-	common.State.MinOffset = 0
-	common.State.IndexOffset = 0
+	common.State.UndeliveredOffset = 0
+	common.State.NextWriteOffset = 0
 	if !intakeInitialized {
 		logging.Init()
 		go intake.Init()
@@ -32,8 +32,8 @@ func BootstrapIntake(t *testing.T) {
 }
 
 func BootstrapExhaust(t *testing.T) {
-	common.State.MinOffset = 0
-	common.State.IndexOffset = 0
+	common.State.UndeliveredOffset = 0
+	common.State.NextWriteOffset = 0
 	if !exhaustInitialized {
 		rand.Seed(time.Now().UTC().UnixNano())
 		logging.Init()
