@@ -31,7 +31,7 @@ func Init() {
 
 	go afterburner()
 	go combustor()
-	go turbine()
+	go turbineStage1()
 	go turbineStage2()
 	go fuelControlUnit()
 

@@ -11,6 +11,7 @@ import (
 var (
 	Stage2CompressorChannel = make(common.IntakeChannel, config.Intake.CompressorBuffer)
 	CompressorChannel       = make(common.IntakeChannel, config.Intake.CompressorBuffer)
+	DataOffset              uint64
 )
 
 func Init() {

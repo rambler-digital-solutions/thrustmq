@@ -26,8 +26,8 @@ type Struct struct {
 	StateFile     string
 	DataPrefix    string
 	IndexPrefix   string
-	Debug         bool
 	Logfile       string
+	Debug         bool
 	FileBuffer    int
 	NetworkBuffer int
 	ChunkSize     uint64

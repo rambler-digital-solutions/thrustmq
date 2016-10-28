@@ -11,10 +11,6 @@ import (
 	"time"
 )
 
-var (
-	DataOffset uint64
-)
-
 // first stage of compressor just passes message simultaneously to:
 //  the exhaust (delivery)
 //  and the second stage of the compressor (storage)
@@ -63,10 +59,10 @@ func compressorStage2() {
 			}
 			persistRecord(message.Record, indexWriter, dataWriter)
 			common.State.NextNextWriteOffset()
-			// log.Print("compressing ", message.Record, " chunk ", common.State.ChunkNumber())
+			if config.Base.Debug {
+				log.Print("compressing ", message.Record, " chunk ", common.State.ChunkNumber())
+			}
 			DataOffset += message.Record.DataLength
-			// indexWriter.Flush()
-			// dataWriter.Flush()
 			if message.AckChannel != nil {
 				message.Status = 1
 				message.AckChannel <- message

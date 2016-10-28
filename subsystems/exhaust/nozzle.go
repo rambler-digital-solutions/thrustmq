@@ -70,6 +70,7 @@ func blow(connection net.Conn) {
 	if client.DeserializeHeader() {
 		RegisterBucketSink(client)
 	} else {
+		log.Print("Could not deserialize consumer header")
 		return
 	}
 	logging.NewConsumerHeader(client)

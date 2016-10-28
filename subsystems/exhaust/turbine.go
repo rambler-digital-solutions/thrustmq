@@ -8,7 +8,7 @@ import (
 )
 
 // Entry function, loops throught the records in memory and take appropriate action
-func turbine() {
+func turbineStage1() {
 	for {
 		RecordsMutex.Lock()
 		for _, record := range RecordsMap {

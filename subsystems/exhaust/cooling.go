@@ -5,6 +5,10 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
 )
 
+/////////////////////////////////////
+// Records Map synchronization
+/////////////////////////////////////
+
 func DeleteRecord(record *common.Record) {
 	RecordsMutex.Lock()
 	delete(RecordsMap, record.Seek)
@@ -36,11 +40,19 @@ func RecordInMemory(record *common.Record) bool {
 	RecordsMutex.RLock()
 	_, ok := RecordsMap[record.Seek]
 	RecordsMutex.RUnlock()
-	if ok {
-		return true
-	}
-	return false
+	return !!ok
 }
+
+func RecordsMapLength() int {
+	RecordsMutex.RLock()
+	length := len(RecordsMap)
+	RecordsMutex.RUnlock()
+	return length
+}
+
+/////////////////////////////////////
+// Connections Map synchronization
+/////////////////////////////////////
 
 func MapConnection(connection *common.ConnectionStruct) {
 	ConnectionsMutex.Lock()
@@ -52,13 +64,6 @@ func ConnectionsMapLength() int {
 	ConnectionsMutex.RLock()
 	length := len(ConnectionsMap)
 	ConnectionsMutex.RUnlock()
-	return length
-}
-
-func RecordsMapLength() int {
-	RecordsMutex.RLock()
-	length := len(RecordsMap)
-	RecordsMutex.RUnlock()
 	return length
 }
 
@@ -91,6 +96,10 @@ func ConnectionAlive(ID uint64) bool {
 	return false
 }
 
+/////////////////////////////////////
+// Buckets Map synchronization
+/////////////////////////////////////
+
 func BucketRequired(bucketID uint64) bool {
 	BucketsMutex.RLock()
 	result := BucketsMap[bucketID]
@@ -114,28 +123,25 @@ func UnregisterBucketSink(client *common.ConnectionStruct) {
 	if client.ListElement == nil {
 		return
 	}
-
 	BucketsMutex.Lock()
 	list := BucketsMap[client.Bucket]
 	list.Remove(client.ListElement)
 	client.ListElement = nil
-
 	if BucketsMap[client.Bucket].Len() == 0 {
 		delete(BucketsMap, client.Bucket)
 	}
-
 	BucketsMutex.Unlock()
 }
 
 func nextConnFor(bucketID uint64) *common.ConnectionStruct {
-	BucketsMutex.Lock()
+	BucketsMutex.RLock()
 	if BucketsMap[bucketID] == nil {
-		BucketsMutex.Unlock()
+		BucketsMutex.RUnlock()
 		return nil
 	}
 	connectionEl := BucketsMap[bucketID].Front()
 	BucketsMap[bucketID].MoveToBack(connectionEl)
 	connection, _ := connectionEl.Value.(*common.ConnectionStruct)
-	BucketsMutex.Unlock()
+	BucketsMutex.RUnlock()
 	return connection
 }
