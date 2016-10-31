@@ -62,7 +62,7 @@ func compressorStage2() {
 			persistRecord(message.Record, indexWriter, dataWriter)
 			common.State.NextNextWriteOffset()
 
-			common.Log("intake", fmt.Sprintf("compressing %v chunk %d", message.Record, common.State.ChunkNumber()))
+			common.Log("intake", fmt.Sprintf("compressed seek: %d dataseek: %d datalength: %d to chunk %d", message.Record.Seek, message.Record.DataSeek, message.Record.DataLength, common.State.ChunkNumber()))
 
 			common.State.NextDataWriteOffset += message.Record.DataLength
 			if message.AckChannel != nil {

@@ -5,7 +5,6 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
-	"log"
 	"os"
 	"testing"
 )
@@ -21,7 +20,6 @@ func DumpRecords(records []*common.Record) {
 	common.State.NextDataWriteOffset = 0
 
 	for i := range records {
-		log.Print("dumping ", records[i].Data)
 		dataFile.Write(records[i].Data)
 		records[i].DataSeek = common.State.NextDataWriteOffset
 		common.State.NextDataWriteOffset += uint64(len(records[i].Data))

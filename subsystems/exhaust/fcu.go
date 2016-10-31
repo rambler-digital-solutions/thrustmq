@@ -19,7 +19,7 @@ func getFile(offset uint64) *os.File {
 		common.FaceIt(err)
 
 		message := fmt.Sprintf("map #%d to %s", chunk, path)
-		common.OplogRecord{Subsystem: "fcu", Message: message}.Send()
+		common.OplogRecord{Subsystem: "fuel", Message: message}.Send()
 
 		ChunksMap[chunk] = file
 		return file
@@ -36,7 +36,7 @@ func rmFile(offset uint64) {
 
 // Subsystem that instantiates records from disk and pushes them to combustor
 func fuelControlUnit() {
-	oprecord := common.OplogRecord{Subsystem: "fcu"}
+	oprecord := common.OplogRecord{Subsystem: "fuel"}
 
 	for {
 		// rm processed chunks
@@ -86,8 +86,8 @@ func inject(file *os.File, offset uint64) bool {
 	record.Deserialize(file)
 	record.Seek = offset
 
-	message := fmt.Sprintf("restore %v from chunk #%d", record, common.State.StringChunkNumberByOffset(offset))
-	common.OplogRecord{Subsystem: "fcu", Message: message}.Send()
+	message := fmt.Sprintf("restore %v from chunk #%s", record.Seek, common.State.StringChunkNumberByOffset(offset))
+	common.OplogRecord{Subsystem: "fuel", Message: message}.Send()
 
 	if !RecordInMemory(record) {
 		MapRecord(record)

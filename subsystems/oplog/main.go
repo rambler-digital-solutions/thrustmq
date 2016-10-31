@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -37,6 +38,7 @@ func logger() {
 	common.FaceIt(err)
 	logger := log.New(logfile, "", log.LstdFlags)
 	for {
-		logger.Print(<-common.OplogChannel)
+		oprecord := <-common.OplogChannel
+		logger.Printf("[%.4s] %s", strings.ToUpper(oprecord.Subsystem), oprecord.Message)
 	}
 }

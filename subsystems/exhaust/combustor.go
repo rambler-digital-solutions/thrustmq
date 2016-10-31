@@ -16,11 +16,11 @@ func forward(record *common.Record, connection *common.ConnectionStruct) {
 
 	oprecord := common.OplogRecord{Subsystem: "combustor"}
 
-	oprecord.Message = fmt.Sprintf("forwarding %v to connection %d", record.Bucket, connection.ID)
+	oprecord.Message = fmt.Sprintf("fwd %d to connection %d (%d retries)", record.Seek, connection.ID, record.Retries)
 	common.OplogChannel <- oprecord
 	connection.Channel <- record
 
-	oprecord.Message = fmt.Sprintf("forwarding %v to turbine", record.Bucket)
+	oprecord.Message = fmt.Sprintf("fwd %d to turbine", record.Seek)
 	common.OplogChannel <- oprecord
 	TurbineChannel <- record
 }
