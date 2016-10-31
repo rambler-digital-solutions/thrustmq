@@ -3,9 +3,9 @@ package intake
 import (
 	"bufio"
 	"encoding/binary"
+	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
-	"github.com/rambler-digital-solutions/thrustmq/logging"
 	"io"
 	"net"
 )
@@ -31,8 +31,10 @@ func getMessage(i int, ackChannel chan *common.IntakeStruct, reader *bufio.Reade
 
 // Handler for producer connection
 func suck(connection net.Conn) {
-	logging.NewProducer(connection.RemoteAddr())
-	defer logging.LostProducer(connection.RemoteAddr())
+	address := connection.RemoteAddr()
+	message := fmt.Sprintf("new producer %s %s", address.Network(), address.String())
+	common.Log("intake", message)
+	defer common.Log("intake", fmt.Sprintf("lost producer %s %s", address.Network(), address.String()))
 
 	reader := bufio.NewReaderSize(connection, config.Base.NetworkBuffer)
 	for {

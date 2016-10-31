@@ -2,10 +2,10 @@ package intake
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
-	"log"
 	"os"
 	"runtime"
 	"time"
@@ -55,13 +55,15 @@ func compressorStage2() {
 				indexFile.Close()
 				dataFile.Close()
 				indexFile, dataFile, indexWriter, dataWriter = nextChunkFile()
-				log.Print("compressor switched to a new chunk #", common.State.ChunkNumber(), " seek:", common.State.NextWriteOffset, " dataSeek:", common.State.NextDataWriteOffset)
+
+				message := fmt.Sprintf("compressor switched to a new chunk: %d seek: %d dataSeek: %d", common.State.ChunkNumber(), common.State.NextWriteOffset, common.State.NextDataWriteOffset)
+				common.OplogRecord{Message: message, Subsystem: "intake"}.Send()
 			}
 			persistRecord(message.Record, indexWriter, dataWriter)
 			common.State.NextNextWriteOffset()
-			if config.Base.Debug {
-				log.Print("compressing ", message.Record, " chunk ", common.State.ChunkNumber())
-			}
+
+			common.Log("intake", fmt.Sprintf("compressing %v chunk %d", message.Record, common.State.ChunkNumber()))
+
 			common.State.NextDataWriteOffset += message.Record.DataLength
 			if message.AckChannel != nil {
 				message.Status = 1
