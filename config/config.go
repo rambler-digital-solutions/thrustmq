@@ -21,17 +21,18 @@ type intakeConfigStruct struct {
 }
 
 type Struct struct {
-	Intake        *intakeConfigStruct
-	Exhaust       *exhaustConfigStruct
-	StateFile     string
-	DataPrefix    string
-	IndexPrefix   string
-	Logfile       string
-	Debug         bool
-	FileBuffer    int
-	NetworkBuffer int
-	ChunkSize     uint64
-	MaxChunks     uint64
+	Intake             *intakeConfigStruct
+	Exhaust            *exhaustConfigStruct
+	StateFile          string
+	DataPrefix         string
+	IndexPrefix        string
+	Logfile            string
+	Debug              bool
+	FileBuffer         int
+	NetworkBuffer      int
+	ChunkSize          uint64
+	MaxChunks          uint64
+	OplogChannelLength int
 }
 
 func loadConfig() *Struct {

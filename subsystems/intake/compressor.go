@@ -17,7 +17,7 @@ import (
 func compressorStage1() {
 	for {
 		message := <-CompressorChannel
-		Stage2CompressorChannel <- message
+		CompressorChannelStage2 <- message
 		select {
 		case exhaust.CombustorChannel <- message.Record: // combustor is full, do nothing
 		default:
@@ -48,7 +48,7 @@ func compressorStage2() {
 	indexFile, dataFile, indexWriter, dataWriter := nextChunkFile()
 	for {
 		select {
-		case message := <-Stage2CompressorChannel:
+		case message := <-CompressorChannelStage2:
 			if common.State.SwitchChunk() {
 				indexWriter.Flush()
 				dataWriter.Flush()

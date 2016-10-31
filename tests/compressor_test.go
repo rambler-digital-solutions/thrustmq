@@ -49,7 +49,7 @@ func TestChunkSwitching(t *testing.T) {
 	for i := 0; i < int(config.Base.ChunkSize+1); i++ {
 		message := &common.IntakeStruct{}
 		message.Record = &common.Record{}
-		intake.Stage2CompressorChannel <- message
+		intake.CompressorChannelStage2 <- message
 	}
 
 	time.Sleep(1e7)
@@ -67,7 +67,7 @@ func TestChunkOverrIDe(t *testing.T) {
 	for i := 0; i < int(config.Base.ChunkSize+1); i++ {
 		message := &common.IntakeStruct{}
 		message.Record = &common.Record{Bucket: 666}
-		intake.Stage2CompressorChannel <- message
+		intake.CompressorChannelStage2 <- message
 	}
 
 	time.Sleep(1e7)

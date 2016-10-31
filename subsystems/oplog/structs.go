@@ -10,10 +10,11 @@ import (
 
 type channels struct {
 	CompressorChannelLength       int
-	Stage2CompressorChannelLength int
+	CompressorChannelStage2Length int
 	CombustorChannelLength        int
 	AfterburnerChannelLength      int
 	TurbineChannelLength          int
+	OplogChannelLength            int
 }
 
 type maps struct {
@@ -25,10 +26,11 @@ type maps struct {
 
 func (object *channels) Update() {
 	object.CompressorChannelLength = len(intake.CompressorChannel)
-	object.Stage2CompressorChannelLength = len(intake.Stage2CompressorChannel)
+	object.CompressorChannelStage2Length = len(intake.CompressorChannelStage2)
 	object.CombustorChannelLength = len(exhaust.CombustorChannel)
 	object.AfterburnerChannelLength = len(exhaust.AfterburnerChannel)
 	object.TurbineChannelLength = len(exhaust.TurbineChannel)
+	object.OplogChannelLength = len(common.OplogChannel)
 }
 
 func (object *maps) Update() {

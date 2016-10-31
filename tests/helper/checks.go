@@ -35,8 +35,8 @@ func CheckChunkNumber(t *testing.T, expectation uint64) {
 }
 
 func CheckUncompressedMessages(t *testing.T, expectation int) {
-	if len(intake.Stage2CompressorChannel) != expectation {
-		t.Fatalf("there are uncompressed messages: %d messages instead of %d", len(intake.Stage2CompressorChannel), expectation)
+	if len(intake.CompressorChannelStage2) != expectation {
+		t.Fatalf("there are uncompressed messages: %d messages instead of %d", len(intake.CompressorChannelStage2), expectation)
 	}
 }
 
