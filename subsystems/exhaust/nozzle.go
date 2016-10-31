@@ -91,7 +91,7 @@ func blow(connection net.Conn) {
 		} else {
 			message := fmt.Sprintf("pinging %d", client.ID)
 			common.OplogRecord{Message: message, Subsystem: "exhaust"}.Send()
-			time.Sleep(time.Duration(config.Exhaust.HeartbeatRate) * time.Nanosecond)
+			time.Sleep(time.Duration(config.Exhaust.HeartbeatRateNs) * time.Nanosecond)
 			runtime.Gosched()
 			if !client.Ping() {
 				return

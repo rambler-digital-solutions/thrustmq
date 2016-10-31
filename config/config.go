@@ -11,7 +11,7 @@ type exhaustConfigStruct struct {
 	TurbineBuffer     int
 	CombustionBuffer  int
 	NozzleBuffer      int
-	HeartbeatRate     int
+	HeartbeatRateNs   int
 	AfterburnerBuffer int
 }
 

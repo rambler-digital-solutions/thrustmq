@@ -7,9 +7,9 @@
         "Port": 2888,
         "TurbineBuffer": 1024,
         "CombustionBuffer": 1024,
-        "AfterburnerBuffer": 1e6,
+        "AfterburnerBuffer": 4096,
         "NozzleBuffer": 1024,
-        "HeartbeatRate": 1e9
+        "HeartbeatRateNs": 1000000
     },
     "Logfile": "data/system.log",
     "IndexPrefix": "data/index",
@@ -19,6 +19,6 @@
     "MaxChunks": 5,
     "FileBuffer": 4096,
     "NetworkBuffer": 1024,
-    "OplogChannelLength": 1e6,
+    "OplogChannelLength": 1000000,
     "Debug": true
 }
