@@ -5,7 +5,6 @@ import (
 	"container/list"
 	"encoding/binary"
 	"io"
-	"log"
 	"net"
 )
 
@@ -23,8 +22,6 @@ type ConnectionStruct struct {
 
 type ConnectionsMap map[uint64]*ConnectionStruct
 type BucketsMap map[uint64]*list.List
-
-var ConnectionHeaderSize = 20
 
 func (connection *ConnectionStruct) DeserializeHeader() bool {
 	buffer := make([]byte, ConnectionHeaderSize)
@@ -63,7 +60,6 @@ func (connection *ConnectionStruct) Ping() bool {
 
 	acks, err := connection.GetAcks(1)
 	if err != nil || acks[0] != 1 {
-		log.Print("Ping failed. ", err)
 		return false
 	}
 

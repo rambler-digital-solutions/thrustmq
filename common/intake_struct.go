@@ -14,8 +14,6 @@ type IntakeStruct struct {
 
 type IntakeChannel chan *IntakeStruct
 
-var MessageHeaderSize = 12
-
 func (wrapper *IntakeStruct) Deserialize(reader io.Reader) bool {
 	header := make([]byte, MessageHeaderSize)
 	bytesRead, _ := io.ReadFull(reader, header)

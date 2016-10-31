@@ -35,7 +35,7 @@ func nextChunkFile() (*os.File, *os.File, *bufio.Writer, *bufio.Writer) {
 	dataFile, err := os.OpenFile(config.Base.DataPrefix+common.State.StringChunkNumber(), os.O_WRONLY|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	ptr, err := dataFile.Seek(0, os.SEEK_END)
-	DataOffset = uint64(ptr)
+	common.State.NextDataWriteOffset = uint64(ptr)
 
 	dataWriter := bufio.NewWriterSize(dataFile, config.Base.FileBuffer)
 	indexWriter := bufio.NewWriterSize(indexFile, config.Base.FileBuffer)
@@ -55,14 +55,14 @@ func compressorStage2() {
 				indexFile.Close()
 				dataFile.Close()
 				indexFile, dataFile, indexWriter, dataWriter = nextChunkFile()
-				log.Print("compressor switched to a new chunk #", common.State.ChunkNumber(), " seek:", common.State.NextWriteOffset, " dataSeek:", DataOffset)
+				log.Print("compressor switched to a new chunk #", common.State.ChunkNumber(), " seek:", common.State.NextWriteOffset, " dataSeek:", common.State.NextDataWriteOffset)
 			}
 			persistRecord(message.Record, indexWriter, dataWriter)
 			common.State.NextNextWriteOffset()
 			if config.Base.Debug {
 				log.Print("compressing ", message.Record, " chunk ", common.State.ChunkNumber())
 			}
-			DataOffset += message.Record.DataLength
+			common.State.NextDataWriteOffset += message.Record.DataLength
 			if message.AckChannel != nil {
 				message.Status = 1
 				message.AckChannel <- message
@@ -81,7 +81,7 @@ func persistRecord(record *common.Record, indexWriter *bufio.Writer, dataWriter 
 	_, err := dataWriter.Write(record.Data)
 	common.FaceIt(err)
 	record.Seek = common.State.NextWriteOffset
-	record.DataSeek = DataOffset
+	record.DataSeek = common.State.NextDataWriteOffset
 	record.Created = uint64(time.Now().UnixNano())
 	_, err = indexWriter.Write(record.Serialize())
 	common.FaceIt(err)

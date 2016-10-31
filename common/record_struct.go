@@ -27,8 +27,6 @@ type RecordPipe chan *Record
 type RecordPipes []RecordPipe
 type RecordsMap map[uint64]*Record
 
-var IndexSize uint64 = 8 * 9
-
 func (record *Record) Slots() []*uint64 {
 	return []*uint64{
 		&record.DataSeek,

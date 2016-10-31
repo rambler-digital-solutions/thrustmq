@@ -6,7 +6,6 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/logging"
-	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
 	"io"
 	"net"
 )
@@ -58,7 +57,6 @@ func suck(connection net.Conn) {
 		for i := 0; i < batchSize; i++ {
 			message := <-ackChannel
 			response[message.NumberInBatch] = message.Status
-			oplog.IntakeThroughput++
 		}
 
 		connection.Write(response)

@@ -1,45 +1,33 @@
 package logging
 
 import (
+	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
-	"github.com/rambler-digital-solutions/thrustmq/config"
-	"log"
 	"net"
-	"os"
-	"strings"
 )
 
-func Init() {
-	logfile, err := os.OpenFile(config.Base.Logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	common.FaceIt(err)
-
-	log.SetOutput(logfile)
-	log.Println("ThrusMQ started")
-}
-
 func NewProducer(address net.Addr) {
-	log.Printf("new producer %s %s", address.Network(), address.String())
+	message := fmt.Sprintf("new producer %s %s", address.Network(), address.String())
+	common.OplogChannel <- &common.OplogRecord{Message: message, Subsystem: "intake", Action: "newProducer"}
 }
 
 func LostProducer(address net.Addr) {
-	log.Printf("lost producer %s %s", address.Network(), address.String())
+	message := fmt.Sprintf("lost producer %s %s", address.Network(), address.String())
+	common.OplogChannel <- &common.OplogRecord{Message: message, Subsystem: "intake", Action: "lostProducer"}
 }
 
 func NewConsumer(connectionStruct *common.ConnectionStruct, length int) {
 	address := connectionStruct.Connection.RemoteAddr()
-	log.Printf("new consumer #%d %s %s (%d connections)", connectionStruct.ID, address.Network(), address.String(), length)
+	message := fmt.Sprintf("new consumer #%d %s %s (%d connections)", connectionStruct.ID, address.Network(), address.String(), length)
+	common.OplogChannel <- &common.OplogRecord{Message: message, Subsystem: "exhaust", Action: "newConsumer"}
 }
 
 func NewConsumerHeader(connectionStruct *common.ConnectionStruct) {
-	log.Printf("consumer #%d subscribed to bucket %d with batch size %d", connectionStruct.ID, connectionStruct.Bucket, connectionStruct.BatchSize)
+	message := fmt.Sprintf("consumer #%d subscribed to bucket %d with batch size %d", connectionStruct.ID, connectionStruct.Bucket, connectionStruct.BatchSize)
+	common.OplogChannel <- &common.OplogRecord{Message: message, Subsystem: "exhaust"}
 }
 
 func LostConsumer(address net.Addr, length int) {
-	log.Printf("lost consumer %s %s (%d connections)", address.Network(), address.String(), length)
-}
-
-func Debug(messages ...string) {
-	if os.Getenv("GODEBUG") != "" {
-		log.Print("[DEBUG] ", strings.Join(messages, " "))
-	}
+	message := fmt.Sprintf("lost consumer %s %s (%d connections)", address.Network(), address.String(), length)
+	common.OplogChannel <- &common.OplogRecord{Message: message, Subsystem: "exhaust", Action: "lostConsumer"}
 }

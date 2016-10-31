@@ -21,8 +21,8 @@ type intakeConfigStruct struct {
 }
 
 type Struct struct {
-	Intake        intakeConfigStruct
-	Exhaust       exhaustConfigStruct
+	Intake        *intakeConfigStruct
+	Exhaust       *exhaustConfigStruct
 	StateFile     string
 	DataPrefix    string
 	IndexPrefix   string
@@ -34,7 +34,7 @@ type Struct struct {
 	MaxChunks     uint64
 }
 
-func loadConfig() Struct {
+func loadConfig() *Struct {
 	filename := "./config.json"
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		filename = "../config.json"
@@ -47,7 +47,7 @@ func loadConfig() Struct {
 
 	var config Struct
 	json.Unmarshal(raw, &config)
-	return config
+	return &config
 }
 
 var Base = loadConfig()

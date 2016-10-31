@@ -5,7 +5,6 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/logging"
-	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
 	"log"
 	"net"
 	"runtime"
@@ -45,7 +44,6 @@ func sendBatch(client *common.ConnectionStruct, batch []*common.Record) {
 			return
 		}
 		batch[i] = record
-		oplog.ExhaustThroughput++
 	}
 	client.Writer.Flush()
 }

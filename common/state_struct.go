@@ -9,13 +9,11 @@ import (
 )
 
 type StateStruct struct {
-	UndeliveredOffset uint64
-	NextWriteOffset   uint64
-	Capacity          float32
-	ConnectionID      uint64
+	UndeliveredOffset   uint64
+	NextWriteOffset     uint64
+	NextDataWriteOffset uint64
+	ConnectionID        uint64
 }
-
-var State = loadState()
 
 func loadState() *StateStruct {
 	if _, err := os.Stat(config.Base.StateFile); err == nil {
