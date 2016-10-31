@@ -1,9 +1,8 @@
 package exhaust
 
 import (
+	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
-	"github.com/rambler-digital-solutions/thrustmq/config"
-	"log"
 	"runtime"
 )
 
@@ -14,14 +13,16 @@ func forward(record *common.Record, connection *common.ConnectionStruct) {
 	record.Enqueued = common.TimestampUint64()
 	record.Retries++
 	record.Dirty = true
-	if config.Base.Debug {
-		log.Print("to turbine and connection!~ ", record)
-	}
-	TurbineChannel <- record
+
+	oprecord := common.OplogRecord{Subsystem: "combustor"}
+
+	oprecord.Message = fmt.Sprintf("forwarding %v to connection %d", record.Bucket, connection.ID)
+	common.OplogChannel <- oprecord
 	connection.Channel <- record
-	if config.Base.Debug {
-		log.Print("done~ ")
-	}
+
+	oprecord.Message = fmt.Sprintf("forwarding %v to turbine", record.Bucket)
+	common.OplogChannel <- oprecord
+	TurbineChannel <- record
 }
 
 // Forwards records to connections or discards them
@@ -29,15 +30,16 @@ func combustor() {
 	for {
 		select {
 		case record := <-CombustorChannel:
-			if config.Base.Debug {
-				log.Print("forward ", record)
-			}
 			if record.Enqueued == 0 {
 				// Round robin connections with matching BucketID
 				connection := nextConnFor(record.Bucket)
 				if connection != nil && len(connection.Channel) != cap(connection.Channel) {
 					forward(record, connection)
 				}
+			} else {
+				oprecord := common.OplogRecord{Subsystem: "combustor"}
+				oprecord.Message = fmt.Sprintf("record %v was already enqueued at %d... skipping...", record, record.Enqueued)
+				oprecord.Send()
 			}
 		default:
 			runtime.Gosched()

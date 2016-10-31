@@ -1,9 +1,9 @@
 package exhaust
 
 import (
+	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
-	"log"
 	"os"
 	"runtime"
 	"time"
@@ -17,9 +17,10 @@ func getFile(offset uint64) *os.File {
 		path := config.Base.IndexPrefix + common.State.StringChunkNumberByOffset(offset)
 		file, err := os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
 		common.FaceIt(err)
-		if config.Base.Debug {
-			log.Print("FCU maps #", chunk, " to ", path)
-		}
+
+		message := fmt.Sprintf("map #%d to %s", chunk, path)
+		common.OplogRecord{Subsystem: "fcu", Message: message}.Send()
+
 		ChunksMap[chunk] = file
 		return file
 	}
@@ -35,21 +36,27 @@ func rmFile(offset uint64) {
 
 // Subsystem that instantiates records from disk and pushes them to combustor
 func fuelControlUnit() {
+	oprecord := common.OplogRecord{Subsystem: "fcu"}
+
 	for {
 		// rm processed chunks
 		for chunkNumber := range ChunksMap {
 			if common.ChunkToOffset(int(chunkNumber+1)) <= common.State.UndeliveredOffset {
-				if config.Base.Debug {
-					log.Print("FCU removes #", chunkNumber, " ", common.State.UndeliveredOffset, " >= ", common.ChunkToOffset(int(chunkNumber+1)))
-				}
+				oprecord.Message = fmt.Sprintf(
+					"remove chunk #%d (%d >= %d)",
+					chunkNumber,
+					common.State.UndeliveredOffset,
+					common.ChunkToOffset(int(chunkNumber+1)))
+				oprecord.Send()
 				rmFile(common.ChunkToOffset(int(chunkNumber)))
 			}
 		}
 		// process records
 		if len(CombustorChannel) < cap(CombustorChannel)/2 {
 			start := true
-			if config.Base.Debug {
-				log.Print("FCU pass ", common.State.UndeliveredOffset, "->", common.State.NextWriteOffset)
+			if common.State.UndeliveredOffset < common.State.NextWriteOffset {
+				oprecord.Message = fmt.Sprintf("pass %d -> %d", common.State.UndeliveredOffset, common.State.NextWriteOffset)
+				oprecord.Send()
 			}
 			for offset := common.State.UndeliveredOffset; offset < common.State.NextWriteOffset; offset += common.IndexSize {
 				if RecordInMemory(&common.Record{Seek: offset}) {
@@ -60,9 +67,8 @@ func fuelControlUnit() {
 					start = false
 				} else {
 					if start {
-						if config.Base.Debug {
-							log.Print("FCU changes UndeliveredOffset to ", offset)
-						}
+						oprecord.Message = fmt.Sprintf("change UndeliveredOffset to %d", offset)
+						oprecord.Send()
 						common.State.UndeliveredOffset = offset + common.IndexSize
 					}
 				}
@@ -79,9 +85,10 @@ func inject(file *os.File, offset uint64) bool {
 	record := &common.Record{}
 	record.Deserialize(file)
 	record.Seek = offset
-	if config.Base.Debug {
-		log.Print("fcu ", record, " chunk ", common.State.StringChunkNumberByOffset(offset))
-	}
+
+	message := fmt.Sprintf("restore %v from chunk #%d", record, common.State.StringChunkNumberByOffset(offset))
+	common.OplogRecord{Subsystem: "fcu", Message: message}.Send()
+
 	if !RecordInMemory(record) {
 		MapRecord(record)
 		if record.Delivered == 0 {

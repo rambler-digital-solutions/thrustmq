@@ -5,3 +5,7 @@ type OplogRecord struct {
 	Subsystem string
 	Action    string
 }
+
+func (record OplogRecord) Send() {
+	OplogChannel <- record
+}

@@ -1,8 +1,9 @@
 package exhaust
 
 import (
+	"fmt"
+	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
-	"log"
 )
 
 // Sweeps or requeues records
@@ -11,7 +12,8 @@ func afterburner() {
 		record := <-AfterburnerChannel
 		if record.Delivered != 0 || !BucketRequired(record.Bucket) {
 			if config.Base.Debug {
-				log.Print("ab delete bucket ", record.Bucket)
+				message := fmt.Sprintf("deleting bucket %d", record.Bucket)
+				common.OplogRecord{Message: message, Subsystem: "afterburner"}.Send()
 			}
 			DeleteRecord(record)
 		} else {
