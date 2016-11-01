@@ -34,7 +34,7 @@ func nextChunkFile() (*os.File, *os.File, *bufio.Writer, *bufio.Writer) {
 
 	dataFile, err := os.OpenFile(config.Base.DataPrefix+common.State.StringChunkNumber(), os.O_WRONLY|os.O_CREATE, 0666)
 	common.FaceIt(err)
-	ptr, err := dataFile.Seek(0, os.SEEK_END)
+	ptr, _ := dataFile.Seek(0, os.SEEK_END)
 	common.State.NextDataWriteOffset = uint64(ptr)
 
 	dataWriter := bufio.NewWriterSize(dataFile, config.Base.FileBuffer)
