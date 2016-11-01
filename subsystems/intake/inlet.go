@@ -24,6 +24,7 @@ func getMessage(i int, ackChannel chan *common.IntakeStruct, reader *bufio.Reade
 	message.AckChannel = ackChannel
 	message.NumberInBatch = i
 	if !message.Deserialize(reader) {
+		common.Log("inlet", "con't deserialize message")
 		return nil
 	}
 	return message
@@ -40,7 +41,7 @@ func suck(connection net.Conn) {
 	for {
 		batchSize := getBatchSize(reader)
 		if batchSize == 0 {
-			// non standard request, treating like an exit
+			common.Log("inlet", "non standard request, treating like an exit")
 			return
 		}
 

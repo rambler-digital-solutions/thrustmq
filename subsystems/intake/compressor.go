@@ -21,6 +21,7 @@ func compressorStage1() {
 		select {
 		case exhaust.CombustorChannel <- message.Record: // combustor is full, do nothing
 		default:
+			common.Log("compressor", "combustor is full, skipping forward")
 		}
 	}
 }
@@ -62,7 +63,7 @@ func compressorStage2() {
 			persistRecord(message.Record, indexWriter, dataWriter)
 			common.State.NextNextWriteOffset()
 
-			common.Log("intake", fmt.Sprintf("compressed seek: %d dataseek: %d datalength: %d to chunk %d", message.Record.Seek, message.Record.DataSeek, message.Record.DataLength, common.State.ChunkNumber()))
+			common.Log("compressor", fmt.Sprintf("compressed seek: %d dataseek: %d datalength: %d to chunk %d", message.Record.Seek, message.Record.DataSeek, message.Record.DataLength, common.State.ChunkNumber()))
 
 			common.State.NextDataWriteOffset += message.Record.DataLength
 			if message.AckChannel != nil {
