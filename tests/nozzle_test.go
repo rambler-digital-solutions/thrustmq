@@ -16,7 +16,7 @@ func TestPing(t *testing.T) {
 	helper.BootstrapExhaust(t)
 	consumer.SendHeader(1, uint64(rand.Int63()))
 
-	messages := consumer.RecieveBatchOrPing()
+	messages := consumer.ReceiveBatchOrPing()
 	consumer.SendAcks(1)
 
 	expectedBatchSize := 1
@@ -31,7 +31,7 @@ func TestPing(t *testing.T) {
 	}
 }
 
-// Send single message, check that recieved data matches sent one
+// Send single message, check that received data matches sent one
 func TestRecipienceOfSingleMessage(t *testing.T) {
 	helper.BootstrapExhaust(t)
 
@@ -44,7 +44,7 @@ func TestRecipienceOfSingleMessage(t *testing.T) {
 	helper.CheckConnectionChannel(t, common.State.ConnectionID, 1)
 
 	consumer.SendHeader(1, uint64(rand.Uint32()))
-	messages := consumer.RecieveBatch()
+	messages := consumer.ReceiveBatch()
 	consumer.SendAcks(1)
 
 	expectedBatchSize := 1
@@ -61,11 +61,11 @@ func TestRecipienceOfSingleMessage(t *testing.T) {
 	}
 	actualNumber := binary.LittleEndian.Uint64(messages[0].Payload)
 	if actualNumber != expectedNumber {
-		t.Fatalf("recieved number is ne to sent one %d != %d", expectedNumber, actualNumber)
+		t.Fatalf("received number is ne to sent one %d != %d", expectedNumber, actualNumber)
 	}
 }
 
-// Send several messages, check that recieved data matches sent one
+// Send several messages, check that received data matches sent one
 func TestRecipienceOfMultipleMessages(t *testing.T) {
 	helper.BootstrapExhaust(t)
 
@@ -87,7 +87,7 @@ func TestRecipienceOfMultipleMessages(t *testing.T) {
 	}
 
 	consumer.SendHeader(batchSize, bucketID)
-	messages := consumer.RecieveBatch()
+	messages := consumer.ReceiveBatch()
 	consumer.SendAcks(batchSize)
 
 	expectedBatchSize := batchSize
@@ -105,7 +105,7 @@ func TestRecipienceOfMultipleMessages(t *testing.T) {
 		}
 		actualNumber := binary.LittleEndian.Uint64(messages[i].Payload)
 		if !common.Contains(randomNumbers, actualNumber) {
-			t.Fatalf("recieved number %d was not sent at all / step %d / conn %d", actualNumber, i, len(channel))
+			t.Fatalf("received number %d was not sent at all / step %d / conn %d", actualNumber, i, len(channel))
 		}
 	}
 }

@@ -50,7 +50,7 @@ func TestIntake(t *testing.T) {
 	}
 }
 
-// Connect to MQ via golang consumer client and recieve several messages from disk
+// Connect to MQ via golang consumer client and receive several messages from disk
 func TestExhaust(t *testing.T) {
 	batchSize := 3
 	expectedMessageLength := 8
@@ -71,7 +71,7 @@ func TestExhaust(t *testing.T) {
 	helper.DumpRecords(records)
 
 	consumer.SendHeader(batchSize, bucketID)
-	messages := consumer.RecieveBatch()
+	messages := consumer.ReceiveBatch()
 	consumer.SendAcks(batchSize)
 
 	if len(messages) != batchSize {
@@ -85,12 +85,12 @@ func TestExhaust(t *testing.T) {
 		}
 		actualNumber := binary.LittleEndian.Uint64(messages[i].Payload)
 		if !common.Contains(randomNumbers, actualNumber) {
-			t.Fatalf("recieved number %d was not sent at all", actualNumber)
+			t.Fatalf("received number %d was not sent at all", actualNumber)
 		}
 	}
 }
 
-// Send message via golang producer client and recieve it via golang consumer client
+// Send message via golang producer client and receive it via golang consumer client
 func TestSystem(t *testing.T) {
 	helper.BootstrapIntake(t)
 	helper.BootstrapExhaust(t)
@@ -118,21 +118,21 @@ func TestSystem(t *testing.T) {
 
 	consumer.SendHeader(batchSize, bucketID)
 
-	messagesRecieved := consumer.RecieveBatch()
+	messagesReceived := consumer.ReceiveBatch()
 	consumer.SendAcks(batchSize)
 
-	if len(messagesRecieved) != batchSize {
-		t.Fatalf("batch size is expected to be %d (%d instead)", batchSize, len(messagesRecieved))
+	if len(messagesReceived) != batchSize {
+		t.Fatalf("batch size is expected to be %d (%d instead)", batchSize, len(messagesReceived))
 	}
 
 	for i := 0; i < batchSize; i++ {
-		actualMessageLength := messagesRecieved[i].Length
+		actualMessageLength := messagesReceived[i].Length
 		if actualMessageLength != expectedMessageLength {
 			t.Fatalf("message length is expected to be %d (%d instead)", expectedMessageLength, actualMessageLength)
 		}
-		actualNumber := binary.LittleEndian.Uint64(messagesRecieved[i].Payload)
+		actualNumber := binary.LittleEndian.Uint64(messagesReceived[i].Payload)
 		if !common.Contains(payloads, actualNumber) {
-			t.Fatalf("recieved number %d was not sent at all", actualNumber)
+			t.Fatalf("received number %d was not sent at all", actualNumber)
 		}
 	}
 }

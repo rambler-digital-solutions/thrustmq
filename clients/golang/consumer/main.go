@@ -35,7 +35,7 @@ func Send(data []byte) {
 	connection.Write(data)
 }
 
-func Recieve(buffer []byte) {
+func Receive(buffer []byte) {
 	connection.Read(buffer)
 }
 
@@ -55,29 +55,29 @@ func SendAcks(batchSize int) {
 	Send(buffer)
 }
 
-func RecieveBatchOrPing() []Message {
+func ReceiveBatchOrPing() []Message {
 	buffer := make([]byte, 4)
-	Recieve(buffer)
+	Receive(buffer)
 	batchSize := int(binary.LittleEndian.Uint32(buffer[0:4]))
 	batch := make([]Message, batchSize)
 
 	for i := 0; i < batchSize; i++ {
-		Recieve(buffer)
+		Receive(buffer)
 		length := int(binary.LittleEndian.Uint32(buffer[0:4]))
 		payload := make([]byte, length)
-		Recieve(payload)
+		Receive(payload)
 		batch[i] = Message{Length: length, Payload: payload}
 	}
 
 	return batch
 }
 
-func RecieveBatch() []Message {
-	batch := RecieveBatchOrPing()
+func ReceiveBatch() []Message {
+	batch := ReceiveBatchOrPing()
 	for len(batch) == 1 && batch[0].Length == 0 {
 		log.Print("CLIENT: got ping")
 		SendAcks(1)
-		batch = RecieveBatchOrPing()
+		batch = ReceiveBatchOrPing()
 	}
 	return batch
 }

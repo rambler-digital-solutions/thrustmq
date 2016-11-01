@@ -19,7 +19,7 @@ class ThrustMQConsumer:
         self.sock.connect((host, port))
         self.sock.settimeout(1)
 
-    def recieve(self):
+    def receive(self):
         data = self.sock.recv(4)
         size = int.from_bytes(data, byteorder='little')
         message = self.sock.recv(size)

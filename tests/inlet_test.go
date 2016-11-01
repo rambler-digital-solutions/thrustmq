@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// Recieve one message and check that everything goes smooth
+// Receive one message and check that everything goes smooth
 func TestSendOneMessage(t *testing.T) {
 	helper.BootstrapIntake(t)
 
@@ -26,7 +26,7 @@ func TestSendOneMessage(t *testing.T) {
 	}
 }
 
-// Recieve several messages and check that everything goes smooth
+// Receive several messages and check that everything goes smooth
 func TestSendSeveralMessages(t *testing.T) {
 	helper.BootstrapIntake(t)
 

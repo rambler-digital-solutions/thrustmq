@@ -9,6 +9,6 @@ for i in range(10):
     producer.send([message])
 
 for i in range(10):
-    result = consumer.recieve()
+    result = consumer.receive()
     result = str(result, encoding='utf-8')
     print(result)

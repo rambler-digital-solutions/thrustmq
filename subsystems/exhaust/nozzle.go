@@ -52,7 +52,7 @@ func sendBatch(client *common.ConnectionStruct, batch []*common.Record) {
 	client.Writer.Flush()
 }
 
-func recieveAcks(client *common.ConnectionStruct, batch []*common.Record) {
+func receiveAcks(client *common.ConnectionStruct, batch []*common.Record) {
 	acks, _ := client.GetAcks(len(batch))
 	for i := 0; i < len(batch); i++ {
 		if acks[i] == 1 {
@@ -87,7 +87,7 @@ func blow(connection net.Conn) {
 		if batchSize > 0 {
 			batch := make([]*common.Record, batchSize)
 			sendBatch(client, batch)
-			recieveAcks(client, batch)
+			receiveAcks(client, batch)
 		} else {
 			message := fmt.Sprintf("pinging %d", client.ID)
 			common.OplogRecord{Message: message, Subsystem: "exhaust"}.Send()

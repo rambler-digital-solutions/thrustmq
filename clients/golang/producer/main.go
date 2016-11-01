@@ -37,7 +37,7 @@ func Send(data []byte) {
 	connection.Write(data)
 }
 
-func Recieve(buffer []byte) {
+func Receive(buffer []byte) {
 	connection.Read(buffer)
 }
 
@@ -59,6 +59,6 @@ func SendBatch(messages []*Message) {
 
 func GetAcks(length int) []byte {
 	acksBuffer := make([]byte, length)
-	Recieve(acksBuffer)
+	Receive(acksBuffer)
 	return acksBuffer
 }

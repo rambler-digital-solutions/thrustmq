@@ -12,6 +12,7 @@
 
 https://www.gitbook.com/
 https://pages.github.com/
+https://goreportcard.com/report/github.com/mikaa123/imapmq
 
 TBD:
 - create throughput benchmark (Thu)

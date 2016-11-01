@@ -7,7 +7,7 @@ import (
 	"runtime"
 )
 
-// Entry function, loops throught the records in memory and take appropriate action
+// Entry function, loops through the records in memory and take appropriate action
 func turbineStage1() {
 	for {
 		RecordsMutex.Lock()
