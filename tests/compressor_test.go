@@ -12,12 +12,11 @@ import (
 
 // Write single record on disk, then read it and check if they are the same
 func TestRecordSerialization(t *testing.T) {
-	indexFile, err := os.OpenFile(config.Base.IndexPrefix+"_test", os.O_RDWR|os.O_CREATE, 0666)
+	indexFile, err := os.OpenFile(config.Base.IndexPrefix+"_record_persistence_test", os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	defer indexFile.Close()
 
 	record := common.Record{}
-
 	slots := record.Slots()
 	for i := 0; i < len(slots); i++ {
 		*slots[i] = uint64(i + 1)
@@ -44,33 +43,32 @@ func TestRecordSerialization(t *testing.T) {
 func TestChunkSwitching(t *testing.T) {
 	helper.BootstrapIntake(t)
 
-	common.State.NextWriteOffset = 0
-
+	common.State.WriteOffset = 0
 	for i := 0; i < int(config.Base.ChunkSize+1); i++ {
 		message := &common.IntakeStruct{}
 		message.Record = &common.Record{}
-		intake.CompressorChannelStage2 <- message
+		intake.CompressorStage2Channel <- message
 	}
 
-	time.Sleep(1e7)
+	time.Sleep(config.Base.TestDelayDuration)
 
 	helper.CheckUncompressedMessages(t, 0)
 	helper.CheckChunkNumber(t, 1)
 }
 
 // Check that chunks are being circularly overwritten
-func TestChunkOverrIDe(t *testing.T) {
+func TestChunkOverride(t *testing.T) {
 	helper.BootstrapIntake(t)
 
-	common.State.NextWriteOffset = config.Base.ChunkSize * (config.Base.MaxChunks - 1) * common.IndexSize
-
+	common.State.WriteOffset = config.Base.ChunkSize * (config.Base.MaxChunks - 1) * common.IndexSize
 	for i := 0; i < int(config.Base.ChunkSize+1); i++ {
 		message := &common.IntakeStruct{}
-		message.Record = &common.Record{Bucket: 666}
-		intake.CompressorChannelStage2 <- message
+		message.Record = &common.Record{}
+		intake.CompressorStage2Channel <- message
 	}
 
-	time.Sleep(1e7)
+	helper.CheckChunkNumber(t, config.Base.MaxChunks-1)
+	time.Sleep(config.Base.TestDelayDuration)
 
 	helper.CheckUncompressedMessages(t, 0)
 	helper.CheckChunkNumber(t, 0)

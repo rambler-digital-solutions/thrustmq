@@ -32,7 +32,7 @@ func BootstrapIntake(t *testing.T) {
 		intakeInitialized = true
 	}
 	common.State.UndeliveredOffset = 0
-	common.State.NextWriteOffset = 0
+	common.State.WriteOffset = 0
 	producer.Disconnect()
 	producer.Connect()
 }
@@ -46,7 +46,7 @@ func BootstrapExhaust(t *testing.T) {
 	}
 
 	common.State.UndeliveredOffset = 0
-	common.State.NextWriteOffset = 0
+	common.State.WriteOffset = 0
 	exhaust.ClearRecordsMap()
 	consumer.Disconnect()
 	consumer.Connect()

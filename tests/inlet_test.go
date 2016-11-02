@@ -10,7 +10,7 @@ import (
 func TestSendOneMessage(t *testing.T) {
 	helper.BootstrapIntake(t)
 
-	messages := helper.ForgeProducerMessages(3)
+	messages := helper.ForgeProducerMessages(1)
 
 	producer.SendBatch(messages)
 	acks := producer.GetAcks(len(messages))
@@ -25,7 +25,7 @@ func TestSendOneMessage(t *testing.T) {
 }
 
 // Receive several messages and check that everything goes smooth
-func fTestSendSeveralMessages(t *testing.T) {
+func TestSendSeveralMessages(t *testing.T) {
 	helper.BootstrapIntake(t)
 
 	messages := helper.ForgeProducerMessages(3)

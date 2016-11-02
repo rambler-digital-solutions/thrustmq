@@ -41,7 +41,7 @@ func suck(connection net.Conn) {
 	for {
 		batchSize := getBatchSize(reader)
 		if batchSize == 0 {
-			common.Log("inlet", "non standard request, treating like an exit")
+			common.Log("inlet", "zero batch size, treating like an exit")
 			return
 		}
 

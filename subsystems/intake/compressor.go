@@ -17,7 +17,7 @@ import (
 func compressorStage1() {
 	for {
 		message := <-CompressorChannel
-		CompressorChannelStage2 <- message
+		CompressorStage2Channel <- message
 		select {
 		case exhaust.CombustorChannel <- message.Record: // combustor is full, do nothing
 		default:
@@ -36,7 +36,7 @@ func nextChunkFile() (*os.File, *os.File, *bufio.Writer, *bufio.Writer) {
 	dataFile, err := os.OpenFile(config.Base.DataPrefix+common.State.StringChunkNumber(), os.O_WRONLY|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	ptr, _ := dataFile.Seek(0, os.SEEK_END)
-	common.State.NextDataWriteOffset = uint64(ptr)
+	common.State.DataWriteOffset = uint64(ptr)
 
 	dataWriter := bufio.NewWriterSize(dataFile, config.Base.FileBuffer)
 	indexWriter := bufio.NewWriterSize(indexFile, config.Base.FileBuffer)
@@ -49,7 +49,7 @@ func compressorStage2() {
 	indexFile, dataFile, indexWriter, dataWriter := nextChunkFile()
 	for {
 		select {
-		case message := <-CompressorChannelStage2:
+		case message := <-CompressorStage2Channel:
 			if common.State.SwitchChunk() {
 				indexWriter.Flush()
 				dataWriter.Flush()
@@ -57,15 +57,13 @@ func compressorStage2() {
 				dataFile.Close()
 				indexFile, dataFile, indexWriter, dataWriter = nextChunkFile()
 
-				message := fmt.Sprintf("compressor switched to a new chunk: %d seek: %d dataSeek: %d", common.State.ChunkNumber(), common.State.NextWriteOffset, common.State.NextDataWriteOffset)
-				common.OplogRecord{Message: message, Subsystem: "intake"}.Send()
+				message := fmt.Sprintf("compressor switched to a new chunk: %d seek: %d dataSeek: %d", common.State.ChunkNumber(), common.State.WriteOffset, common.State.DataWriteOffset)
+				common.OplogRecord{Message: message, Subsystem: "compressor"}.Send()
 			}
 			persistRecord(message.Record, indexWriter, dataWriter)
-			common.State.NextNextWriteOffset()
-
 			common.Log("compressor", fmt.Sprintf("compressed seek: %d dataseek: %d datalength: %d to chunk %d", message.Record.Seek, message.Record.DataSeek, message.Record.DataLength, common.State.ChunkNumber()))
-
-			common.State.NextDataWriteOffset += message.Record.DataLength
+			common.State.NextWriteOffset()
+			common.State.DataWriteOffset += message.Record.DataLength
 			if message.AckChannel != nil {
 				message.Status = 1
 				message.AckChannel <- message
@@ -83,8 +81,8 @@ func compressorStage2() {
 func persistRecord(record *common.Record, indexWriter *bufio.Writer, dataWriter *bufio.Writer) {
 	_, err := dataWriter.Write(record.Data)
 	common.FaceIt(err)
-	record.Seek = common.State.NextWriteOffset
-	record.DataSeek = common.State.NextDataWriteOffset
+	record.Seek = common.State.WriteOffset
+	record.DataSeek = common.State.DataWriteOffset
 	record.Created = uint64(time.Now().UnixNano())
 	_, err = indexWriter.Write(record.Serialize())
 	common.FaceIt(err)

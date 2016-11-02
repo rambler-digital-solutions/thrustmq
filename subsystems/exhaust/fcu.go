@@ -54,11 +54,11 @@ func fuelControlUnit() {
 		// process records
 		if len(CombustorChannel) < cap(CombustorChannel)/2 {
 			start := true
-			if common.State.UndeliveredOffset < common.State.NextWriteOffset {
-				oprecord.Message = fmt.Sprintf("pass %d -> %d", common.State.UndeliveredOffset, common.State.NextWriteOffset)
+			if common.State.UndeliveredOffset < common.State.WriteOffset {
+				oprecord.Message = fmt.Sprintf("pass %d -> %d", common.State.UndeliveredOffset, common.State.WriteOffset)
 				oprecord.Send()
 			}
-			for offset := common.State.UndeliveredOffset; offset < common.State.NextWriteOffset; offset += common.IndexSize {
+			for offset := common.State.UndeliveredOffset; offset < common.State.WriteOffset; offset += common.IndexSize {
 				if RecordInMemory(&common.Record{Seek: offset}) {
 					continue
 				}

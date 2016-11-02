@@ -9,10 +9,10 @@ import (
 )
 
 type StateStruct struct {
-	UndeliveredOffset   uint64
-	NextWriteOffset     uint64
-	NextDataWriteOffset uint64
-	ConnectionID        uint64
+	UndeliveredOffset uint64
+	WriteOffset       uint64
+	DataWriteOffset   uint64
+	ConnectionID      uint64
 }
 
 func loadState() *StateStruct {
@@ -47,13 +47,13 @@ func (state *StateStruct) Save() {
 }
 
 func (state *StateStruct) Distance() uint64 {
-	return state.NextWriteOffset - state.UndeliveredOffset
+	return state.WriteOffset - state.UndeliveredOffset
 }
 
 func (state *StateStruct) SwitchChunk() bool {
-	result := state.SwitchChunkByOffset(state.NextWriteOffset)
+	result := state.SwitchChunkByOffset(state.WriteOffset)
 	if result && state.ChunkNumber() >= config.Base.MaxChunks {
-		state.NextWriteOffset = 0
+		state.WriteOffset = 0
 	}
 	return result
 }
@@ -62,12 +62,12 @@ func (state *StateStruct) SwitchChunkByOffset(offset uint64) bool {
 	return (offset/IndexSize)%config.Base.ChunkSize == 0
 }
 
-func (state *StateStruct) NextNextWriteOffset() {
-	state.NextWriteOffset += IndexSize
+func (state *StateStruct) NextWriteOffset() {
+	state.WriteOffset += IndexSize
 }
 
 func (state *StateStruct) ChunkNumber() uint64 {
-	return state.ChunkNumberByOffset(state.NextWriteOffset)
+	return state.ChunkNumberByOffset(state.WriteOffset)
 }
 
 func (state *StateStruct) ChunkNumberByOffset(offset uint64) uint64 {
@@ -83,7 +83,7 @@ func (state *StateStruct) StringChunkNumberByOffset(offset uint64) string {
 }
 
 func (state *StateStruct) IndexSeek() int64 {
-	return OffsetToChunkSeek(state.NextWriteOffset)
+	return OffsetToChunkSeek(state.WriteOffset)
 }
 
 func (state *StateStruct) IndexSeekByOffset(offset uint64) int64 {

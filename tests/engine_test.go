@@ -30,7 +30,7 @@ func TestIntake(t *testing.T) {
 
 	time.Sleep(1e7)
 
-	offset := common.State.NextWriteOffset - common.IndexSize
+	offset := common.State.WriteOffset - common.IndexSize
 	chunk := common.OffsetToChunkString(offset)
 	indexFile, err := os.OpenFile(config.Base.IndexPrefix+chunk, os.O_RDONLY, 0666)
 	common.FaceIt(err)
