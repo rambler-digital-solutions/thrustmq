@@ -11,7 +11,7 @@ import (
 )
 
 // If there is no consumer for the bucket - just discard the record
-func fTestCombustorDiscardByBucket(t *testing.T) {
+func TestCombustorDiscardByBucket(t *testing.T) {
 	helper.BootstrapExhaust(t)
 
 	record := &common.Record{}
@@ -20,11 +20,14 @@ func fTestCombustorDiscardByBucket(t *testing.T) {
 	exhaust.CombustorChannel <- record
 
 	helper.CheckRecordsMap(t, 1)
+
 	time.Sleep(config.Base.TestDelayDuration)
+
 	helper.CheckCombustor(t, 0)
 	helper.CheckRecordsMap(t, 0)
 }
 
+// Records from one bucket must be assigned to consumers of this bucket evenly
 func TestCombustorRoundRobinBuckets(t *testing.T) {
 	helper.BootstrapExhaust(t)
 	helper.CheckConnections(t, 0)
