@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"io"
 	"net"
+	// "fmt"
 )
 
 type ConnectionStruct struct {
@@ -27,6 +28,7 @@ func (connection *ConnectionStruct) DeserializeHeader() bool {
 	buffer := make([]byte, ConnectionHeaderSize)
 	_, err := io.ReadFull(connection.Reader, buffer)
 	if err != nil {
+		// fmt.Println(err)
 		return false
 	}
 

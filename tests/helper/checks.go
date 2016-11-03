@@ -5,7 +5,6 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
 	"testing"
-	"time"
 )
 
 func CheckCombustor(t *testing.T, size int) {
@@ -20,8 +19,14 @@ func CheckRecordsMap(t *testing.T, size int) {
 	}
 }
 
+func CheckBuckets(t *testing.T, bucket uint64, size int) {
+	actualSize := exhaust.BucketsMap[bucket].Len()
+	if actualSize != size {
+		t.Fatalf("connections list size in bucket %d is %d instead of %d", bucket, actualSize, size)
+	}
+}
+
 func CheckConnections(t *testing.T, size int) {
-	time.Sleep(1e8)
 	if exhaust.ConnectionsMapLength() != size {
 		t.Fatalf("%d connections instead of %d", exhaust.ConnectionsMapLength(), size)
 	}
@@ -47,5 +52,11 @@ func CheckConnectionChannel(t *testing.T, ID uint64, size int) {
 	}
 	if len(connection.Channel) != size {
 		t.Fatalf("%d record in %d connection channel (should be %d)", len(connection.Channel), ID, size)
+	}
+}
+
+func CheckBucketRequired(t *testing.T, bucketID uint64) {
+	if !exhaust.BucketRequired(bucketID) {
+		t.Fatalf("bucket %d should be required", bucketID)
 	}
 }

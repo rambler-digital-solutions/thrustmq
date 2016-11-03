@@ -11,8 +11,6 @@ import (
 	"os"
 	"testing"
 	"time"
-	// "github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
-	// "log"
 )
 
 // Send message via golang producer client and make sure that it was stored on disk

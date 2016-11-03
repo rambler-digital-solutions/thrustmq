@@ -37,6 +37,7 @@ func logger() {
 	logfile, err := os.OpenFile(config.Base.Logfile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	common.FaceIt(err)
 	logger := log.New(logfile, "", log.LstdFlags)
+	logger.Printf("\n\n\n")
 	for {
 		oprecord := <-common.OplogChannel
 		logger.Printf("[%.4s] %s", strings.ToUpper(oprecord.Subsystem), oprecord.Message)

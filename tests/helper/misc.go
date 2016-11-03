@@ -1,12 +1,9 @@
 package helper
 
 import (
-	"github.com/rambler-digital-solutions/thrustmq/clients/golang/consumer"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
-	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
 	"os"
-	"testing"
 )
 
 func DumpRecords(records []*common.Record) {
@@ -29,15 +26,4 @@ func DumpRecords(records []*common.Record) {
 	dataFile.Sync()
 	common.State.UndeliveredOffset = 0
 	common.State.WriteOffset = common.IndexSize * uint64(len(records))
-}
-
-func ForgeConnection(t *testing.T, connectionID uint64, bucketID uint64) {
-	consumer.Disconnect()
-	CheckConnections(t, 0)
-	connection := &common.ConnectionStruct{}
-	connection.ID = connectionID
-	connection.Bucket = bucketID
-	connection.Channel = make(common.RecordPipe, config.Exhaust.NozzleBuffer)
-	exhaust.MapConnection(connection)
-	exhaust.RegisterBucketSink(connection)
 }

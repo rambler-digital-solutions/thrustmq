@@ -54,6 +54,7 @@ func RecordsMapLength() int {
 // Connections Map synchronization
 /////////////////////////////////////
 
+// MapConnection adds connection to ConnectionsMap
 func MapConnection(connection *common.ConnectionStruct) {
 	ConnectionsMutex.Lock()
 	ConnectionsMap[connection.ID] = connection
@@ -110,6 +111,7 @@ func BucketRequired(bucketID uint64) bool {
 	return true
 }
 
+// RegisterBucketSink adds connection to linked list of connections for this bucket
 func RegisterBucketSink(client *common.ConnectionStruct) {
 	BucketsMutex.Lock()
 	if BucketsMap[client.Bucket] == nil {

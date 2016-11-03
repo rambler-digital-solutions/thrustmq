@@ -1,8 +1,6 @@
 package helper
 
 import (
-	"github.com/rambler-digital-solutions/thrustmq/clients/golang/consumer"
-	"github.com/rambler-digital-solutions/thrustmq/clients/golang/producer"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
@@ -33,8 +31,6 @@ func BootstrapIntake(t *testing.T) {
 	}
 	common.State.UndeliveredOffset = 0
 	common.State.WriteOffset = 0
-	producer.Disconnect()
-	producer.Connect()
 }
 
 func BootstrapExhaust(t *testing.T) {
@@ -44,10 +40,7 @@ func BootstrapExhaust(t *testing.T) {
 		time.Sleep(config.Base.TestDelayDuration)
 		exhaustInitialized = true
 	}
-
 	common.State.UndeliveredOffset = 0
 	common.State.WriteOffset = 0
 	exhaust.ClearRecordsMap()
-	consumer.Disconnect()
-	consumer.Connect()
 }
