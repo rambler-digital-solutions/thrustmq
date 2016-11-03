@@ -17,14 +17,12 @@ import (
 func TestTurbineFlush(t *testing.T) {
 	helper.BootstrapExhaust(t)
 
-	record := &common.Record{}
+	record := helper.ForgeAndMapRecord(uint64(0), uint64(rand.Int63()))
 	record.Created = uint64(rand.Int63())
-	record.Seek = 0
 	record.Dirty = true
-	exhaust.MapRecord(record)
 	exhaust.TurbineChannel <- record
 
-	time.Sleep(1e7)
+	time.Sleep(config.Base.TestDelayDuration)
 
 	indexFile, err := os.OpenFile(config.Base.IndexPrefix, os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)

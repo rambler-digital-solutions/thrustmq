@@ -14,13 +14,15 @@ func afterburner() {
 		}
 
 		if record.Delivered != 0 || !BucketRequired(record.Bucket) {
-			message := fmt.Sprintf("deleting record from map (seek %d bucket %d)", record.Seek, record.Bucket)
+			message := fmt.Sprintf("deleting record %d from map (bucket %d)", record.Seek, record.Bucket)
 			common.OplogRecord{Message: message, Subsystem: "afterburner"}.Send()
 
 			DeleteRecord(record)
 		} else {
 			if record.Enqueued > 0 && !ConnectionAlive(record.Connection) {
 				record.Enqueued = 0
+				message := fmt.Sprintf("combusting record %d (bucket %d)", record.Seek, record.Bucket)
+				common.OplogRecord{Message: message, Subsystem: "afterburner"}.Send()
 				CombustorChannel <- record
 			}
 		}

@@ -1,7 +1,6 @@
 package exhaust
 
 import (
-	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"os"
@@ -18,8 +17,7 @@ func getFile(offset uint64) *os.File {
 		file, err := os.OpenFile(path, os.O_RDONLY|os.O_CREATE, 0666)
 		common.FaceIt(err)
 
-		message := fmt.Sprintf("map #%d to %s", chunk, path)
-		common.OplogRecord{Subsystem: "fuel", Message: message}.Send()
+		common.Log("fuel", "map chunk %d to %s", chunk, path)
 
 		ChunksMap[chunk] = file
 		return file
@@ -36,18 +34,12 @@ func rmFile(offset uint64) {
 
 // Subsystem that instantiates records from disk and pushes them to combustor
 func fuelControlUnit() {
-	oprecord := common.OplogRecord{Subsystem: "fuel"}
 
 	for {
 		// rm processed chunks
 		for chunkNumber := range ChunksMap {
 			if common.ChunkToOffset(int(chunkNumber+1)) <= common.State.UndeliveredOffset {
-				oprecord.Message = fmt.Sprintf(
-					"remove chunk #%d (%d >= %d)",
-					chunkNumber,
-					common.State.UndeliveredOffset,
-					common.ChunkToOffset(int(chunkNumber+1)))
-				oprecord.Send()
+				common.Log("fuel", "remove chunk #%d (%d >= %d)", chunkNumber, common.State.UndeliveredOffset, common.ChunkToOffset(int(chunkNumber+1)))
 				rmFile(common.ChunkToOffset(int(chunkNumber)))
 			}
 		}
@@ -55,8 +47,7 @@ func fuelControlUnit() {
 		if len(CombustorChannel) < cap(CombustorChannel)/2 {
 			start := true
 			if common.State.UndeliveredOffset < common.State.WriteOffset {
-				oprecord.Message = fmt.Sprintf("pass %d -> %d", common.State.UndeliveredOffset, common.State.WriteOffset)
-				oprecord.Send()
+				common.Log("fuel", "pass %d -> %d", common.State.UndeliveredOffset, common.State.WriteOffset)
 			}
 			for offset := common.State.UndeliveredOffset; offset < common.State.WriteOffset; offset += common.IndexSize {
 				if RecordInMemory(&common.Record{Seek: offset}) {
@@ -67,14 +58,13 @@ func fuelControlUnit() {
 					start = false
 				} else {
 					if start {
-						oprecord.Message = fmt.Sprintf("change UndeliveredOffset to %d", offset)
-						oprecord.Send()
+						common.Log("fuel", "change UndeliveredOffset to %d", offset)
 						common.State.UndeliveredOffset = offset + common.IndexSize
 					}
 				}
 			}
 		}
-		time.Sleep(1e6)
+		time.Sleep(1e4)
 		runtime.Gosched()
 	}
 }
@@ -86,8 +76,7 @@ func inject(file *os.File, offset uint64) bool {
 	record.Deserialize(file)
 	record.Seek = offset
 
-	message := fmt.Sprintf("restore %v from chunk #%s", record.Seek, common.State.StringChunkNumberByOffset(offset))
-	common.OplogRecord{Subsystem: "fuel", Message: message}.Send()
+	common.Log("fuel", "restore record %d from chunk #%s", record.Seek, common.State.StringChunkNumberByOffset(offset))
 
 	if !RecordInMemory(record) {
 		MapRecord(record)

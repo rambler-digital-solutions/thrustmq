@@ -24,11 +24,12 @@ func TestInstantiationOfStoredMessages(t *testing.T) {
 	helper.DumpRecords(records)
 
 	helper.BootstrapExhaust(t)
-	helper.ForgeConnection(t, connectionID, bucketID)
+	helper.ForgeConnection(connectionID, bucketID)
+
 	common.State.UndeliveredOffset = 0
 	common.State.WriteOffset = common.IndexSize * uint64(numberOfRecords)
 
-	time.Sleep(1e7)
+	time.Sleep(config.Base.TestDelayDuration)
 
 	helper.CheckConnectionChannel(t, connectionID, numberOfRecords)
 
@@ -55,11 +56,11 @@ func TestInstantiationOfUndeliveredMessages(t *testing.T) {
 	helper.DumpRecords(records)
 
 	helper.BootstrapExhaust(t)
-	helper.ForgeConnection(t, connectionID, bucketID)
+	helper.ForgeConnection(connectionID, bucketID)
 	common.State.UndeliveredOffset = 0
 	common.State.WriteOffset = common.IndexSize * uint64(numberOfRecords)
 
-	time.Sleep(1e7)
+	time.Sleep(config.Base.TestDelayDuration)
 
 	helper.CheckConnectionChannel(t, connectionID, numberOfRecords/2)
 	exhaust.DeleteConnectionByID(connectionID)
@@ -83,11 +84,11 @@ func TestMovementOfUndeliveredOffset(t *testing.T) {
 	}
 	helper.BootstrapExhaust(t)
 	helper.DumpRecords(records)
-	helper.ForgeConnection(t, connectionID, bucketID)
+	helper.ForgeConnection(connectionID, bucketID)
 	common.State.UndeliveredOffset = 0
 	common.State.WriteOffset = common.IndexSize * uint64(numberOfRecords)
 
-	time.Sleep(1e8)
+	time.Sleep(config.Base.TestDelayDuration)
 
 	exhaust.DeleteConnectionByID(connectionID)
 	if common.State.UndeliveredOffset != common.State.WriteOffset-common.IndexSize {
@@ -112,7 +113,7 @@ func TestFCUFileDeletion(t *testing.T) {
 	common.State.WriteOffset = common.IndexSize * uint64(numberOfRecords)
 	common.State.UndeliveredOffset = common.State.WriteOffset
 
-	time.Sleep(1e8)
+	time.Sleep(config.Base.TestDelayDuration)
 
 	exhaust.DeleteConnectionByID(connectionID)
 	_, err := os.Stat(config.Base.IndexPrefix + "0")

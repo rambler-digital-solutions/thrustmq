@@ -2,6 +2,7 @@ package tests
 
 import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
+	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
 	"github.com/rambler-digital-solutions/thrustmq/tests/helper"
 	"math/rand"
@@ -18,7 +19,7 @@ func TestAfterburnerRemoveSent(t *testing.T) {
 	record.Delivered = common.TimestampUint64()
 	exhaust.MapRecord(record)
 
-	time.Sleep(1e6)
+	time.Sleep(config.Base.TestDelayDuration)
 
 	if exhaust.RecordsMapGet(record.Seek) != nil {
 		t.Fatalf("record wasn't deleted %v", exhaust.RecordsMapGet(record.Seek))
@@ -33,17 +34,14 @@ func TestAfterburnerRequeueOnDeadConnection(t *testing.T) {
 	bucketID := uint64(rand.Int63())
 	connectionID := uint64(rand.Int63())
 	deadConnectionID := uint64(rand.Int63())
-	helper.ForgeConnection(t, connectionID, bucketID)
+	helper.ForgeConnection(connectionID, bucketID)
 
-	record := &common.Record{}
-	record.Seek = seek
-	record.Bucket = bucketID
+	record := helper.ForgeAndMapRecord(seek, bucketID)
 	record.Connection = deadConnectionID
 	record.Enqueued = common.TimestampUint64()
-	exhaust.MapRecord(record)
 	exhaust.AfterburnerChannel <- record
 
-	time.Sleep(1e6)
+	time.Sleep(config.Base.TestDelayDuration)
 
 	retries := exhaust.RecordsMapGet(seek).Retries
 	if retries != 1 {

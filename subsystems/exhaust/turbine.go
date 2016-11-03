@@ -1,6 +1,7 @@
 package exhaust
 
 import (
+	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"os"
@@ -35,6 +36,7 @@ func turbineStage2() {
 			common.FaceIt(err)
 			file.Write(record.Serialize())
 			record.Dirty = false
+			common.Log("turbine", fmt.Sprintf("flushed record %d to disk", record.Seek))
 		}
 	}
 }

@@ -1,7 +1,6 @@
 package exhaust
 
 import (
-	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"runtime"
 )
@@ -14,20 +13,15 @@ func forward(record *common.Record, connection *common.ConnectionStruct) {
 	record.Dirty = true
 	record.Retries++
 
-	oprecord := common.OplogRecord{Subsystem: "combustor"}
-
-	oprecord.Message = fmt.Sprintf("forward record %d to connection %d (%d retries)", record.Seek, connection.ID, record.Retries)
-	common.OplogChannel <- oprecord
+	common.Log("combustor", "forward record %d to connection %d (%d retries)", record.Seek, connection.ID, record.Retries)
 	connection.Channel <- record
 
-	oprecord.Message = fmt.Sprintf("forward record %d to turbine", record.Seek)
-	common.OplogChannel <- oprecord
+	common.Log("combustor", "forward record %d to turbine", record.Seek)
 	TurbineChannel <- record
 }
 
 // Forwards records to connections or discards them
 func combustor() {
-	oprecord := common.OplogRecord{Subsystem: "combustor"}
 	for {
 		select {
 		case record := <-CombustorChannel:
@@ -36,23 +30,19 @@ func combustor() {
 				connection := nextConnFor(record.Bucket)
 
 				if connection == nil {
-					oprecord.Message = fmt.Sprintf("skipping fwd of record %d (connection is nil)", record.Seek)
-					oprecord.Send()
+					common.Log("combustor", "skipping fwd of record %d (connection is nil)", record.Seek)
 					continue
 				}
 
 				if len(connection.Channel) == cap(connection.Channel) {
-					oprecord.Message = fmt.Sprintf("skipping fwd of record %d (connection %d is full)", record.Seek, connection.ID)
-					oprecord.Send()
+					common.Log("combustor", "skipping fwd of record %d (connection %d is full)", record.Seek, connection.ID)
 					continue
 				}
 
-				oprecord.Message = fmt.Sprintf("assigned record %d to connection %d", record.Seek, connection.ID)
-				oprecord.Send()
+				common.Log("combustor", "assigned record %d to connection %d", record.Seek, connection.ID)
 				forward(record, connection)
 			} else {
-				oprecord.Message = fmt.Sprintf("record %v was already enqueued at %d... skipping...", record, record.Enqueued)
-				oprecord.Send()
+				common.Log("combustor", "record %v was already enqueued at %d... skipping...", record, record.Enqueued)
 			}
 		default:
 			runtime.Gosched()
