@@ -1,7 +1,6 @@
 package exhaust
 
 import (
-	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 )
 
@@ -14,15 +13,12 @@ func afterburner() {
 		}
 
 		if record.Delivered != 0 || !BucketRequired(record.Bucket) {
-			message := fmt.Sprintf("deleting record %d from map (bucket %d)", record.Seek, record.Bucket)
-			common.OplogRecord{Message: message, Subsystem: "afterburner"}.Send()
-
+			common.Log("afterburner", "deleting record %d from map (bucket %d)", record.Seek, record.Bucket)
 			DeleteRecord(record)
 		} else {
 			if record.Enqueued > 0 && !ConnectionAlive(record.Connection) {
 				record.Enqueued = 0
-				message := fmt.Sprintf("combusting record %d (bucket %d)", record.Seek, record.Bucket)
-				common.OplogRecord{Message: message, Subsystem: "afterburner"}.Send()
+				common.Log("afterburner", "combusting record %d (connection %d is dead)", record.Seek, record.Connection)
 				CombustorChannel <- record
 			}
 		}

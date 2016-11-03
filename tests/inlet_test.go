@@ -9,7 +9,7 @@ import (
 // Receive one message and check that everything goes smooth
 func TestSendOneMessage(t *testing.T) {
 	helper.BootstrapIntake(t)
-	helper.ReconnectProducer()
+	helper.ReconnectProducer(t)
 
 	messages := helper.ForgeProducerMessages(1)
 
@@ -28,7 +28,7 @@ func TestSendOneMessage(t *testing.T) {
 // Receive several messages and check that everything goes smooth
 func TestSendSeveralMessages(t *testing.T) {
 	helper.BootstrapIntake(t)
-	helper.ReconnectProducer()
+	helper.ReconnectProducer(t)
 
 	messages := helper.ForgeProducerMessages(3)
 

@@ -36,7 +36,7 @@ func turbineStage2() {
 			common.FaceIt(err)
 			file.Write(record.Serialize())
 			record.Dirty = false
-			common.Log("turbine", fmt.Sprintf("flushed record %d to disk", record.Seek))
+			common.Log("turbine", fmt.Sprintf("flushed record %d to disk (%d retries)", record.Seek, record.Retries))
 		}
 	}
 }

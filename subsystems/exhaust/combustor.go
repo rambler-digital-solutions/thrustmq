@@ -13,7 +13,7 @@ func forward(record *common.Record, connection *common.ConnectionStruct) {
 	record.Dirty = true
 	record.Retries++
 
-	common.Log("combustor", "forward record %d to connection %d (%d retries)", record.Seek, connection.ID, record.Retries)
+	common.Log("combustor", "forward record %d to connection %d (%d retries) %v", record.Seek, record.Connection, record.Retries)
 	connection.Channel <- record
 
 	common.Log("combustor", "forward record %d to turbine", record.Seek)

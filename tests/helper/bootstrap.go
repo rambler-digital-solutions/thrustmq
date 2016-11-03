@@ -9,6 +9,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
 	"math/rand"
+	"runtime"
 	"testing"
 	"time"
 )
@@ -27,27 +28,31 @@ func bootstrapOplog() bool {
 func BootstrapIntake(t *testing.T) {
 	if !intakeInitialized {
 		rand.Seed(time.Now().UTC().UnixNano())
+		SeekStart()
 		go intake.Init()
+		runtime.Gosched()
 		time.Sleep(config.Base.TestDelayDuration)
 		intakeInitialized = true
 	}
-	common.State.UndeliveredOffset = 0
-	common.State.WriteOffset = 0
 }
 
 func BootstrapExhaust(t *testing.T) {
 	if !exhaustInitialized {
 		rand.Seed(time.Now().UTC().UnixNano())
+		SeekStart()
 		go exhaust.Init()
+		runtime.Gosched()
 		time.Sleep(config.Base.TestDelayDuration)
 		exhaustInitialized = true
 	}
-	common.State.UndeliveredOffset = 0
-	common.State.WriteOffset = 0
-	exhaust.ClearRecordsMap()
 }
 
-func ReconnectProducer() {
+func SeekStart() {
+	common.State.UndeliveredOffset = 0
+	common.State.WriteOffset = 0
+}
+
+func ReconnectProducer(t *testing.T) {
 	producer.Disconnect()
 	producer.Connect()
 }
@@ -55,4 +60,13 @@ func ReconnectProducer() {
 func ReconnectConsumer(t *testing.T) {
 	consumer.Disconnect()
 	consumer.Connect()
+}
+
+func ClearCompressor() {
+	for len(intake.CompressorChannel) > 0 {
+		<-intake.CompressorChannel
+	}
+	for len(intake.CompressorStage2Channel) > 0 {
+		<-intake.CompressorStage2Channel
+	}
 }

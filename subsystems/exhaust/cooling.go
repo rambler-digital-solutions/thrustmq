@@ -76,12 +76,17 @@ func ConnectionsMapGet(key uint64) *common.ConnectionStruct {
 }
 
 func DeleteConnection(connection *common.ConnectionStruct) {
+	UnregisterBucketSink(connection)
 	ConnectionsMutex.Lock()
 	delete(ConnectionsMap, connection.ID)
 	ConnectionsMutex.Unlock()
 }
 
 func DeleteConnectionByID(ID uint64) {
+	ConnectionsMutex.RLock()
+	connection := ConnectionsMap[ID]
+	ConnectionsMutex.RUnlock()
+	UnregisterBucketSink(connection)
 	ConnectionsMutex.Lock()
 	delete(ConnectionsMap, ID)
 	ConnectionsMutex.Unlock()

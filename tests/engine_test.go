@@ -26,7 +26,7 @@ func TestIntake(t *testing.T) {
 	producer.SendBatch(messages)
 	producer.GetAcks(1)
 
-	time.Sleep(1e7)
+	time.Sleep(config.Base.TestDelayDuration)
 
 	offset := common.State.WriteOffset - common.IndexSize
 	chunk := common.OffsetToChunkString(offset)
@@ -54,18 +54,16 @@ func TestExhaust(t *testing.T) {
 	expectedMessageLength := 8
 	bucketID := uint64(rand.Int63())
 	randomNumbers := make([]uint64, batchSize)
-
-	records := make([]*common.Record, 0)
+	records := make([]*common.Record, batchSize)
 	for i := 0; i < batchSize; i++ {
 		randomNumbers[i] = uint64(rand.Int63())
-		record := &common.Record{}
-		record.DataLength = 8
-		record.Data = common.BinUint64(randomNumbers[i])
-		record.Bucket = bucketID
-		records = append(records, record)
+		records[i] = &common.Record{}
+		records[i].Bucket = bucketID
+		records[i].DataLength = 8
+		records[i].Data = common.BinUint64(randomNumbers[i])
 	}
 	helper.BootstrapExhaust(t)
-
+	helper.ReconnectConsumer(t)
 	helper.DumpRecords(records)
 
 	consumer.SendHeader(batchSize, bucketID)
@@ -91,7 +89,9 @@ func TestExhaust(t *testing.T) {
 // Send message via golang producer client and receive it via golang consumer client
 func TestSystem(t *testing.T) {
 	helper.BootstrapIntake(t)
+	helper.ReconnectProducer(t)
 	helper.BootstrapExhaust(t)
+	helper.ReconnectConsumer(t)
 
 	batchSize := 3
 	bucketID := uint64(rand.Int63())
@@ -108,11 +108,10 @@ func TestSystem(t *testing.T) {
 		messages[i].Payload = buffer
 	}
 
-	producer.Connect()
 	producer.SendBatch(messages)
 	producer.GetAcks(batchSize)
 
-	time.Sleep(1e6)
+	time.Sleep(config.Base.TestDelayDuration)
 
 	consumer.SendHeader(batchSize, bucketID)
 

@@ -2,7 +2,6 @@ package exhaust
 
 import (
 	"bufio"
-	"fmt"
 	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"net"
@@ -22,19 +21,17 @@ func registerConnect(connection net.Conn) *common.ConnectionStruct {
 	MapConnection(connectionStruct)
 
 	address := connectionStruct.Connection.RemoteAddr()
-	message := fmt.Sprintf("new consumer #%d %s %s (%d connections)", connectionStruct.ID, address.Network(), address.String(), ConnectionsMapLength())
-	common.OplogRecord{Message: message, Subsystem: "exhaust", Action: "newConsumer"}.Send()
+	common.Log("exhaust", "new consumer #%d %s %s (%d connections)", connectionStruct.ID, address.Network(), address.String(), ConnectionsMapLength())
 
 	return connectionStruct
 }
 
 func registerDisconnect(connectionStruct *common.ConnectionStruct) {
+	address := connectionStruct.Connection.RemoteAddr()
+	common.Log("exhaust", "lost consumer %s %s (%d connections)", address.Network(), address.String(), ConnectionsMapLength())
+
 	UnregisterBucketSink(connectionStruct)
 	DeleteConnection(connectionStruct)
-
-	address := connectionStruct.Connection.RemoteAddr()
-	message := fmt.Sprintf("lost consumer %s %s (%d connections)", address.Network(), address.String(), ConnectionsMapLength())
-	common.OplogRecord{Message: message, Subsystem: "exhaust", Action: "lostConsumer"}.Send()
 }
 
 func sendBatch(client *common.ConnectionStruct, batch []*common.Record) {
@@ -44,7 +41,7 @@ func sendBatch(client *common.ConnectionStruct, batch []*common.Record) {
 		record.Sent = common.TimestampUint64()
 		err := client.SendMessage(record)
 		if err != nil {
-			common.OplogRecord{Message: err.Error(), Subsystem: "exhaust"}.Send()
+			common.Log("exhaust", err.Error())
 			return
 		}
 		batch[i] = record
@@ -60,8 +57,7 @@ func receiveAcks(client *common.ConnectionStruct, batch []*common.Record) {
 			batch[i].Dirty = true
 			TurbineChannel <- batch[i]
 		} else {
-			message := fmt.Sprintf("failed ack for %v... returning to combustor", batch[i])
-			common.OplogRecord{Message: message, Subsystem: "exhaust"}.Send()
+			common.Log("exhaust", "failed ack for %v... returning to combustor", batch[i])
 		}
 	}
 }
@@ -73,14 +69,11 @@ func blow(connection net.Conn) {
 	if client.DeserializeHeader() {
 		RegisterBucketSink(client)
 	} else {
-		message := fmt.Sprintf("failed to deserialize header for connection %d", client.ID)
-		common.OplogRecord{Message: message, Subsystem: "exhaust"}.Send()
+		common.Log("exhaust", "failed to deserialize header for connection %d", client.ID)
 		return
 	}
 
-	message := fmt.Sprintf("consumer #%d subscribed to bucket %d with batch size %d", client.ID, client.Bucket, client.BatchSize)
-	common.Log("exhaust", message)
-
+	common.Log("exhaust", "consumer #%d subscribed to bucket %d with batch size %d", client.ID, client.Bucket, client.BatchSize)
 	time.Sleep(1e6) // allows data to arrive
 	for {
 		batchSize := common.Min(int(client.BatchSize), len(client.Channel))
@@ -89,8 +82,7 @@ func blow(connection net.Conn) {
 			sendBatch(client, batch)
 			receiveAcks(client, batch)
 		} else {
-			message := fmt.Sprintf("pinging %d", client.ID)
-			common.OplogRecord{Message: message, Subsystem: "exhaust"}.Send()
+			common.Log("exhaust", "pinging %d", client.ID)
 			time.Sleep(1e6)
 			runtime.Gosched()
 			if !client.Ping() {

@@ -5,6 +5,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
 	"github.com/rambler-digital-solutions/thrustmq/tests/helper"
+	"log"
 	"os"
 	"testing"
 	"time"
@@ -42,6 +43,7 @@ func TestRecordSerialization(t *testing.T) {
 // 2. position pointer is set correctly
 func TestChunkSwitching(t *testing.T) {
 	helper.BootstrapIntake(t)
+	helper.ClearCompressor()
 
 	common.State.WriteOffset = 0
 	for i := 0; i < int(config.Base.ChunkSize+1); i++ {
@@ -50,7 +52,10 @@ func TestChunkSwitching(t *testing.T) {
 		intake.CompressorStage2Channel <- message
 	}
 
-	time.Sleep(config.Base.TestDelayDuration)
+	for len(intake.CompressorStage2Channel) > 0 {
+		log.Print("idling on compressor...")
+		time.Sleep(config.Base.TestDelayDuration)
+	}
 
 	helper.CheckUncompressedMessages(t, 0)
 	helper.CheckChunkNumber(t, 1)
