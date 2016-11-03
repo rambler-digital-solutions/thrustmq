@@ -20,6 +20,6 @@
     "NetworkBuffer": 1024,
     "OplogChannelLength": 1000000,
     "HeartbeatDelay": "10ms",
-    "TestDelay": "2ms",
+    "TestDelay": "1ms",
     "Debug": true
 }

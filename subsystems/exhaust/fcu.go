@@ -5,7 +5,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"os"
 	"runtime"
-	"time"
+	// "time"
 )
 
 // Opens file for reading and adds it to ChunksMap
@@ -64,7 +64,7 @@ func fuelControlUnit() {
 				}
 			}
 		}
-		time.Sleep(1e4)
+		// time.Sleep(1e4)
 		runtime.Gosched()
 	}
 }

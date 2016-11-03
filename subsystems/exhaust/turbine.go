@@ -6,6 +6,7 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/config"
 	"os"
 	"runtime"
+	// "time"
 )
 
 // Entry function, loops through the records in memory and take appropriate action
@@ -20,6 +21,7 @@ func turbineStage1() {
 		}
 		RecordsMutex.Unlock()
 		runtime.Gosched()
+		// time.Sleep(1e3)
 	}
 }
 

@@ -13,6 +13,18 @@ func CheckCombustor(t *testing.T, size int) {
 	}
 }
 
+func CheckTurbine(t *testing.T, size int) {
+	if len(exhaust.CombustorChannel) != size {
+		t.Fatalf("turbine channel size %d (should be %d)", len(exhaust.TurbineChannel), size)
+	}
+}
+
+func CheckAfterburner(t *testing.T, size int) {
+	if len(exhaust.AfterburnerChannel) != size {
+		t.Fatalf("afterburner channel size %d (should be %d)", len(exhaust.AfterburnerChannel), size)
+	}
+}
+
 func CheckRecordsMap(t *testing.T, size int) {
 	if exhaust.RecordsMapLength() != size {
 		t.Fatalf("record map size %d (should be %d)", exhaust.RecordsMapLength(), size)

@@ -2,12 +2,14 @@ package tests
 
 import (
 	"github.com/rambler-digital-solutions/thrustmq/clients/golang/producer"
+	"github.com/rambler-digital-solutions/thrustmq/common"
 	"github.com/rambler-digital-solutions/thrustmq/tests/helper"
 	"testing"
 )
 
 // Receive one message and check that everything goes smooth
 func TestSendOneMessage(t *testing.T) {
+	common.Log("test", "\n\nTestSendOneMessage")
 	helper.BootstrapIntake(t)
 	helper.ReconnectProducer(t)
 
@@ -27,6 +29,7 @@ func TestSendOneMessage(t *testing.T) {
 
 // Receive several messages and check that everything goes smooth
 func TestSendSeveralMessages(t *testing.T) {
+	common.Log("test", "\n\nTestSendSeveralMessages")
 	helper.BootstrapIntake(t)
 	helper.ReconnectProducer(t)
 

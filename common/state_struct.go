@@ -31,7 +31,7 @@ func loadState() *StateStruct {
 
 func SaveState() {
 	for {
-		time.Sleep(1e7)
+		time.Sleep(1e6)
 		State.Save()
 	}
 }

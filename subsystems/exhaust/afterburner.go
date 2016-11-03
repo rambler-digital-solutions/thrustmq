@@ -20,6 +20,8 @@ func afterburner() {
 				record.Enqueued = 0
 				common.Log("afterburner", "combusting record %d (connection %d is dead)", record.Seek, record.Connection)
 				CombustorChannel <- record
+			} else {
+				// common.Log("afterburner", "record %d is delivering... do nothing", record.Seek)
 			}
 		}
 	}

@@ -11,7 +11,8 @@ import (
 )
 
 // When record was delivered - remove it from memory
-func fTestAfterburnerRemoveSent(t *testing.T) {
+func TestAfterburnerRemoveSent(t *testing.T) {
+	common.Log("test", "\n\nTestAfterburnerRemoveSent")
 	helper.BootstrapExhaust(t)
 
 	record := &common.Record{}
@@ -21,6 +22,9 @@ func fTestAfterburnerRemoveSent(t *testing.T) {
 
 	time.Sleep(config.Base.TestDelayDuration)
 
+	helper.CheckCombustor(t, 0)
+	helper.CheckTurbine(t, 0)
+	helper.CheckAfterburner(t, 0)
 	if exhaust.RecordsMapGet(record.Seek) != nil {
 		t.Fatalf("record wasn't deleted %v", exhaust.RecordsMapGet(record.Seek))
 	}
@@ -28,6 +32,7 @@ func fTestAfterburnerRemoveSent(t *testing.T) {
 
 // When connection with record dies - requeue the record
 func TestAfterburnerRequeueOnDeadConnection(t *testing.T) {
+	common.Log("test", "\n\nTestAfterburnerRequeueOnDeadConnection")
 	helper.BootstrapExhaust(t)
 
 	seek := uint64(rand.Int63())
@@ -41,10 +46,9 @@ func TestAfterburnerRequeueOnDeadConnection(t *testing.T) {
 	record.Enqueued = common.TimestampUint64()
 	exhaust.AfterburnerChannel <- record
 
-	time.Sleep(config.Base.TestDelayDuration)
+	helper.GenericWait()
 	helper.WaitForAfterburner()
 	helper.WaitForCombustor()
-	helper.WaitForTurbine()
 
 	retries := exhaust.RecordsMapGet(seek).Retries
 	if retries != 1 {
@@ -52,7 +56,7 @@ func TestAfterburnerRequeueOnDeadConnection(t *testing.T) {
 	}
 
 	if len(client.Channel) != 1 {
-		t.Fatalf("record wasn't added to connection queue (%d items)", len(client.Channel))
+		t.Fatalf("record wasn't added to connection channel (%d items)", len(client.Channel))
 	}
 
 	exhaust.DeleteConnectionByID(connectionID)
