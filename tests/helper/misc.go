@@ -15,15 +15,18 @@ func DumpRecords(records []*common.Record) {
 	dataFile.Seek(0, os.SEEK_SET)
 
 	common.State.DataWriteOffset = 0
+	common.State.UndeliveredOffset = 0
+	common.State.WriteOffset = 0
 
 	for i := range records {
 		dataFile.Write(records[i].Data)
 		records[i].DataSeek = common.State.DataWriteOffset
 		common.State.DataWriteOffset += uint64(len(records[i].Data))
 		indexFile.Write(records[i].Serialize())
+		records[i].Seek = common.IndexSize * uint64(i)
 	}
 	indexFile.Sync()
 	dataFile.Sync()
-	common.State.UndeliveredOffset = 0
+
 	common.State.WriteOffset = common.IndexSize * uint64(len(records))
 }

@@ -10,14 +10,14 @@ import (
 
 func WaitForAfterburner() {
 	for len(exhaust.AfterburnerChannel) > 0 {
-		common.Log("tests", "idling on afterburner...")
+		common.Log("tests", "blocking wait of afterburner...")
 		GenericWait()
 	}
 	GenericWait()
 }
 
 func WaitForCombustor() {
-	common.Log("tests", "idling on combustor...")
+	common.Log("tests", "blocking wait of combustor...")
 	for len(exhaust.CombustorChannel) > 0 {
 		GenericWait()
 	}
@@ -25,7 +25,7 @@ func WaitForCombustor() {
 }
 
 func WaitForTurbine() {
-	common.Log("tests", "idling on combustor...")
+	common.Log("tests", "blocking wait of combustor...")
 	for len(exhaust.TurbineChannel) > 0 {
 		GenericWait()
 	}
@@ -33,8 +33,25 @@ func WaitForTurbine() {
 }
 
 func WaitForCompressor() {
-	common.Log("tests", "idling on compressor...")
+	common.Log("tests", "blocking wait of compressor...")
 	for len(intake.CompressorStage2Channel) > 0 {
+		GenericWait()
+	}
+	GenericWait()
+}
+
+func WaitForRecords(amount int) {
+	common.Log("tests", "blocking wait of records...")
+	for len(exhaust.RecordsMap) < amount {
+		GenericWait()
+	}
+	GenericWait()
+}
+
+func WaitForConnectionChannel(id uint64, amount int) {
+	common.Log("tests", "blocking wait of connection's #%d channel...", id)
+	channel := exhaust.ConnectionsMapGet(id).Channel
+	for len(channel) < amount {
 		GenericWait()
 	}
 	GenericWait()

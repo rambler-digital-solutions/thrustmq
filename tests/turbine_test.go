@@ -24,7 +24,7 @@ func TestTurbineFlush(t *testing.T) {
 
 	time.Sleep(config.Base.TestDelayDuration)
 
-	indexFile, err := os.OpenFile(config.Base.IndexPrefix, os.O_RDWR|os.O_CREATE, 0666)
+	indexFile, err := os.OpenFile(config.Base.IndexPrefix+common.State.StringChunkNumber(), os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	defer indexFile.Close()
 

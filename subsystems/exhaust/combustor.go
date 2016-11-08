@@ -37,7 +37,7 @@ func combustor() {
 				common.Log("combustor", "assigned record %d to connection %d", record.Seek, connection.ID)
 				forward(record, connection)
 			} else {
-				common.Log("combustor", "record %v was already enqueued at %d... skipping...", record, record.Enqueued)
+				common.Log("combustor", "skip record %d (enqueued at %d)", record.Seek, record.Enqueued)
 			}
 		default:
 			runtime.Gosched()

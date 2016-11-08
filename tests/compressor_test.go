@@ -7,7 +7,6 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/tests/helper"
 	"os"
 	"testing"
-	"time"
 )
 
 // Write single record on disk, then read it and check if they are the same
@@ -72,7 +71,7 @@ func TestChunkOverride(t *testing.T) {
 	}
 
 	helper.CheckChunkNumber(t, config.Base.MaxChunks-1)
-	time.Sleep(config.Base.TestDelayDuration)
+	helper.WaitForCompressor()
 
 	helper.CheckUncompressedMessages(t, 0)
 	helper.CheckChunkNumber(t, 0)

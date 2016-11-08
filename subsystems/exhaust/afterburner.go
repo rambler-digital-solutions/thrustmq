@@ -11,18 +11,20 @@ func afterburner() {
 		if RecordsMapGet(record.Seek) == nil {
 			continue
 		}
-
-		if record.Delivered != 0 || !BucketRequired(record.Bucket) {
-			common.Log("afterburner", "deleting record %d from map (bucket %d)", record.Seek, record.Bucket)
+		if record.Delivered != 0 {
+			common.Log("afterburner", "deleting delivered record %d from the map", record.Seek, record.Bucket)
 			DeleteRecord(record)
-		} else {
-			if record.Enqueued > 0 && !ConnectionAlive(record.Connection) {
-				record.Enqueued = 0
-				common.Log("afterburner", "combusting record %d (connection %d is dead)", record.Seek, record.Connection)
-				CombustorChannel <- record
-			} else {
-				// common.Log("afterburner", "record %d is delivering... do nothing", record.Seek)
-			}
+			continue
+		}
+		if !BucketRequired(record.Bucket) {
+			common.Log("afterburner", "deleting record %d from the map (bucket %d is not required)", record.Seek, record.Bucket)
+			DeleteRecord(record)
+			continue
+		}
+		if record.Enqueued > 0 && !ConnectionAlive(record.Connection) {
+			record.Enqueued = 0
+			common.Log("afterburner", "combusting record %d (connection %d is dead)", record.Seek, record.Connection)
+			CombustorChannel <- record
 		}
 	}
 }

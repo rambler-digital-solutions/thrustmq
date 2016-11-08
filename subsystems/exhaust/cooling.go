@@ -43,6 +43,13 @@ func RecordInMemory(record *common.Record) bool {
 	return !!ok
 }
 
+func RecordInMemoryBySeek(seek uint64) bool {
+	RecordsMutex.RLock()
+	_, ok := RecordsMap[seek]
+	RecordsMutex.RUnlock()
+	return !!ok
+}
+
 func RecordsMapLength() int {
 	RecordsMutex.RLock()
 	length := len(RecordsMap)
@@ -77,6 +84,7 @@ func ConnectionsMapGet(key uint64) *common.ConnectionStruct {
 
 func DeleteConnection(connection *common.ConnectionStruct) {
 	UnregisterBucketSink(connection)
+
 	ConnectionsMutex.Lock()
 	delete(ConnectionsMap, connection.ID)
 	ConnectionsMutex.Unlock()
@@ -86,7 +94,9 @@ func DeleteConnectionByID(ID uint64) {
 	ConnectionsMutex.RLock()
 	connection := ConnectionsMap[ID]
 	ConnectionsMutex.RUnlock()
+
 	UnregisterBucketSink(connection)
+
 	ConnectionsMutex.Lock()
 	delete(ConnectionsMap, ID)
 	ConnectionsMutex.Unlock()
@@ -127,7 +137,7 @@ func RegisterBucketSink(client *common.ConnectionStruct) {
 }
 
 func UnregisterBucketSink(client *common.ConnectionStruct) {
-	if client.ListElement == nil {
+	if client == nil || client.ListElement == nil {
 		return
 	}
 	BucketsMutex.Lock()

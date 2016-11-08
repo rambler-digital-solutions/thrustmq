@@ -26,25 +26,27 @@ func bootstrapOplog() bool {
 }
 
 func BootstrapIntake(t *testing.T) {
-	if !intakeInitialized {
-		rand.Seed(time.Now().UTC().UnixNano())
-		SeekStart()
-		go intake.Init()
-		runtime.Gosched()
-		time.Sleep(config.Base.TestDelayDuration)
-		intakeInitialized = true
+	SeekStart()
+	rand.Seed(time.Now().UTC().UnixNano())
+	if intakeInitialized {
+		return
 	}
+	go intake.Init()
+	runtime.Gosched()
+	time.Sleep(config.Base.TestDelayDuration * 2)
+	intakeInitialized = true
 }
 
 func BootstrapExhaust(t *testing.T) {
-	if !exhaustInitialized {
-		rand.Seed(time.Now().UTC().UnixNano())
-		SeekStart()
-		go exhaust.Init()
-		runtime.Gosched()
-		time.Sleep(config.Base.TestDelayDuration)
-		exhaustInitialized = true
+	SeekStart()
+	rand.Seed(time.Now().UTC().UnixNano())
+	if exhaustInitialized {
+		return
 	}
+	go exhaust.Init()
+	runtime.Gosched()
+	time.Sleep(config.Base.TestDelayDuration * 2)
+	exhaustInitialized = true
 }
 
 func SeekStart() {

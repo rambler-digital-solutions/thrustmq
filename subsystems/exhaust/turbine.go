@@ -27,7 +27,8 @@ func turbineStage1() {
 
 // Flushes "dirty" records to disk
 func turbineStage2() {
-	file, err := os.OpenFile(config.Base.IndexPrefix, os.O_RDWR|os.O_CREATE, 0666)
+	path := config.Base.IndexPrefix + common.State.StringChunkNumber()
+	file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
 	defer file.Close()
 

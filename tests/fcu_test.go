@@ -8,11 +8,11 @@ import (
 	"math/rand"
 	"os"
 	"testing"
-	"time"
 )
 
 // Test that FCU instantiates records from disk
 func TestInstantiationOfStoredMessages(t *testing.T) {
+	common.Log("test", "\n\nTestInstantiationOfStoredMessages")
 	numberOfRecords := 3
 	connectionID := uint64(rand.Int63())
 	bucketID := uint64(rand.Int63())
@@ -21,28 +21,25 @@ func TestInstantiationOfStoredMessages(t *testing.T) {
 		records[i] = &common.Record{}
 		records[i].Bucket = bucketID
 	}
-	helper.DumpRecords(records)
 
-	exhaust.ClearRecordsMap()
 	helper.BootstrapExhaust(t)
 	helper.ForgeConnection(connectionID, bucketID)
+	helper.DumpRecords(records)
 
-	common.State.UndeliveredOffset = 0
-	common.State.WriteOffset = common.IndexSize * uint64(numberOfRecords)
-
-	helper.GenericWait()
-
+	helper.CheckConnectionChannel(t, connectionID, 0)
+	helper.WaitForConnectionChannel(connectionID, numberOfRecords)
 	helper.CheckConnectionChannel(t, connectionID, numberOfRecords)
 
 	exhaust.DeleteConnectionByID(connectionID)
 	if common.State.WriteOffset < common.State.UndeliveredOffset {
 		t.Fatalf("head %d lt tail %d", common.State.WriteOffset, common.State.UndeliveredOffset)
 	}
-
 }
 
-// Test that FCU instantiates ONLY valID messages
-func fTestInstantiationOfUndeliveredMessages(t *testing.T) {
+// Test that FCU instantiates ONLY valid messages
+func TestInstantiationOfUndeliveredMessages(t *testing.T) {
+	common.Log("test", "\n\nTestInstantiationOfUndeliveredMessages")
+	exhaust.ClearRecordsMap()
 	numberOfRecords := 4
 	connectionID := uint64(rand.Int63())
 	bucketID := uint64(rand.Int63())
@@ -54,16 +51,15 @@ func fTestInstantiationOfUndeliveredMessages(t *testing.T) {
 			records[i].Delivered = common.TimestampUint64()
 		}
 	}
-	helper.DumpRecords(records)
 
 	helper.BootstrapExhaust(t)
 	helper.ForgeConnection(connectionID, bucketID)
-	common.State.UndeliveredOffset = 0
-	common.State.WriteOffset = common.IndexSize * uint64(numberOfRecords)
+	helper.DumpRecords(records)
 
-	time.Sleep(config.Base.TestDelayDuration)
-
+	helper.CheckConnectionChannel(t, connectionID, 0)
+	helper.WaitForConnectionChannel(connectionID, numberOfRecords/2)
 	helper.CheckConnectionChannel(t, connectionID, numberOfRecords/2)
+
 	exhaust.DeleteConnectionByID(connectionID)
 	if common.State.WriteOffset < common.State.UndeliveredOffset {
 		t.Fatalf("head %d lt tail %d", common.State.WriteOffset, common.State.UndeliveredOffset)
@@ -71,7 +67,8 @@ func fTestInstantiationOfUndeliveredMessages(t *testing.T) {
 }
 
 // Test that FCU moves UndeliveredOffset
-func fTestMovementOfUndeliveredOffset(t *testing.T) {
+func TestMovementOfUndeliveredOffset(t *testing.T) {
+	common.Log("test", "\n\nTestMovementOfUndeliveredOffset")
 	numberOfRecords := 4
 	connectionID := uint64(rand.Int63())
 	bucketID := uint64(rand.Int63())
@@ -84,21 +81,21 @@ func fTestMovementOfUndeliveredOffset(t *testing.T) {
 		}
 	}
 	helper.BootstrapExhaust(t)
-	helper.DumpRecords(records)
 	helper.ForgeConnection(connectionID, bucketID)
-	common.State.UndeliveredOffset = 0
-	common.State.WriteOffset = common.IndexSize * uint64(numberOfRecords)
+	helper.DumpRecords(records)
+	exhaust.ClearRecordsMap()
 
-	time.Sleep(config.Base.TestDelayDuration)
+	helper.GenericWait()
 
 	exhaust.DeleteConnectionByID(connectionID)
 	if common.State.UndeliveredOffset != common.State.WriteOffset-common.IndexSize {
-		t.Fatalf("min offset does not move %d - %d", common.State.UndeliveredOffset, common.State.WriteOffset)
+		t.Fatalf("min offset does not move %d - %d", common.State.UndeliveredOffset, common.State.WriteOffset-common.IndexSize)
 	}
 }
 
 // Test that FCU removes old files
-func fTestFCUFileDeletion(t *testing.T) {
+func TestFCUFileDeletion(t *testing.T) {
+	common.Log("test", "\n\nTestFCUFileDeletion")
 	numberOfRecords := int(config.Base.ChunkSize + 1)
 	connectionID := uint64(rand.Int63())
 	bucketID := uint64(rand.Int63())
@@ -108,13 +105,10 @@ func fTestFCUFileDeletion(t *testing.T) {
 		records[i].Bucket = bucketID
 		records[i].Delivered = common.TimestampUint64()
 	}
+	helper.BootstrapExhaust(t)
 	helper.DumpRecords(records)
 
-	helper.BootstrapExhaust(t)
-	common.State.WriteOffset = common.IndexSize * uint64(numberOfRecords)
-	common.State.UndeliveredOffset = common.State.WriteOffset
-
-	time.Sleep(config.Base.TestDelayDuration)
+	helper.GenericWait()
 
 	exhaust.DeleteConnectionByID(connectionID)
 	_, err := os.Stat(config.Base.IndexPrefix + "0")
