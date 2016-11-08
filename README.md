@@ -79,3 +79,9 @@ ack []byte
 
 ### JSON dashboard
 Navigate to `http://localhost:3888/dash` to get a snapshot of ThrustMQ internals.
+
+### Tests
+```
+go test ./tests/...
+go test -bench=. -benchmem ./benchmarks/...
+```
