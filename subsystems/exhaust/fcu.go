@@ -51,9 +51,11 @@ func fuelControlUnit() {
 		}
 		previousRecordsWereDelivered := true
 		jump := common.State.UndeliveredOffset
+		floor := common.State.UndeliveredOffset
+		ceil := common.State.WriteOffset
 		var record *common.Record
 		common.Log("fuel", "pass %d -> %d", common.State.UndeliveredOffset, common.State.WriteOffset)
-		for offset := common.State.UndeliveredOffset; offset < common.State.WriteOffset; offset += common.IndexSize {
+		for offset := floor; offset < ceil; offset += common.IndexSize {
 			record = RecordsMapGet(offset)
 			if record == nil {
 				file := getFile(offset)

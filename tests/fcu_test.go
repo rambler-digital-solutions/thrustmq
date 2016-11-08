@@ -83,11 +83,10 @@ func TestMovementOfUndeliveredOffset(t *testing.T) {
 	helper.BootstrapExhaust(t)
 	helper.ForgeConnection(connectionID, bucketID)
 	helper.DumpRecords(records)
-	exhaust.ClearRecordsMap()
 
-	helper.GenericWait()
+	helper.LongWait()
+
 	exhaust.DeleteConnectionByID(connectionID)
-	helper.GenericWait()
 	if common.State.UndeliveredOffset != common.State.WriteOffset-common.IndexSize {
 		t.Fatalf("min offset does not move %d - %d", common.State.UndeliveredOffset, common.State.WriteOffset-common.IndexSize)
 	}
@@ -108,7 +107,7 @@ func TestFCUFileDeletion(t *testing.T) {
 	helper.BootstrapExhaust(t)
 	helper.DumpRecords(records)
 
-	helper.GenericWait()
+	helper.LongWait()
 
 	exhaust.DeleteConnectionByID(connectionID)
 	_, err := os.Stat(config.Base.IndexPrefix + "0")

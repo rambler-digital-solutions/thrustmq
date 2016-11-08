@@ -20,6 +20,7 @@ func TestAfterburnerRemoveSent(t *testing.T) {
 	record.Delivered = common.TimestampUint64()
 	exhaust.MapRecord(record)
 
+	helper.GenericWait()
 	helper.WaitForAfterburner()
 
 	helper.CheckCombustor(t, 0)
