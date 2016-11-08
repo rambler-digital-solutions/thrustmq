@@ -3,7 +3,6 @@ package consumer
 import (
 	"encoding/binary"
 	"fmt"
-	"log"
 	"math/rand"
 	"net"
 	"os"
@@ -75,7 +74,6 @@ func ReceiveBatchOrPing() []Message {
 func ReceiveBatch() []Message {
 	batch := ReceiveBatchOrPing()
 	for len(batch) == 1 && batch[0].Length == 0 {
-		log.Print("CLIENT: got ping")
 		SendAcks(1)
 		batch = ReceiveBatchOrPing()
 	}

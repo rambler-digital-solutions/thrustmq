@@ -12,7 +12,7 @@ func afterburner() {
 			continue
 		}
 		if record.Delivered != 0 {
-			common.Log("afterburner", "deleting delivered record %d from the map", record.Seek, record.Bucket)
+			common.Log("afterburner", "deleting delivered record %d from the map", record.Seek)
 			DeleteRecord(record)
 			continue
 		}

@@ -74,7 +74,6 @@ func blow(connection net.Conn) {
 	}
 
 	common.Log("exhaust", "consumer #%d subscribed to bucket %d with batch size %d", client.ID, client.Bucket, client.BatchSize)
-	// time.Sleep(1e6) // allows data to arrive
 	for {
 		batchSize := common.Min(int(client.BatchSize), len(client.Channel))
 		if batchSize > 0 {

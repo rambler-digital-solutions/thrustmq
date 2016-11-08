@@ -28,6 +28,7 @@ func combustor() {
 				connection := nextConnFor(record.Bucket)
 				if connection == nil {
 					common.Log("combustor", "skipping fwd of record %d (connection is nil)", record.Seek)
+					DeleteRecord(record)
 					continue
 				}
 				if len(connection.Channel) == cap(connection.Channel) {

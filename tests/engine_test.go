@@ -10,11 +10,11 @@ import (
 	"math/rand"
 	"os"
 	"testing"
-	"time"
 )
 
 // Send message via golang producer client and make sure that it was stored on disk
 func TestIntake(t *testing.T) {
+	common.Log("test", "\n\nTestIntake")
 	helper.BootstrapIntake(t)
 
 	expectedPayload := rand.Uint32()
@@ -26,7 +26,7 @@ func TestIntake(t *testing.T) {
 	producer.SendBatch(messages)
 	producer.GetAcks(1)
 
-	time.Sleep(config.Base.TestDelayDuration)
+	helper.GenericWait()
 
 	offset := common.State.WriteOffset - common.IndexSize
 	chunk := common.OffsetToChunkString(offset)
@@ -50,6 +50,8 @@ func TestIntake(t *testing.T) {
 
 // Connect to MQ via golang consumer client and receive several messages from disk
 func TestExhaust(t *testing.T) {
+	common.Log("test", "\n\nTestExhaust")
+
 	batchSize := 3
 	expectedMessageLength := 8
 	bucketID := uint64(rand.Int63())
@@ -66,12 +68,14 @@ func TestExhaust(t *testing.T) {
 	helper.ReconnectConsumer(t)
 	helper.DumpRecords(records)
 
-	consumer.SendHeader(batchSize, bucketID)
-	messages := consumer.ReceiveBatch()
-	consumer.SendAcks(batchSize)
+	helper.GenericWait()
 
-	if len(messages) != batchSize {
-		t.Fatalf("batch size is expected to be %d (%d instead)", batchSize, len(messages))
+	consumer.SendHeader(batchSize, bucketID)
+	messages := make([]consumer.Message, 0)
+	for len(messages) < batchSize {
+		newMessages := consumer.ReceiveBatch()
+		consumer.SendAcks(len(newMessages))
+		messages = append(messages, newMessages...)
 	}
 
 	for i := 0; i < batchSize; i++ {
@@ -88,9 +92,12 @@ func TestExhaust(t *testing.T) {
 
 // Send message via golang producer client and receive it via golang consumer client
 func TestSystem(t *testing.T) {
+	common.Log("test", "\n\nTestSystem")
+
 	helper.BootstrapIntake(t)
-	helper.ReconnectProducer(t)
 	helper.BootstrapExhaust(t)
+
+	helper.ReconnectProducer(t)
 	helper.ReconnectConsumer(t)
 
 	batchSize := 3
@@ -110,16 +117,14 @@ func TestSystem(t *testing.T) {
 
 	producer.SendBatch(messages)
 	producer.GetAcks(batchSize)
-
-	time.Sleep(config.Base.TestDelayDuration)
+	helper.GenericWait()
 
 	consumer.SendHeader(batchSize, bucketID)
-
-	messagesReceived := consumer.ReceiveBatch()
-	consumer.SendAcks(batchSize)
-
-	if len(messagesReceived) != batchSize {
-		t.Fatalf("batch size is expected to be %d (%d instead)", batchSize, len(messagesReceived))
+	messagesReceived := make([]consumer.Message, 0)
+	for len(messagesReceived) < batchSize {
+		newMessages := consumer.ReceiveBatch()
+		consumer.SendAcks(len(newMessages))
+		messagesReceived = append(messagesReceived, newMessages...)
 	}
 
 	for i := 0; i < batchSize; i++ {

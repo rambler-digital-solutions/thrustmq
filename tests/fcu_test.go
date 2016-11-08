@@ -86,8 +86,8 @@ func TestMovementOfUndeliveredOffset(t *testing.T) {
 	exhaust.ClearRecordsMap()
 
 	helper.GenericWait()
-
 	exhaust.DeleteConnectionByID(connectionID)
+	helper.GenericWait()
 	if common.State.UndeliveredOffset != common.State.WriteOffset-common.IndexSize {
 		t.Fatalf("min offset does not move %d - %d", common.State.UndeliveredOffset, common.State.WriteOffset-common.IndexSize)
 	}

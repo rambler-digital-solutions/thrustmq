@@ -22,6 +22,7 @@ func TestTurbineFlush(t *testing.T) {
 	record.Dirty = true
 	exhaust.TurbineChannel <- record
 
+	helper.GenericWait()
 	helper.WaitForTurbine()
 
 	indexFile, err := os.OpenFile(config.Base.IndexPrefix+common.State.StringChunkNumber(), os.O_RDWR|os.O_CREATE, 0666)

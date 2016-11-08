@@ -38,8 +38,22 @@ func logger() {
 	common.FaceIt(err)
 	logger := log.New(logfile, "", log.LstdFlags)
 	logger.Printf("\n\n\n\n Oplog started.")
+
+	var prev = common.OplogRecord{}
+	var current common.OplogRecord
+	var counter = 1
 	for {
-		oprecord := <-common.OplogChannel
-		logger.Printf("[%.4s] %s", strings.ToUpper(oprecord.Subsystem), oprecord.Message)
+		current = <-common.OplogChannel
+		if current.Message != prev.Message {
+			logger.Printf("[%.4s] %s", strings.ToUpper(current.Subsystem), current.Message)
+			counter = 1
+			prev = current
+		} else {
+			counter++
+			if counter == 2 {
+				logger.Printf("... repeats")
+			}
+		}
+
 	}
 }

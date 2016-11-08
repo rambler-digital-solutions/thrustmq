@@ -4,12 +4,10 @@ import (
 	"github.com/rambler-digital-solutions/thrustmq/clients/golang/consumer"
 	"github.com/rambler-digital-solutions/thrustmq/clients/golang/producer"
 	"github.com/rambler-digital-solutions/thrustmq/common"
-	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/intake"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/oplog"
 	"math/rand"
-	"runtime"
 	"testing"
 	"time"
 )
@@ -32,21 +30,22 @@ func BootstrapIntake(t *testing.T) {
 		return
 	}
 	go intake.Init()
-	runtime.Gosched()
-	time.Sleep(config.Base.TestDelayDuration * 2)
 	intakeInitialized = true
+	LongWait()
 }
 
 func BootstrapExhaust(t *testing.T) {
+	WaitForAfterburner()
 	SeekStart()
+	exhaust.ClearRecordsMap()
+	ClearCombustor()
 	rand.Seed(time.Now().UTC().UnixNano())
 	if exhaustInitialized {
 		return
 	}
 	go exhaust.Init()
-	runtime.Gosched()
-	time.Sleep(config.Base.TestDelayDuration * 2)
 	exhaustInitialized = true
+	LongWait()
 }
 
 func SeekStart() {
@@ -57,11 +56,14 @@ func SeekStart() {
 func ReconnectProducer(t *testing.T) {
 	producer.Disconnect()
 	producer.Connect()
+	GenericWait()
 }
 
 func ReconnectConsumer(t *testing.T) {
 	consumer.Disconnect()
+	nextConnId := common.State.ConnectionID + 1
 	consumer.Connect()
+	WaitForConnectionChannel(nextConnId, 0)
 }
 
 func ClearCompressor() {
@@ -70,5 +72,11 @@ func ClearCompressor() {
 	}
 	for len(intake.CompressorStage2Channel) > 0 {
 		<-intake.CompressorStage2Channel
+	}
+}
+
+func ClearCombustor() {
+	for len(exhaust.CombustorChannel) > 0 {
+		<-exhaust.CombustorChannel
 	}
 }

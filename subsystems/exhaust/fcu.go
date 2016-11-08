@@ -54,13 +54,14 @@ func fuelControlUnit() {
 		var record *common.Record
 		common.Log("fuel", "pass %d -> %d", common.State.UndeliveredOffset, common.State.WriteOffset)
 		for offset := common.State.UndeliveredOffset; offset < common.State.WriteOffset; offset += common.IndexSize {
-			if record = RecordsMapGet(offset); record == nil {
+			record = RecordsMapGet(offset)
+			if record == nil {
 				file := getFile(offset)
 				record = inject(file, offset)
 			}
 			if previousRecordsWereDelivered && record != nil && record.Delivered > 0 {
 				if offset != common.State.UndeliveredOffset {
-					common.Log("fuel", "change UndeliveredOffset to %d", offset+common.IndexSize)
+					common.Log("fuel", "change UndeliveredOffset from %d to %d (delivered %d)", jump, offset+common.IndexSize, record.Delivered)
 					jump = offset + common.IndexSize
 				}
 			} else {
