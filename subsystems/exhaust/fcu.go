@@ -58,14 +58,12 @@ func fuelControlUnit() {
 				file := getFile(offset)
 				record = inject(file, offset)
 			}
-			common.Log("fuel", "%d %d", record.Seek, record.Delivered)
 			if previousRecordsWereDelivered && record != nil && record.Delivered > 0 {
 				if offset != common.State.UndeliveredOffset {
 					common.Log("fuel", "change UndeliveredOffset to %d", offset+common.IndexSize)
 					jump = offset + common.IndexSize
 				}
 			} else {
-				common.Log("fuel", "%d delivered part ended", offset)
 				previousRecordsWereDelivered = false
 			}
 		}

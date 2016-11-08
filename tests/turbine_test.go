@@ -8,13 +8,13 @@ import (
 	"math/rand"
 	"os"
 	"testing"
-	"time"
 )
 
 // 1. Create dirty record
 // 2. Wait for turbine to flush it
 // 3. Check that record was actually updated on disk
 func TestTurbineFlush(t *testing.T) {
+	common.Log("test", "\n\nTestTurbineFlush")
 	helper.BootstrapExhaust(t)
 
 	record := helper.ForgeAndMapRecord(uint64(0), uint64(rand.Int63()))
@@ -22,7 +22,7 @@ func TestTurbineFlush(t *testing.T) {
 	record.Dirty = true
 	exhaust.TurbineChannel <- record
 
-	time.Sleep(config.Base.TestDelayDuration)
+	helper.WaitForTurbine()
 
 	indexFile, err := os.OpenFile(config.Base.IndexPrefix+common.State.StringChunkNumber(), os.O_RDWR|os.O_CREATE, 0666)
 	common.FaceIt(err)
@@ -34,6 +34,7 @@ func TestTurbineFlush(t *testing.T) {
 	if recordOnDisk.Created != record.Created {
 		t.Fatalf("record on disk has wrong Created field %d (%d expected)", recordOnDisk.Created, record.Created)
 	}
+
 	if record.Dirty {
 		t.Fatalf("record wasn't marked as 'clear' in RecordMap =(")
 	}
