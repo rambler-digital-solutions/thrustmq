@@ -2,17 +2,17 @@ package tests
 
 import (
 	"github.com/rambler-digital-solutions/thrustmq/common"
-	"github.com/rambler-digital-solutions/thrustmq/config"
 	"github.com/rambler-digital-solutions/thrustmq/subsystems/exhaust"
 	"github.com/rambler-digital-solutions/thrustmq/tests/helper"
 	"math/rand"
 	"testing"
-	"time"
 )
 
 // When record was delivered - remove it from memory
 func TestAfterburnerRemoveSent(t *testing.T) {
 	common.Log("test", "\n\nTestAfterburnerRemoveSent")
+	exhaust.ClearRecordsMap()
+	helper.SeekStart()
 	helper.BootstrapExhaust(t)
 
 	record := &common.Record{}
@@ -20,11 +20,12 @@ func TestAfterburnerRemoveSent(t *testing.T) {
 	record.Delivered = common.TimestampUint64()
 	exhaust.MapRecord(record)
 
-	time.Sleep(config.Base.TestDelayDuration)
+	helper.WaitForAfterburner()
 
 	helper.CheckCombustor(t, 0)
 	helper.CheckTurbine(t, 0)
 	helper.CheckAfterburner(t, 0)
+
 	if exhaust.RecordsMapGet(record.Seek) != nil {
 		t.Fatalf("record wasn't deleted %v", exhaust.RecordsMapGet(record.Seek))
 	}
@@ -34,6 +35,8 @@ func TestAfterburnerRemoveSent(t *testing.T) {
 func TestAfterburnerRequeueOnDeadConnection(t *testing.T) {
 	common.Log("test", "\n\nTestAfterburnerRequeueOnDeadConnection")
 	helper.BootstrapExhaust(t)
+	exhaust.ClearRecordsMap()
+	helper.SeekStart()
 
 	seek := uint64(rand.Int63())
 	bucketID := uint64(rand.Int63())

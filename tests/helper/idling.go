@@ -9,8 +9,8 @@ import (
 )
 
 func WaitForAfterburner() {
-	common.Log("tests", "idling on afterburner...")
 	for len(exhaust.AfterburnerChannel) > 0 {
+		common.Log("tests", "idling on afterburner...")
 		GenericWait()
 	}
 	GenericWait()
