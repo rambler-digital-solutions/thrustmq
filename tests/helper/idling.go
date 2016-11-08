@@ -75,3 +75,7 @@ func GenericWait() {
 func LongWait() {
 	time.Sleep(10 * config.Base.TestDelayDuration)
 }
+
+func ExtraLongWait() {
+	time.Sleep(100 * config.Base.TestDelayDuration)
+}

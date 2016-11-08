@@ -70,25 +70,22 @@ func TestInstantiationOfUndeliveredMessages(t *testing.T) {
 func TestMovementOfUndeliveredOffset(t *testing.T) {
 	common.Log("test", "\n\nTestMovementOfUndeliveredOffset")
 	numberOfRecords := 4
-	connectionID := uint64(rand.Int63())
 	bucketID := uint64(rand.Int63())
 	records := make([]*common.Record, numberOfRecords)
 	for i := 0; i < numberOfRecords; i++ {
 		records[i] = &common.Record{}
 		records[i].Bucket = bucketID
-		if i < numberOfRecords-1 {
+		if i < numberOfRecords/2 {
 			records[i].Delivered = common.TimestampUint64()
 		}
 	}
 	helper.BootstrapExhaust(t)
-	helper.ForgeConnection(connectionID, bucketID)
 	helper.DumpRecords(records)
 
-	helper.LongWait()
+	helper.ExtraLongWait()
 
-	exhaust.DeleteConnectionByID(connectionID)
-	if common.State.UndeliveredOffset != common.State.WriteOffset-common.IndexSize {
-		t.Fatalf("min offset does not move %d - %d", common.State.UndeliveredOffset, common.State.WriteOffset-common.IndexSize)
+	if common.State.UndeliveredOffset != common.State.WriteOffset/2 {
+		t.Fatalf("min offset does not move %d vs %d", common.State.UndeliveredOffset, common.State.WriteOffset/2)
 	}
 }
 
@@ -96,7 +93,6 @@ func TestMovementOfUndeliveredOffset(t *testing.T) {
 func TestFCUFileDeletion(t *testing.T) {
 	common.Log("test", "\n\nTestFCUFileDeletion")
 	numberOfRecords := int(config.Base.ChunkSize + 1)
-	connectionID := uint64(rand.Int63())
 	bucketID := uint64(rand.Int63())
 	records := make([]*common.Record, numberOfRecords)
 	for i := 0; i < numberOfRecords; i++ {
@@ -107,9 +103,8 @@ func TestFCUFileDeletion(t *testing.T) {
 	helper.BootstrapExhaust(t)
 	helper.DumpRecords(records)
 
-	helper.LongWait()
+	helper.ExtraLongWait()
 
-	exhaust.DeleteConnectionByID(connectionID)
 	_, err := os.Stat(config.Base.IndexPrefix + "0")
 	if !os.IsNotExist(err) {
 		t.Fatalf("index file still exists!")
