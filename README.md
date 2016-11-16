@@ -1,6 +1,6 @@
 # ThrustMQ (WIP)
 
-[![Build Status](https://travis-ci.org/rambler-digital-solutions/thrustmq.svg?branch=develop)](https://travis-ci.org/rambler-digital-solutions/thrustmq)
+[![Build Status](https://travis-ci.org/rambler-digital-solutions/thrustmq.svg?branch=master)](https://travis-ci.org/rambler-digital-solutions/thrustmq)
 [![Code Climate](https://codeclimate.com/github/rambler-digital-solutions/thrustmq/badges/gpa.svg)](https://codeclimate.com/github/rambler-digital-solutions/thrustmq)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rambler-digital-solutions/thrustmq)](https://goreportcard.com/report/github.com/rambler-digital-solutions/thrustmq)
 
