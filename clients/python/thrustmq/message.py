@@ -4,3 +4,6 @@ class Message:
         self.bucket_id = bucket_id
         self.data = data
         self.length = len(data)
+
+    def __str__(self):
+        return "{} {}".format(bucket_id, data)
