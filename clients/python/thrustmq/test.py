@@ -1,14 +1,19 @@
-from thrustmq.producer import ThrustMQProducer
-from thrustmq.consumer import ThrustMQConsumer
+from producer import ThrustMQProducer
+from consumer import ThrustMQConsumer
+from message import Message
 
-producer = ThrustMQProducer("localhost", 1888)
-consumer = ThrustMQConsumer("localhost", 2888)
+NUMBER_OF_MESSAGES = 10
+BATCH_SIZE = 5
+BUCKET_ID = 1
 
-for i in range(10):
-    message = "test message %d" % i
-    producer.send([message])
+producer = ThrustMQProducer()
+consumer = ThrustMQConsumer(bucket_id=BUCKET_ID, batch_size=BATCH_SIZE)
 
-for i in range(10):
+for i in range(int(NUMBER_OF_MESSAGES / BATCH_SIZE)):
+    payload = ("test message %d" % i).encode('utf-8')
+    messages = [Message(BUCKET_ID, payload) for i in range(BATCH_SIZE)]
+    producer.send(messages)
+
+for i in range(int(NUMBER_OF_MESSAGES / BATCH_SIZE)):
     result = consumer.receive()
-    result = str(result, encoding='utf-8')
     print(result)

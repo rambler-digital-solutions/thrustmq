@@ -4,3 +4,4 @@ tests/data/*
 benchmarks/data/*
 clients/**/dist
 .bench
+__pycache__

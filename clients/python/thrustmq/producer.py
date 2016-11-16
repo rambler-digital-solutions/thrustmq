@@ -9,24 +9,19 @@ import time
 from time import gmtime, strftime
 import datetime
 import random
-
-TOKEN = binascii.hexlify(os.urandom(8)).decode('utf-8')
-sock = None
+from message import Message
 
 
 class ThrustMQProducer:
 
-    def __init__(self, host, port):
+    def __init__(self, host="localhost", port=1888):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((host, port))
 
     def send_message(self, message):
-        bucket_id = random.choice([1, 2, 3, 3])
-        message_bytes = message.encode('utf-8')
-        self.sock.sendall(bucket_id.to_bytes(8, byteorder='little'))
-        self.sock.sendall(len(message_bytes).to_bytes(
-            4, byteorder='little'))
-        self.sock.sendall(message_bytes)
+        self.sock.sendall(message.bucket_id.to_bytes(8, byteorder='little'))
+        self.sock.sendall(message.length.to_bytes(4, byteorder='little'))
+        self.sock.sendall(message.data)
 
     def send(self, messages):
         if not isinstance(messages, list):
@@ -39,4 +34,4 @@ class ThrustMQProducer:
         for message in messages:
             self.send_message(message)
 
-        result = self.sock.recv(1)
+        result = self.sock.recv(message.length)
