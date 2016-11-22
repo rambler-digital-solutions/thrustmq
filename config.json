@@ -10,7 +10,7 @@
         "AfterburnerBuffer": 4096,
         "NozzleBuffer": 1024
     },
-    "Logfile": "data/system.log",
+    "Logfile": "data/system",
     "IndexPrefix": "data/index",
     "DataPrefix": "data/data",
     "StateFile": "data/state",
