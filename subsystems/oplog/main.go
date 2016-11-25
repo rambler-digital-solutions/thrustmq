@@ -23,6 +23,7 @@ var (
 
 func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	Dash.Channels.Update()
 	Dash.Maps.Update()
 	json.NewEncoder(w).Encode(Dash)
@@ -30,6 +31,9 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 func Init() {
 	go writeLogs()
+	http.HandleFunc("/public/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, r.URL.Path[1:])
+	})
 	http.HandleFunc("/dash", dashboardHandler)
 	http.ListenAndServe(":3888", nil)
 }

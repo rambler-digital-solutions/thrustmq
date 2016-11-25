@@ -44,7 +44,7 @@ func removeProcessedChunks() {
 // Subsystem that instantiates records from disk and pushes them to combustor
 func fuelControlUnit() {
 	for {
-		time.Sleep(1e3)
+		time.Sleep(1e6)
 		if len(CombustorChannel) > cap(CombustorChannel)/2 || common.State.UndeliveredOffset >= common.State.WriteOffset {
 			runtime.Gosched()
 			continue

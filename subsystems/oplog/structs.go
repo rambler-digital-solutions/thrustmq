@@ -8,6 +8,11 @@ import (
 	"time"
 )
 
+type operations struct {
+	Recieved int
+	Sent     int
+}
+
 type channels struct {
 	CompressorChannelLength       int
 	CompressorStage2ChannelLength int
@@ -51,4 +56,5 @@ type dashboard struct {
 	Channels          *channels
 	Maps              *maps
 	Config            *config.Struct
+	Operations        *operations
 }

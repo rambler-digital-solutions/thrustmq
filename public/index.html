@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+</style>
+<head>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/modules/exporting.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+</head>
+<body>
+  <div id="container1" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+  <div id="container2" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+  <script>
+    var data1 = {
+      CompressorChannelLength: [],
+      CompressorStage2ChannelLength: [],
+      CombustorChannelLength: [],
+      AfterburnerChannelLength: [],
+      TurbineChannelLength: [],
+      OplogChannelLength: []
+    };
+
+    var data2 = {
+      RecordsMapLength: [],
+      ConnectionsMapLength: [],
+      BucketsMapLength: [],
+      ChunksMapLength: []
+    };
+
+    var chart1 = null;
+    var chart2 = null;
+
+    function drawChart(element, series) {
+      return Highcharts.chart(element, {
+          title: {
+              text: ''
+          },
+          xAxis: {
+              labels: {
+                enabled: false
+              }
+          },
+          yAxis: {
+              title: {
+                  text: 'Number of messages'
+              },
+              plotLines: [{
+                  value: 0,
+                  width: 1,
+                  color: '#808080'
+              }]
+          },
+          legend: {
+              layout: 'vertical',
+              align: 'right',
+              verticalAlign: 'middle',
+              borderWidth: 0
+          },
+          plotOptions: {
+              series: {
+                  animation: false,
+                  marker: {
+                    enabled: false
+                  }
+              }
+          },
+          tooltip: {
+            enabled: false
+          },
+          series: series
+      });
+
+    }
+
+    function draw() {
+      $.ajax({
+        dataType: "json",
+        url: "http://localhost:3888/dash",
+        success: function(result) {
+          var preparedData = [];
+          for (var key in result.Channels) {
+            data1[key].push(result.Channels[key]);
+            data1[key] = data1[key].slice(data1[key].length - 300, data1[key].length);
+            preparedData.push({name: key, data: data1[key]})
+          }
+          if (!chart1) chart1 = drawChart('container1', preparedData);
+          else {
+            for (var i in preparedData) {
+              chart1.series[i].setData(preparedData[i].data);
+            }
+          }
+
+          preparedData = [];
+          for (var key in result.Maps) {
+            data2[key].push(result.Maps[key]);
+            data2[key] = data2[key].slice(data2[key].length - 300, data2[key].length);
+            preparedData.push({name: key, data: data2[key]})
+          }
+          if (!chart2) chart2 = drawChart('container2', preparedData);
+          else {
+            for (var i in preparedData) {
+              chart2.series[i].setData(preparedData[i].data);
+            }
+          }
+        }
+      });
+
+    }
+
+    $(function () {
+      setInterval(draw, 1000);
+    });
+  </script>
+</body>
